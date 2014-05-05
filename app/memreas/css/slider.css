@@ -1,0 +1,87 @@
+﻿#mcts1 {
+	width: 46%;/*for the vertical slider, this width is div.item's: width + 2 * borderWidth + paddingLeft + paddingRight */
+	height: 400px;
+	/* Do not alter the below settings*/
+	position: relative;
+	font-size: 0px;
+	float: left;
+	margin-left:20px;
+	
+}
+#mcts1>* {
+	display: none;
+}
+/*-------- div.item is each thumbnail's wrapper created by the javascript ------*/
+#mcts1 div.item {
+	position: relative;/*??*/
+	float: left;
+}
+#mcts1 img {
+	border: 1px #FFF solid;
+	margin:5px;
+	width:70%;	
+}
+/*---------built-in navigation bullets--------*/
+/* Note: the navBullets won't be available when "scrollByEachThumb" was set to false in the Javascript.*/
+#mcts1 .navBullets {
+	display: none;
+}
+/*---------navigation buttons-------*/
+#mcts1 .navPrev, #mcts1 .navNext, #mcts1 .navPlay, #mcts1 .navPause {
+	position: absolute;
+	top: 380px;
+	background: url(../img/next-prev.png);
+	display: block;
+	z-index: 5;
+	cursor: pointer;
+}
+#mcts1 .navPrev {
+	background-position: 0 0;
+	right: 750px;
+	width: 76px;
+	height: 38px;
+}
+#mcts1 .navPrev:hover {
+	background-position: 0 -38px;
+}
+#mcts1 .navNext {
+	background-position: -76px 0px;
+	right: 400px;
+	width: 74px;
+	height: 38px;
+}
+#mcts1 .navNext:hover {
+	background-position: -76px 38px;
+}
+#mcts1 .navPause, #mcts1 .navPlay {
+	right: 530px;
+	width: 166px;
+	height: 38px;
+}
+#mcts1 .navPause {
+	background-position: 166px 0px;
+}
+#mcts1 .navPause:hover {
+	background-position: 166px 38px;
+}
+#mcts1 .navPlay {
+	background-position: 166px 38px;
+}
+#mcts1 .navPlay:hover {
+	background-position: 166px 0px;
+}
+.navPrev, .navPlay, .navPause, .navNext {
+	-moz-user-select: -moz-none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+}
+/* --------- Others ------- */
+#mcts1 {
+	transform: translate3d(0, 0, 0);
+	-ms-transform: translate3d(0, 0, 0);
+	-moz-transform: translate3d(0, 0, 0);
+	-o-transform: translate3d(0, 0, 0);
+	-webkit-transform: translate3d(0, 0, 0);
+}

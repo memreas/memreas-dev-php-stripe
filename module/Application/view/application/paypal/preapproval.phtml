@@ -1,0 +1,89 @@
+<?php 
+$form = $this->form;
+$errors = $this->errors;
+$display_error = NULL;
+if(!empty($errors))
+{
+  foreach($errors as $key => $err)
+  {
+    $display_error .=  "<br/><strong>".$key."</strong><ul>";
+    foreach($err as $message)
+    {
+      $display_error .="<li>".$message."</li>";
+    }
+    $display_error .="</ul>";
+  }
+  echo $display_error;
+}
+
+if(!empty($exception))
+{
+  echo "<table>
+      <tr>
+        <td>Type</td>
+        <td>".$exception["class"]."</td>
+      </tr>
+      <tr>
+        <td>Message</td>
+        <td>".$exception["message"]."</td>
+      </tr>
+      <tr>
+        <td>Detailed message</td>
+        <td>".$exception["details_message"]."</td>
+      </tr>
+    </table>";
+}
+
+echo "<br/>";
+$form->setAttribute('action', $this->url('paypal', array('action' => 'preapproval')));
+$form->prepare();
+
+echo $this->form()->openTag($form);
+echo $this->formRow($form->get('startingDate'));
+echo $this->formRow($form->get('endingDate'));
+echo $this->formRow($form->get('dateOfMonth'));
+echo $this->formRow($form->get('currencyCode'));
+echo $this->formRow($form->get('dayOfWeek'));
+echo $this->formRow($form->get('maxAmountPerPayment'));
+echo $this->formRow($form->get('maxNumberOfPayments'));
+echo $this->formRow($form->get('maxNumberOfPaymentsPerPeriod'));
+echo $this->formRow($form->get('maxTotalAmountOfAllPayments'));
+echo $this->formRow($form->get('paymentPeriod'));
+echo $this->formRow($form->get('displayMaxTotalAmount'));
+echo $this->formRow($form->get('memo'));
+echo $this->formRow($form->get('ipnNotificationUrl'));
+echo $this->formRow($form->get('senderEmail'));
+echo $this->formRow($form->get('pinType'));
+echo $this->formRow($form->get('feesPayer'));  
+echo $this->formSubmit($form->get('send'));
+echo $this->form()->closeTag();
+
+  echo "<br/>";
+  echo "<br/>";
+  if(!empty($this->response)){
+  $response =  $this->response;
+    $ack = strtoupper($response->responseEnvelope->ack);
+if($ack != "SUCCESS"){
+  echo "<b>Error </b>";
+  echo "<pre>";
+  print_r($response);
+  echo "</pre>";
+} else {
+  echo "<pre>";
+  print_r($response);
+  echo "</pre>";
+  
+  // Redirect to paypal.com here
+  $token = $response->preapprovalKey;
+  $payPalURL = 'https://www.sandbox.paypal.com/webscr&cmd=_ap-preapproval&preapprovalkey='.$token;
+  
+  echo "<table>";
+  echo "<tr><td>Ack :</td><td><div id='Ack'>$ack</div> </td></tr>";
+  echo "<tr><td>PreapprovalKey :</td><td><div id='PreapprovalKey'>$token</div> </td></tr>";
+  echo "<tr><td><a href=$payPalURL><b>Redirect URL to Complete Preapproval Authorization</b></a></td></tr>";
+  echo "</table>";
+}
+
+  }
+  
+

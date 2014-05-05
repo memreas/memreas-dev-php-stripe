@@ -1,0 +1,149 @@
+<?php
+use Zend\Session\Container;
+header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1.
+header('Pragma: no-cache'); // HTTP 1.0.
+header('Expires: 0'); // Proxies.
+
+?>
+ 
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Memreas</title>
+
+<!--Custom css-->
+<link href="/memreas/css/style.css" rel="stylesheet" type="text/css">
+<link href="/memreas/css/jquery.mCustomScrollbar.css" rel="stylesheet" />
+
+<!--Bootstrap Css-->
+<link href="/memreas/css/bootstrap.min.css" rel="stylesheet" type="text/memreas/css">
+
+<!--jQuery Lybrary-->
+<script src="/memreas/js/jquery.js"></script>
+<script src="/memreas/js/modernizr.custom.17475.js"></script>
+
+<!--Bootstrap jQuery-->
+<script src="/memreas/js/bootstrap.min.js"></script>
+
+<!--Backgound Strecher-->
+<script type="text/javascript" src="/memreas/js/bgstretcher.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+$(document).bgStretcher({
+			images: ['/memreas/img/bg.jpg'],
+			imageWidth: 1366, imageHeight: 700
+		});
+	});
+</script>
+<!--memreas registration.js-->
+<script type="text/javascript" src="/memreas/js/registration.js"></script>
+
+<script type="text/javascript">
+/*
+    $(document).ready(function () {
+        $("#btnCall").click(onBtnCallClicked);
+    });
+    function onBtnCallClicked() {
+    	alert("HIT onBtnCallClicked");
+        //jQuery.registration();
+    }
+*/
+
+</script>
+
+</head>
+
+<body>
+<!-- Begin : Container -->
+<div class="container">
+  <!-- Begin : Header -->
+  <div class="row-fluid">
+  	<header>
+      <div class="center_logo"><h1 id="logo"><a href="index.html">memreas</a></h1></div>
+  	</header>
+  </div>
+  <!-- End : Header -->
+  <!-- Begin : Content -->
+  	<div class="row-fluid content">
+    <div class="span6 memreas-big-logo"><img src="/memreas/img/memreas_add.png"></div>
+    <div class="span6">
+    <div class="login_contents">
+	<form action="<?php echo $this->url('index',array('action'=>'login'));?>" method="post" name="user" id="user">
+    <ul>
+    <li>
+    <input name="username" type="text" class="input" value="username" onBlur="if(!/\S/.test(this.value))this.value=this.defaultValue" onFocus="if(this.value == 'username')this.value = '';"/>
+    <input name="password" type="password"  class="input" value="password" onBlur="if(!/\S/.test(this.value))this.value=this.defaultValue" onFocus="if(this.value == 'password')this.value = '';"/>
+    </li>
+    <li>
+    <input type="submit" class="login-btn" value="login">
+      <a href="#" class="forgot-password">forgot your password?</a>
+    </li>
+    </ul>
+    </form>
+    </div>
+    
+    
+    <!-- Registration Form-->
+	<form enctype="multipart/form-data" action="<?php echo $this->url('index',array('action'=>'registration'));?>" method="post" name="register" id="register">
+    <div class="signin_contents">
+    <ul>
+    <li>
+    <div class="signup_heading">
+      <p>Sign Up</p>
+    </div>
+    </li>
+    <li>
+    <figure class="profile_picture"><output id="list"></output></figure>
+    <div class="file_upload">Choose Profile Picture <input id="file" type="file" name="file" /></div>
+   <script>
+	if (window.FileReader) {
+      function handleFileSelect(evt) {
+        var files = evt.target.files;
+        var f = files[0];
+        var reader = new FileReader();
+		
+          reader.onload = (function(theFile) {
+            return function(e) {
+              document.getElementById('list').innerHTML = ['<img src="', e.target.result,'" title="', theFile.name, '" width="75" />'].join('');
+            };
+          })(f);
+    
+          reader.readAsDataURL(f);
+      }
+	 } else {
+	  alert('This browser does not support FileReader');
+	}
+    
+      document.getElementById('file').addEventListener('change', handleFileSelect, false);
+    </script>
+<script type="text/javascript" charset="utf-8">
+    jQuery('#file').css('opacity',0);  
+</script>
+    </li>
+    <li>
+    <input name="email" id="inEmail" class="signup_textfields"type="text" value="Your Email" onBlur="if(!/\S/.test(this.value))this.value=this.defaultValue;  onEmailFocusOut();" onFocus="if(this.value == 'Your Email')this.value = '';"/>
+    <input name="username" id="inUserName" class="signup_textfields"type="text" value="User Name" onBlur="if(!/\S/.test(this.value))this.value=this.defaultValue; onUserNameFocusOut();" onFocus="if(this.value == 'User Name')this.value = '';"/>
+    <input name="password" id="inPassword" type="password" class="signup_textfields" onFocus="if(this.value == 'Password')this.value = '';" onBlur="if(!/\S/.test(this.value))this.value=this.defaultValue" value="Password"/>
+    <input name="verifypassword" id="inVerifyPassword" class="signup_textfields"type="password" value="password" onBlur="if(!/\S/.test(this.value))this.value=this.defaultValue" onFocus="if(this.value == 'password')this.value = '';"/>
+    </li>
+    
+    <li>
+    	<input id="demo_box_2" class="css-checkbox" type="checkbox" checked="checked" />
+		<label for="demo_box_2" name="demo_lbl_2" class="css-label">legal disclaimer </label>
+    </li>
+    <li>
+    <input type="submit" id="btnCall" class="sign-btn" value="Create an account">
+    </li>
+    
+    </ul>
+    </div>
+    </div>
+    </div>
+    </form>
+  <!-- End : Content -->
+</div>
+<footer>&copy; 2013 memreas, llc. All rights reserved.</footer>
+<!-- End : Container -->
+</body>
+</html>

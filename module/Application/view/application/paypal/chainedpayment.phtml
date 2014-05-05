@@ -1,0 +1,380 @@
+<script type="text/javascript">
+// --------- Add and remove receivers---------
+function addRow(tableID) {
+
+  var table = document.getElementById(tableID);
+  var rowCount = table.rows.length;
+  if (rowCount < 8) {
+    var row = table.insertRow(rowCount);
+
+    var cell0 = row.insertCell(0);
+    var element0 = document.createElement("label");
+    var textnode = document.createTextNode("Receiver");
+    element0.appendChild(textnode);
+    cell0.appendChild(element0);
+    var element1 = document.createElement("input");
+    element1.type = "checkbox";
+    cell0.appendChild(element1);
+
+    var cell2 = row.insertCell(1);
+    var element2 = document.createElement("input");
+    element2.type = "text";
+    element2.name = "receiverEmail[]";
+    element2.size = "10";
+    cell2.appendChild(element2);
+
+    var cell3 = row.insertCell(2);
+    var element3 = document.createElement("input");
+    element3.type = "text";
+    element3.name = "receiverAmount[]";
+    element3.className = "smallfield";
+    cell3.appendChild(element3);
+
+    var cell4 = row.insertCell(3);
+    var sel = document.createElement('select');
+    sel.name = 'primaryReceiver[]';
+    sel.options[0] = new Option('false', 'false');
+    sel.options[1] = new Option('true', 'true');
+    sel.className = "smallfield";
+    cell4.appendChild(sel);
+
+  }
+}
+
+function deleteRow(tableID) {
+  try {
+    var selectionMade = false;
+    var table = document.getElementById(tableID);
+    var rowCount = table.rows.length;
+    if (rowCount > 1) {
+      for ( var i = 2; i < rowCount; i++) {
+        var row = table.rows[i];
+        var chkbox = row.cells[0].childNodes[0];
+        if (null != chkbox && true == chkbox.checked) {
+          selectionMade = true;
+          table.deleteRow(i);
+          rowCount--;
+          i--;
+        }
+      }
+    } 
+    if(!selectionMade){
+      alert("Please select one or more rows to delete");
+    }
+  } catch (e) {
+    alert(e);
+  }
+}
+
+function cloneRow(tableID, maxRows) {
+
+  var table = document.getElementById(tableID);
+  var tBody = table.getElementsByTagName("tbody")[0];
+  var rowCount = tBody.childElementCount;
+  if (rowCount < maxRows && rowCount > 0) {
+    var origRow = tBody.children[rowCount - 1];
+    var row = origRow.cloneNode(true);
+    row.id = getNextId(origRow.id);
+    tBody.appendChild(row);
+    var cells = row.getElementsByTagName("td");
+    for (i = 0; i < cells.length; i++) {
+      var cell = cells[i];
+      var inputs = cell.getElementsByTagName("input");
+      for (j = 0; j < inputs.length; j++) {
+        var input = inputs[j];
+        input.id = getNextId(input.id);
+        if(input.type == "checkbox") {
+          input.disabled = false;
+        }
+      }
+      var inputs = cell.getElementsByTagName("select");
+      for (j = 0; j < inputs.length; j++) {
+        var input = inputs[j];
+        input.id = getNextId(input.id);
+      }      
+    }
+  }
+}
+
+function getNextId(id) {
+  var parts = id.match(/(\D+)(\d+)$/);
+  // create a unique name for the new field by incrementing
+  // the number for the previous field by 1
+  return parts[1] + ++parts[2];
+}
+
+// JQuery functions
+function addTableRow(table) {
+  // clone the last row in the table
+  var $tr = $(table).find("tbody tr:last").clone();
+
+  // get the name attribute for the input and select fields
+  $tr.find("input,select").attr("name", getNextId(this.name)).attr("id",
+      getNextId(this.id)).removeAttr("disabled");  
+  // append the new row to the table
+  $(table).find("tbody tr:last").after($tr);
+}
+
+qtipConfig = {
+  style : {
+    color : 'black',
+    textAlign : 'left',
+    border : {
+      width : 7,
+      radius : 5
+    },
+    tip : 'topLeft',
+    name : 'blue'
+  }
+}
+
+</script>
+<div id="header">
+      <h3>Pay</h3>
+      <div id="apidetails">The Pay API operation is used to transfer
+        funds from a sender's PayPal account to one or more receivers'
+        PayPal accounts. You can use the Pay API operation to make simple
+        payments, chained payments, or parallel payments; these payments can
+        be explicitly approved, preapproved, or implicitly approved.</div>
+    </div>
+    <div id="request_form">
+      <form action="" method="post">
+        <div class="params">
+          <div class="param_name">Action type *</div>
+          <div class="param_value">
+            <select name="actionType" id="actionType">
+              <option value="PAY">PAY</option>
+              <option value="CREATE">CREATE</option>
+              <option value="PAY_PRIMARY">PAY_PRIMARY</option>
+            </select>
+          </div>
+        </div>
+        <div class="params">
+          <div class="param_name">Cancel Url *</div>
+          <div class="param_value">
+            <input name="cancelUrl" id="cancelUrl" value="http://www.memreas.com/cancel" />
+          </div>
+        </div>
+        <div class="params">
+          <div class="param_name">Currency code *</div>
+          <div class="param_value">
+            <input name="currencyCode" value="USD" />
+          </div>
+        </div>
+        <div class="params">
+          <div class="param_name">Fees payer</div>
+          <div class="param_value">
+            <select name="feesPayer">
+              <option value="EACHRECEIVER">EACHRECEIVER</option>
+              <option value="PRIMARYRECEIVER">PRIMARYRECEIVER</option>
+              <option value="SENDER" selected="selected">SENDER</option>
+              <option value="SECONDARYONLY">SECONDARYONLY</option>
+            </select>
+          </div>
+        </div>
+        <div class="params">
+          <div class="param_name">IPN Notification Url</div>
+          <div class="param_value">
+            <input name="ipnNotificationUrl" value="https://www.sandbox.paypal.com/cgi-bin/webscr" />
+          </div>
+        </div>
+        <div class="params">
+          <div class="param_name">Memo</div>
+          <div class="param_value">
+            <input name="memo" value="" />
+          </div>
+        </div>
+        <div class="params">
+          <div class="param_name">Pin</div>
+          <div class="param_value">
+            <input name="pin" id="pin" value="" />
+          </div>
+        </div>
+        <div class="params">
+          <div class="param_name">Preapproval key</div>
+          <div class="param_value">
+            <input name="preapprovalKey" id="preapprovalKey" value="" />
+          </div>
+        </div>
+        <div class="section_header">Receiver info</div>
+        <table class="params" id="receiverTable">
+          <tr>
+            <th></th>
+            <th>Email *</th>
+            <th>Amount *</th>
+            <th>Phone number</th>
+            <th>Primary receiver</th>
+            <th>Invoice Id</th>
+            <th>Payment type</th>
+            <th>Payment subtype</th>
+          </tr>
+          <tr id="receiverTable_0">
+            <td align="left"><input type="checkbox" name="receiver[]" id="receiver_0" disabled="disabled" /></td>
+            <td>
+              <input type="text" name="receiverEmail[]" id="receiveremail_0" value="tmeah_seller@memreas.com">
+            </td>
+            <td>
+              <input type="text" name="receiverAmount[]" id="amount_0" value="1.0" class="smallfield">
+            </td>
+            <td>
+              <input type="text" name="phoneCountry[]" id="phoneCountry_0" value="" class="xsmallfield" /> - 
+              <input type="text" name="phoneNumber[]" id="phoneNumber_0" value="" class="xsmallfield" />
+              <input type="text" name="phoneExtn[]" id="phoneExtn_0" value="" class="xsmallfield" />
+            </td>            
+            <td>
+              <select name="primaryReceiver[]" id="primaryReceiver_0" class="smallfield">
+                <option value="true">true</option>
+                <option value="false" selected="selected">false</option>
+              </select>
+            </td>
+            <td>
+              <input type="text" name="invoiceId[]" id="invoiceid_0" value="" class="smallfield">
+            </td>
+            <td>
+              <select name="paymentType[]" id="paymentType_0" class="smallfield">
+                <option>- Select -</option>
+                <option>GOODS</option>
+                <option>SERVICE</option>
+                <option>PERSONAL</option>
+                <option>CASHADVANCE</option>
+                <option>DIGITALGOODS</option>
+              </select>
+            </td>
+            <td>
+              <input type="text" name="paymentSubType[]" id="paymentSubType" value="" class="smallfield">
+            </td>            
+          </tr>
+        </table>
+        <a rel="receiverControls"></a>
+        <table align="center">
+          <tr>
+            <td><a href="#receiverControls" onclick="cloneRow('receiverTable', 8)" id="Submit"><span> Add
+                  Receiver  </span> </a></td>
+            <td><a href="#receiverControls" onclick="deleteRow('receiverTable')" id="Submit"><span>  Delete
+                  Receiver</span> </a></td>
+          </tr>
+        </table>
+        <div class="params">
+          <div class="param_name">Reverse all parallel payments on error</div>
+          <div class="param_value">
+            <input name="reverseAllParallelPaymentsOnError" id="reverseAllParallelPaymentsOnError" value="false" />
+          </div>
+        </div>
+        <div class="params">
+          <div class="param_name">Sender email (Optional for Guest Payment)</div>
+          <div class="param_value">
+            <input name="senderEmail" id="senderEmail" value="dmeah_buyer@memreas.com" />
+          </div>
+        </div>
+        <div class="params">
+          <div class="param_name">Return Url</div>
+          <div class="param_value">
+            <input name="returnUrl" id="returnUrl" value="http://www.memreas.com/return" />
+          </div>
+        </div>
+        <div class="params">
+          <div class="param_name">Tracking Id</div>
+          <div class="param_value">
+            <input name="trackingId" id="trackingId" value="" />
+          </div>
+        </div>
+        <div class="params">
+          <div class="param_name">Funding constraint (Requires advanced permission levels)</div>
+          <div class="param_value">
+            <select name="fundingConstraint" id="fundingConstraint">
+              <option value="">- Select -</option>
+              <option>ECHECK</option>
+              <option>BALANCE</option>
+              <option>CREDITCARD</option>
+            </select>
+          </div>
+        </div>
+        <div class="input_header">Sender Identifier</div>
+        <table class="params">
+          <tr>
+            <th>Email</th>
+            <th>Phone (Country code / Phone number / Extension)</th>
+            <th>Use Credentials</th>
+          </tr>
+          <tr>
+            <td><input name="emailIdentifier" id="emailIdentifier" value="" /></td>
+            <td><input type="text" name="senderCountryCode" class="smallfield"/>
+            <input type="text" name="senderPhoneNumber" /> - <input type="text" name="senderExtension" class="smallfield"/></td>
+            <td>
+              <select name="useCredentials" id="useCredentials">
+                <option></option>
+                <option>true</option>
+                <option>false</option>
+              </select>
+            </td>
+          </tr>
+        </table>        
+        <div class="submit">
+          <input type="submit" value="Submit" />
+        </div>
+      </form>
+      <br/>
+      <br/>
+ <?php  
+     if(!empty($this->response)){
+       $response = $this->response;
+      $ack = strtoupper($response->responseEnvelope->ack);
+if($ack != "SUCCESS") {
+  echo "<b>Error </b>";
+  echo "<pre>";
+  print_r($response);
+  echo "</pre>";
+} else {
+  $payKey = $response->payKey;
+  if(($response->paymentExecStatus == "COMPLETED" )) {
+    $case ="1";
+  } else if(($_POST['actionType']== "PAY") && ($response->paymentExecStatus == "CREATED" )) {
+    $case ="2";
+  } else if(($_POST['preapprovalKey'] != null ) && ($_POST['actionType'] == "CREATE") && ($response->paymentExecStatus == "CREATED" )) {
+    $case ="3";
+  } else if(($_POST['actionType']== "PAY_PRIMARY")) {
+    $case ="4";
+  } else if(($_POST['actionType']== "CREATE") && ($response->paymentExecStatus == "CREATED" )) {
+    $apiCred = PPCredentialManager::getInstance()->getCredentialObject(null);
+    if(str_replace('_api1.', '@', $apiCred->getUserName()) == $_POST["senderEmail"]) {
+      $case ="3";
+    } else {
+      $case ="2";
+    }
+  }
+  $token = $response->payKey;
+  $payPalURL = PAYPAL_REDIRECT_URL . '_ap-payment&paykey=' . $token;
+  switch($case) {
+    case "1" :
+      echo "<table>";
+      echo "<tr><td>Ack :</td><td><div id='Ack'>$ack</div> </td></tr>";
+      echo "<tr><td>PayKey :</td><td><div id='PayKey'>$payKey</div> </td></tr>";
+      echo "</table>";
+      break;
+    case "2" :
+      echo "<table>";
+      echo "<tr><td>Ack :</td><td><div id='Ack'>$ack</div> </td></tr>";
+      echo "<tr><td>PayKey :</td><td><div id='PayKey'>$payKey</div> </td></tr>";
+      echo "<tr><td><a href=$payPalURL><b>Redirect URL to Complete Payment </b></a></td></tr>";
+      echo "</table>";
+      break;
+    case "3" :
+      echo "<table>";
+      echo "<tr><td>Ack :</td><td><div id='Ack'>$ack</div> </td></tr>";
+      echo "<tr><td>PayKey :</td><td><div id='PayKey'>$payKey</div> </td></tr>";
+      echo "<tr><td><a href=$payPalURL><b>Redirect URL to Complete Payment </b></a></td></tr>";
+      echo "<tr><td><a href=SetPaymentOption.php?payKey=$payKey><b>Set Payment Options(optional)</b></a></td></tr>";
+      echo "<tr><td><a href=ExecutePaymentOption.php?payKey=$payKey><b>Execute Payment Options</b></a></td></tr>";
+      echo "</table>";
+      break;
+    case "4" :
+      echo"Payment to \"Primary Receiver\" is Complete<br/>";
+      echo"<a href=ExecutePaymentOption.php?payKey=$payKey><b>* \"Execute Payment\" to pay to the secondary receivers</b></a><br>";
+      break;
+  }
+  echo "<pre>";
+  print_r($response);
+  echo "</pre>";  
+}
+   }
+   ?>

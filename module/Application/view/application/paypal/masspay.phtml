@@ -1,0 +1,72 @@
+<form method="POST" action="">
+			<div id="request_form">
+				<div class="params">
+					<div class="param_name">Receiver Info Code Type</div>
+					<div class="param_value">
+						<select name=receiverInfoCode>
+							<option value=EmailAddress>Email</option>
+							<option value=UserID>UserID</option>
+							<option value=PhoneNumber>Phone</option>
+						</select>
+					</div>
+				</div>
+				<table class="params">
+					<tr>
+						<th class="param_name">Mail</th>
+						<th class="param_name">UserID</th>
+						<th class="param_name">Phone Number</th>
+						<th class="param_name">Amount</th>
+						<th class="param_name">Currency Code</th>
+					</tr>
+					<tr>
+						<td class="param_value"><input type="text" name="mail[]"
+							value="enduser_biz@gmail.com" size="25" maxlength="260" /></td>
+						<td class="param_value"><input type="text" name="id[]" value=""
+							size="25" maxlength="260" /></td>
+						<td class="param_value"><input type="text" name="phone[]" value=""
+							size="25" maxlength="260" /></td>
+						<td class="param_value"><input type="text" name="amount[]"
+							value="3.00" size="25" maxlength="260" /></td>
+						<td class="param_value"><input type="text" name="currencyCode[]"
+							value="USD" size="25" maxlength="260" /></td>
+					</tr>
+					<tr>
+						<td class="param_value"><input type="text" name="mail[]"
+							value="sdk-three@paypal.com" size="25" maxlength="260" /></td>
+						<td class="param_value"><input type="text" name="id[]" value=""
+							size="25" maxlength="260" /></td>
+						<td class="param_value"><input type="text" name="phone[]" value=""
+							size="25" maxlength="260" /></td>
+						<td class="param_value"><input type="text" name="amount[]"
+							value="3.00" size="25" maxlength="260" /></td>
+						<td class="param_value"><input type="text" name="currencyCode[]"
+							value="USD" size="25" maxlength="260" /></td>
+					</tr>
+					<tr>
+						<td class="param_value"><input type="text" name="mail[]"
+							value="jb-us-seller@paypal.com" size="25" maxlength="260" /></td>
+						<td class="param_value"><input type="text" name="id[]" value=""
+							size="25" maxlength="260" /></td>
+						<td class="param_value"><input type="text" name="phone[]" value=""
+							size="25" maxlength="260" /></td>
+						<td class="param_value"><input type="text" name="amount[]"
+							value="3.00" size="25" maxlength="260" /></td>
+						<td class="param_value"><input type="text" name="currencyCode[]"
+							value="USD" size="25" maxlength="260" /></td>
+					</tr>
+				</table>
+				<input type="submit" name="MassPayBtn" value="MassPay" /><br />
+			</div>
+		</form>
+<?php 
+$massPayResponse = $this->massPayResponse;
+if(isset($massPayResponse)) {
+	echo "<table>";
+	echo "<tr><td>Ack :</td><td><div id='Ack'>$massPayResponse->Ack</div> </td></tr>";
+	echo "</table>";
+		
+	echo "<pre>";
+	print_r($massPayResponse);
+	echo "</pre>";
+}
+?>

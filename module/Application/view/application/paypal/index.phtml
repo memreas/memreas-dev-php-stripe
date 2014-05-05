@@ -1,0 +1,37 @@
+<div class="form_description">
+    <h2>PAYPAL</h2>
+    <p>This is your form description. Click here to edit.</p>
+</div>
+<table>
+
+    <tr>
+        <td><a
+                href="<?php echo $this->url('paypal', array('action' => 'preapproval')); ?>">Recurring Billing (Subscriptions) -- Preapproval</a></a>
+        </td>
+    </tr>
+    <tr>
+        <td><a
+                href="<?php echo $this->url('paypal', array('action' => 'chainedpayment')); ?>">Payments for Online Content (Chained Payments)</a></a>
+        </td>
+    </tr>
+    <tr>
+        <td><a
+                href="<?php echo $this->url('paypal', array('action' => 'refund')); ?>">Ability to refund customers via admin screen</a></a>
+        </td>
+    </tr>
+	 <tr>
+        <td><a
+                href="<?php echo $this->url('paypal', array('action' => 'ccrecurring')); ?>">Recurring Credi Card</a></a>
+        </td>
+    </tr>
+    <tr>
+        <td><a
+                href="<?php echo $this->url('paypal', array('action' => 'directpayment')); ?>">Direct Paypal Payment</a></a>
+        </td>
+    </tr>
+    <tr>
+        <td><a
+                href="<?php echo $this->url('paypal', array('action' => 'masspay')); ?>">Mass Pay</a></a>
+        </td>
+    </tr>
+</table>

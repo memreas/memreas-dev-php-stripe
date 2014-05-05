@@ -1,0 +1,107 @@
+﻿.akordeon
+{
+    width: 100%;
+    color: White;
+    font-family: Arial;
+    font-size: 14px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+}
+.akordeon-item
+{
+    position: relative;
+}
+.akordeon-item .akordeon-item-head
+{
+	margin-bottom:10px;
+    height: 33px;
+	border:1px #431f20 solid;
+	-webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    background: #4B4B4B; /* Old browsers */
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#4b4b4b), to(#303030));
+    background-image: -moz-linear-gradient(#4b4b4b, #303030);
+    background-image: -webkit-linear-gradient(#4b4b4b, #303030);
+    background-image: -o-linear-gradient(#4b4b4b, #303030);
+    background: -ms-linear-gradient(#4b4b4b, #303030);
+    background: linear-gradient(#4b4b4b, #303030);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4b4b4b', endColorstr='#303030',GradientType=0 ); /* IE6-9 */ /*position:relative;*/
+}
+.akordeon-item .akordeon-item-body
+{
+    border-bottom: none;
+    overflow: hidden;
+}
+.akordeon-hieght
+{
+    height: auto !important;
+}
+.akordeon-icon
+{
+    width: 23px;
+    height: 23px;
+    background: #b7b7b7; 
+    border-radius: 50px;
+    -moz-border-radius: 50px;
+    -webkit-border-radius: 50px; /* position: absolute;     left: -8px;       top:14px;*/
+    padding: 0;
+    margin: 0;
+    float: right;
+    cursor: pointer;
+	margin-top: 5px;
+}
+.akordeon-heading
+{
+    float: left;
+    padding-left: 15px;
+    padding-top: 8px;
+    font: bold 17px Arial, Helvetica, sans-serif;
+	
+}
+.akordeon-icon span
+{
+    color: #FFF;
+    font-size: 28px;
+    position: absolute;
+	top:7px;
+    right: 4px;
+    font-weight: bold;
+    text-align: center;
+}
+.akordeon-item.expanded .akordeon-icon span
+{
+	top: 5px;
+}
+.akordeon-item-head-container
+{
+    width: 100%;
+    position: absolute;
+    left: -8px;
+    cursor: pointer;
+}
+
+
+.akordeon-item.expanded .akordeon-heading
+{
+    color: #FFF;
+}
+
+.akordeon-item-content
+{
+    padding: 10px;
+    min-height: 50px;
+}
+.akordeon-item.expanded .akordeon-item-head
+{
+	background: #393939; /* Old browsers */
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#393939), to(#181818));
+    background-image: -moz-linear-gradient(#393939, #181818);
+    background-image: -webkit-linear-gradient(#393939, #181818);
+    background-image: -o-linear-gradient(#393939, #181818);
+    background: -ms-linear-gradient(#393939, #181818);
+    background: linear-gradient(#393939, #181818);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#393939', endColorstr='#181818',GradientType=0 ); /* IE6-9 */ /*position:relative;*/
+}
+

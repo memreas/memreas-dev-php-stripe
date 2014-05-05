@@ -1,0 +1,30 @@
+{
+    "name": "zendframework/skeleton-application",
+    "description": "Skeleton Application for ZF2",
+    "license": "BSD-3-Clause",
+    "keywords": [
+        "framework",
+        "zf2",
+        "paypal", 
+        "php", 
+        "sdk"
+    ],
+    "homepage": "http://framework.zend.com/",
+    "require": {
+        "php": ">=5.3.3",
+        "zendframework/zendframework": "2.*",
+        "ext-curl": "*",
+        "ext-json": "*",
+		"rhumsaa/uuid": "2.5.0",
+        "paypal/sdk-core-php": "2.4.*",
+        "paypal/merchant-sdk-php":"*",
+        "paypal/rest-api-sdk-php" : "0.7.*",
+        "aws/aws-sdk-php": "2.*",
+        "zfr/zfr-stripe-module": "~2.0"
+    },    
+    "config": {
+		"github-oauth": {
+		  "github.com": "674d012ccb6dad72d37948e137bd659d91477360"
+		}
+	}
+}
