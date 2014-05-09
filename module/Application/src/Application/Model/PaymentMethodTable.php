@@ -41,6 +41,20 @@ class PaymentMethodTable {
 
 		return $result;
 	}
+	
+	public function getPaymentMethodsByAccountId($account_id){
+		$adapter = $this->tableGateway->getAdapter();
+		//Setup the query
+		$sql = new Sql($adapter);
+		$select = $sql->select();
+		$select->from($this->tableGateway->table)->columns(array('*'))->where(array('account_id' => $account_id));
+		$sqlString = $sql->getSqlStringForSqlObject($select);
+ 		
+		$statement = $sql->prepareStatementForSqlObject($select);
+		$result = $statement->execute();
+
+		return $result;	
+	}
 
 	public function getPaymentMethod($payment_method_id) {
 		$rowset = $this->tableGateway->select ( array ('payment_method_id' => $payment_method_id ) );
@@ -51,8 +65,8 @@ class PaymentMethodTable {
 		return $row;
 	}
 
-	public function getPaymentMethodByPayPalReferenceId($paypal_card_reference_id) {
-		$rowset = $this->tableGateway->select ( array ('paypal_card_reference_id' => $paypal_card_reference_id ) );
+	public function getPaymentMethodByStripeReferenceId($stripe_card_reference_id) {
+		$rowset = $this->tableGateway->select ( array ('stripe_card_reference_id' => $stripe_card_reference_id ) );
 		$row = $rowset->current ();
 		if (! $row) {
 			throw new \Exception ( "Could not find row $payment_method_id" );
@@ -92,7 +106,8 @@ class PaymentMethodTable {
 		$this->tableGateway->delete ( array ('payment_method_id' => $payment_method_id ) );
 	}
 
-	public function deletePaymentMethodByPayPalCardReferenceId($paypal_card_reference_id) {
-		$this->tableGateway->delete ( array ('paypal_card_reference_id' => $paypal_card_reference_id ) );
+	public function deletePaymentMethodByStripeCardReferenceId($stripe_card_reference_id) {
+		return $this->tableGateway->delete ( array ('stripe_card_reference_id' => $stripe_card_reference_id ) );
 	}
+	
 }

@@ -369,13 +369,13 @@ error_log("Inside paypalPayoutMassPayeesAction.json --> $json" . PHP_EOL);
 		//Delete customer
 		//echo '<pre>'; print_r ($stripe->deleteCustomer('cus_3yx1W1G08Wj62Q')); die();
 		
-		$sample_cus = array('email' => 'customer1@gmail.com',  'description' => 'demo stripe customer');
-		$stripe->setCustomerInfo($sample_cus);
-		$customer = $stripe->createCustomer();
+		//$sample_cus = array('email' => 'customer1@gmail.com',  'description' => 'demo stripe customer');
+		//$stripe->setCustomerInfo($sample_cus);
+		//$customer = $stripe->createCustomer();
 		//$customer_id = $customer['id'];
 		//$sample_cus['id'] = $customer_id;			
-		echo '<pre>'; print_r ($customer); echo '</pre>';
-		$stripe->setCardAttribute('customer', "cus_3yx1W1G08Wj62Q");		
+		//echo '<pre>'; print_r ($customer); echo '</pre>';
+		/*$stripe->setCardAttribute('customer', "cus_3yx1W1G08Wj62Q");		
 		$sample_data = array(
 								'number' => '4242424242424242',
 								'exp_month' => '10',
@@ -385,7 +385,7 @@ error_log("Inside paypalPayoutMassPayeesAction.json --> $json" . PHP_EOL);
 							);
 		$stripe->setCard($sample_data);			
 		echo '<pre>'; print_r ($stripe->getCardValues());
-		echo '<pre>'; print_r ($stripe->storeCard()); die();
+		echo '<pre>'; print_r ($stripe->storeCard()); die();*/
 		
 		//
     	

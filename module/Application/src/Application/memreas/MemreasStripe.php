@@ -236,7 +236,98 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 				"payment_method_id" => $payment_method_id
 		);
 
-		return $result;
+		return $result;						
+	 }
+
+	/*
+	 * List card by user_id
+	 * */
+	 public function listCards(){
+	 	$user_id = $this->session->offsetGet('user_id');
+		$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user_id);
+		
+		//Check if exist account
+		if (empty($account))
+			return array('status' => 'Failure', 'message' => 'No account related to this user.');
+			
+		$paymentMethods = $this->memreasStripeTables->getPaymentMethodTable()->getPaymentMethodsByAccountId($account->account_id);
+		
+		//Check if account has payment method
+		if (empty($paymentMethods))
+			return array('status' => 'Failure', 'message' => 'No record found.');
+		
+		//Fetching results
+		$listPayments = array();
+		$index = 0;
+		foreach ($paymentMethods as $paymentMethod){
+			$accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($paymentMethod['account_id']);
+			
+			if (empty($accountDetail))
+				return array('status' => 'Failure', 'message' => 'Data corrupt with this account. Please try add new card first.');
+			
+			//Check if this card has exist at Stripe
+			$stripeCard = $this->stripeCard->getCard($accountDetail->stripe_customer_id, $paymentMethod['stripe_card_reference_id']);
+			if (!$stripeCard['exist']){
+				$listPayments[$index]['stripe_card'] = 'Failure';
+				$listPayments[$index]['stripe_card_respone'] = $stripeCard['message'];
+			} 										
+			else{
+				$listPayments[$index]['stripe_card'] = 'Success';
+				$listPayments[$index]['stripe_card_response'] = $stripeCard['info'];
+			}
+			
+			//Payment Method Details					
+			$listPayments[$index]['payment_method_id'] = $paymentMethod['payment_method_id'];
+			$listPayments[$index]['account_id'] = $paymentMethod['account_id'];
+			$listPayments[$index]['user_id'] = $user_id;
+			$listPayments[$index]['stripe_card_reference_id'] = $paymentMethod['stripe_card_reference_id'];
+			$listPayments[$index]['card_type'] = $paymentMethod['card_type'];
+			$listPayments[$index]['obfuscated_card_number'] = $paymentMethod['obfuscated_card_number'];
+			$listPayments[$index]['exp_month'] = $paymentMethod['exp_month'];
+			$listPayments[$index]['valid_until'] = $paymentMethod['valid_until'];
+
+			//Address Details			
+			$listPayments[$index]['first_name'] = $accountDetail->first_name;
+			$listPayments[$index]['last_name'] = $accountDetail->last_name;
+			$listPayments[$index]['address_line_1'] = $accountDetail->address_line_1;
+			$listPayments[$index]['address_line_2'] = $accountDetail->address_line_2;
+			$listPayments[$index]['city'] = $accountDetail->city;
+			$listPayments[$index]['state'] = $accountDetail->state;
+			$listPayments[$index]['zip_code'] = $accountDetail->zip_code;
+			++$index;
+		}
+
+		return array(
+					'status' => 'Success',
+					'NumRows' => count($listPayments),
+					'payment_methods' => $listPayments,
+				);
+	 }
+
+	/*
+	 * Delete cards
+	 * */
+	 public function DeleteCards($card_data){
+	 	if (empty($card_data))
+		 return array('status' => 'Failure', 'message' => 'No card input');
+		
+		foreach ($card_data as $card){						
+			if (!empty($card)){
+				$paymentMethod = $this->memreasStripeTables->getPaymentMethodTable()->getPaymentMethodByStripeReferenceId($card);				
+				$accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($paymentMethod->account_id);
+				$stripeCustomerId = $accountDetail->stripe_customer_id;
+				$deleteCardDB = $this->memreasStripeTables->getPaymentMethodTable()->deletePaymentMethodByStripeCardReferenceId($card);
+				if ($deleteCardDB){
+					//Remove this card from Stripe
+					$deleteStripeCard = $this->stripeCard->deleteCard($stripeCustomerId, $card);
+					if (!$deleteStripeCard['deleted'])
+						return array('status' => 'Failure', 'message' => $deleteStripeCard['message']);
+				}
+				else return array('status' => 'Failure', 'message' => 'Error while deleting card from DB.');
+				
+			}
+		}
+		return array('status' => 'Success', 'message' => 'Cards have been deleted.');
 	 }
 
 	/*
@@ -513,10 +604,10 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	  * @params: $card_id
 	  * @return:
 	  * */
-	  public function getCard($card_id){
+	  public function getCard($customer_id, $card_id){
 	  	try{
 	  		$result['exist'] = 1;
-			$result['info'] = $this->stripeClient->getCard(array('id' => $card_id));
+			$result['info'] = $this->stripeClient->getCard(array('customer' => $customer_id, 'id' => $card_id));
 	  	}catch(NoFoundException $e){
 	  		$result['exist'] = 0;
 			$result['message'] = $e->getMessage();
@@ -527,9 +618,9 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	  /*
 	   * Remove a card
 	   * */
-	   public function deleteCard($card_id){
+	   public function deleteCard($customer_id, $card_id){
 	   	try{
-	   		return $this->stripeClient->deleteCard(array('id' => $card_id));			
+	   		return $this->stripeClient->deleteCard(array('customer' => $customer_id, 'id' => $card_id));			
 	   	}catch(NoFoundException $e){
 	   		return array('deleted' => 0, 'message' => $e->getMessage());
 	   	}
