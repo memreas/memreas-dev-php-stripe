@@ -64,7 +64,7 @@ class PaymentMethodTable {
 		
 		$data = array ('payment_method_id' => $payment_method->payment_method_id, 
 		'account_id' => $payment_method->account_id, 
-		'paypal_card_reference_id' => $payment_method->paypal_card_reference_id, 
+		'stripe_card_reference_id' => $payment_method->stripe_card_reference_id, 
 		'card_type' => $payment_method->card_type, 
 		'obfuscated_card_number' => $payment_method->obfuscated_card_number, 
 		'exp_month' => $payment_method->exp_month, 

@@ -53,6 +53,19 @@ return array(
         		),
         	 ),
         	),
+        	'stripe' => array(
+        		'type' => 'Segment',
+        		'options' => array(
+        		'route'    => '/stripe[/:action][/:id]',
+        			'constraints' => array(
+        			'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+        		),
+        		'defaults' => array(
+        			'controller' => 'Application\Controller\Stripe',
+        			'action'     => 'index',
+        		),
+        	 ),
+        	),
             // The following is a route to simplify getting started creating
             // new controllers and actions without needing to create a new
             // module. Simply drop new controllers in, and you can access them
@@ -103,7 +116,8 @@ return array(
     'controllers' => array(
         'invokables' => array(
             'Application\Controller\Index' => 'Application\Controller\IndexController',
-            'Application\Controller\Paypal' => 'Application\Controller\PaypalController'
+            'Application\Controller\Paypal' => 'Application\Controller\PaypalController',
+            'Application\Controller\Stripe' => 'Application\Controller\StripeController',
         ),
     ),
     'view_manager' => array(

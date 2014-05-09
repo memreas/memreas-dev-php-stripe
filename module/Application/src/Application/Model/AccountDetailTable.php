@@ -47,6 +47,7 @@ class AccountDetailTable {
 	public function saveAccountDetail(AccountDetail $account) {
 		$data = array ('account_detail_id' => $account->account_detail_id, 
 						'account_id' => $account->account_id, 
+						'stripe_customer_id' => $account->stripe_customer_id,
 						'first_name' => $account->first_name, 
 						'last_name' => $account->last_name, 
 						'address_line_1' => $account->address_line_1, 
@@ -54,11 +55,8 @@ class AccountDetailTable {
 						'city' => $account->city, 
 						'state' => $account->state, 
 						'zip_code' => $account->zip_code, 
-						'postal_code' => $account->postal_code, 
-						'paypal_card_reference_id' => $account->paypal_card_reference_id, 
-						'paypal_email_address' => $account->paypal_email_address, 
-						'paypal_receiver_phone' => $account->paypal_receiver_phone, 
-						'paypal_receiver_id' => $account->paypal_receiver_id );		
+						'postal_code' => $account->postal_code
+						); 						
 		
 		if (isset($account->account_detail_id)) {
 			if ($this->getAccountDetail ( $account->account_detail_id )) {
@@ -79,7 +77,7 @@ class AccountDetailTable {
 		$this->tableGateway->delete ( array ('account_detail_id' => $account_detail_id ) );
 	}
 
-	public function deleteAccountDetailByPayPalCardReferenceId($paypal_card_reference_id) {
-		$this->tableGateway->delete ( array ('paypal_card_reference_id' => $paypal_card_reference_id ) );
+	public function deleteAccountDetailByPayPalCardReferenceId($stripe_card_reference_id) {
+		$this->tableGateway->delete ( array ('paypal_card_reference_id' => $stripe_card_reference_id ) );
 	}
 }

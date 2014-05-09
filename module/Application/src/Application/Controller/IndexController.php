@@ -24,6 +24,7 @@ use Guzzle\Http\Client;
 use Application\Model\MemreasConstants;
 use Application\memreas\MemreasPayPal;
 use Application\memreas\MemreasPayPalTables;
+use Application\memreas\MemreasStripe;
 
 class IndexController extends AbstractActionController {
 	protected $url = MemreasConstants::ORIGINAL_URL;
@@ -294,7 +295,8 @@ error_log("Inside paypalPayoutMassPayeesAction.json --> $json" . PHP_EOL);
 		return $view;			
     }
 
-    public function paypalAccountHistoryAction() {
+    public function paypalAccountHistoryAction() {			
+		
 	    $path = $this->security("application/index/paypal.phtml");
 
 		if (isset($_REQUEST['callback'])) {
@@ -361,6 +363,32 @@ error_log("Inside paypalPayoutMassPayeesAction.json --> $json" . PHP_EOL);
     }
     
     public function paypalAction() {
+    	//		
+    	$stripe = new MemreasStripe($this->getServiceLocator());					
+		
+		//Delete customer
+		//echo '<pre>'; print_r ($stripe->deleteCustomer('cus_3yx1W1G08Wj62Q')); die();
+		
+		$sample_cus = array('email' => 'customer1@gmail.com',  'description' => 'demo stripe customer');
+		$stripe->setCustomerInfo($sample_cus);
+		$customer = $stripe->createCustomer();
+		//$customer_id = $customer['id'];
+		//$sample_cus['id'] = $customer_id;			
+		echo '<pre>'; print_r ($customer); echo '</pre>';
+		$stripe->setCardAttribute('customer', "cus_3yx1W1G08Wj62Q");		
+		$sample_data = array(
+								'number' => '4242424242424242',
+								'exp_month' => '10',
+								'exp_year' => '2019',
+								'cvc'	=> '111',
+								'type' => 'Master'
+							);
+		$stripe->setCard($sample_data);			
+		echo '<pre>'; print_r ($stripe->getCardValues());
+		echo '<pre>'; print_r ($stripe->storeCard()); die();
+		
+		//
+    	
 	    $path = $this->security("application/index/paypal.phtml");
 
 		if (isset($_REQUEST['callback'])) {
