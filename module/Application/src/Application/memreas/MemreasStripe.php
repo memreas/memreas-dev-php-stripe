@@ -74,6 +74,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
  class StripeInstance{
  	
 	private $stripeCustomer;
+	private $stripeRecipient;
 	private $stripeCard;
 	
 	protected $session;
@@ -81,36 +82,120 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	
  	public function __construct($stripeClient, $memreasStripeTables){
  		$this->stripeCustomer = new StripeCustomer($stripeClient);
+		$this->stripeRecipient = new StripeRecipient($stripeClient);
 		$this->stripeCard = new StripeCard($stripeClient);		
 		$this->memreasStripeTables = $memreasStripeTables;
 		$this->session = new Container('user');		
  	}
 		
 	/*
-	 * Collect Customer's functions
-	 * Description on each function can be found on detail classes
+	 * Override customer's function
 	 * */
-	public function setCustomerInfo($data){
-		return $this->stripeCustomer->setCustomerInfo($data);
-	}
-	public function getCustomerValues(){
-		return $this->stripeCustomer->getCustomerValues();
-	}
-	public function createCustomer($data = null){
-		return $this->stripeCustomer->createCustomer($data);
-	}
-	public function getCustomer($customer_id){
-		return $this->stripeCustomer->getCustomer($customer_id);
-	}
-	public function getCustomers(){
-		return $this->stripeCustomer->getCustomers();
-	}	
-	public function updateCustomer($data){
-		return $this->stripeCustomer->updateCustomer($data);
-	}
-	public function deleteCustomer($customer_id){
-		return $this->stripeCustomer->deleteCustomer($customer_id);
-	}
+	 public function addSeller($seller_data){
+	 		 		
+		//Get memreas user name
+		$user_name = $seller_data['user_name'];
+		$user = $this->memreasStripeTables->getUserTable()->getUserByUsername($user_name);
+		//Get Paypal email address
+		$stripe_email_address = $seller_data['stripe_email_address'];			
+
+		//Fetch the Account
+		$row = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user->user_id);
+		if (!$row) {
+			//Create Stripe Recipient data
+			$recipientParams = array(
+									'name' => $seller_data['first_name'] . ' ' . $seller_data['last_name'],
+									'email' => $stripe_email_address,
+									'description' => 1,
+								);
+			$this->stripeRecipient->setRecipientInfo($recipientParams);
+			$recipientResponse = $this->stripeRecipient->createRecipient();						
+			
+			//Create an account entry
+			$now = date('Y-m-d H:i:s');
+			$account  = new Account();
+			$account->exchangeArray(array(
+				'user_id' => $user->user_id,
+				'username' => $user->username,
+				'account_type' => 'seller',
+				'balance' => 0,
+				'create_time' => $now,
+				'update_time' => $now
+			));
+			$account_id =  $this->memreasStripeTables->getAccountTable()->saveAccount($account);
+		} else {
+			$account_id = $row->account_id;
+			//Return a success message:
+			$result = array (
+				"Status"=>"Failure",
+				"account_id"=> $account_id,
+				"Error"=>"Seller already exists",
+			);
+			return $result;
+		}
+
+		$accountDetail  = new AccountDetail();
+		$accountDetail->exchangeArray(array(
+			'account_id'=>$account_id,
+			'first_name'=>$seller_data['first_name'],
+			'last_name'=>$seller_data['last_name'],
+			'stripe_customer_id' => $recipientResponse['id'],
+			'address_line_1'=>$seller_data['address_line_1'],
+			'address_line_2'=>$seller_data['address_line_2'],
+			'city'=>$seller_data['city'],
+			'state'=>$seller_data['state'],
+			'zip_code'=>$seller_data['zip_code'],
+			'postal_code'=>$seller_data['zip_code'],
+			'stripe_email_address'=>$seller_data['stripe_email_address'],
+			));
+		$account_detail_id = $this->memreasStripeTables->getAccountDetailTable()->saveAccountDetail($accountDetail);
+
+		//Store the transaction that is sent to PayPal
+		$now = date('Y-m-d H:i:s');
+		$transaction  = new Memreas_Transaction();
+		$transaction->exchangeArray(array(
+				'account_id'=>$account_id,
+				'transaction_type' =>'add_seller',
+				'transaction_request' => "N/a",
+				'pass_fail' => 1,
+				'transaction_sent' =>$now,
+				'transaction_receive' =>$now
+		));
+		$transaction_id =  $this->memreasStripeTables->getTransactionTable()->saveTransaction($transaction);
+
+		//Insert account balances as needed
+		$account_balances  = new AccountBalances();
+		$account_balances->exchangeArray(array(
+			'account_id' => $account_id,
+			'transaction_id' => $transaction_id,
+			'transaction_type' => 'add seller',
+			'starting_balance' => 0,
+			'amount' => 0,
+			'ending_balance' => 0,
+			'create_time' => $now
+		));
+		$account_balances_id =  $this->memreasStripeTables->getAccountBalancesTable()->saveAccountBalances($account_balances);
+
+		//Return a success message:
+		$result = array (
+			"Status"=>"Success",
+			"account_id"=> $account_id,
+			"account_detail_id"=>$account_detail_id,
+			"transaction_id"=>$transaction_id,
+			"account_balances_id"=>$account_balances_id,
+		);
+
+		return $result;
+	 }
+
+	/*
+	 * Override stripe recipient function
+	 * */
+	 public function createRecipient($data){
+	 	$this->stripeRecipient->setRecipientInfo($data);
+		return $this->stripeRecipient->createRecipient();
+	 }
+	
 		
 	/*
 	 * Override card's function
@@ -323,8 +408,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 					if (!$deleteStripeCard['deleted'])
 						return array('status' => 'Failure', 'message' => $deleteStripeCard['message']);
 				}
-				else return array('status' => 'Failure', 'message' => 'Error while deleting card from DB.');
-				
+				else return array('status' => 'Failure', 'message' => 'Error while deleting card from DB.');				
 			}
 		}
 		return array('status' => 'Success', 'message' => 'Cards have been deleted.');
@@ -466,6 +550,107 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 		}
 	  }
  }
+ 
+ /*
+  * Inherit Main Stripe Class
+  * Process all requests under Recipient
+  * */
+  class StripeRecipient{
+  	
+	private $stripeClient;
+	
+	/*
+	 * Defone member variables
+	 * */
+	 private $id;					//Recipient id
+	 private $name;					//Recipient name
+	 private $type = 'individual';	//individual or corporation
+	 private $tax_id = null;			//The recipient's tax ID
+	 private $bank_account = array();	//Bank account
+	 private $email;				//Email	
+	 private $description = '';			//Description
+	 private $metadata = array();		//Meta data, optional value
+	 
+	 public function __construct($stripeClient){
+	 	$this->stripeClient = $stripeClient;
+	 }
+	 
+	 /*
+	  * Set recipient's info
+	  * @params: $data
+	  * @return: TRUE if data is set - FAIL if data set failed
+	  * */
+	 public function setRecipientInfo($data){
+	 	if (is_array($data)){
+	 		foreach ($data as $key => $value)
+				$this->{$key} = $value;
+			return true;
+	 	}
+		else{
+			if (is_object($data)){
+				$this->name = $data->name;
+				$this->type = isset($data->type) ? $data->type : $this->type;
+				$this->tax_id = isset($data->tax_id) ? $data->tax_id : $this->tax_id;
+				$this->bank_account = isset($data->bank_account) ? $data->bank_account : $this->bank_account;
+				$this->email = $data->email;
+				$this->description = $data->description;
+				$this->metadata = isset($data->metadata) ? $data->metadata : $this->metadata;
+				return true;
+			}
+			else return false;
+		}
+	 }	
+	 
+	 /*
+	  * Create a new recipient account
+	  * @params: $data - If $data is not null, this will use this data to create instead of class's members
+	  * @return: result in JSON
+	  * */
+	 public function createRecipient($data = null){	 	
+	 	if ($data){
+			return $customer = $this->stripeClient->createRecipient($data);
+			$this->id = $customer['id'];			
+		}
+		else{
+			return $customer = $this->stripeClient->createRecipient($this->getRecipientValues());
+			$this->id = $customer['id'];
+		}
+		return $this->updateCustomer(array('id' => $this->id, 'email' => $this->email, 'description' => $this->description));
+	 }
+	 
+	 /*
+	  * Retrieve current recipient instance
+	  * @params: $outputFormat : 1 - ARRAY, 0 - OBJECT
+	  * */
+	  public function getRecipientValues($outputFormat = 1){
+	  	if ($outputFormat){
+			$recipient = array(
+					'id' => $this->id,
+					'name' => $this->name,
+					'type' => $this->type,					
+					'bank_account' => $this->bank_account,
+					'email' => $this->email, 
+					'description' => $this->description,
+					'metadata' => $this->metadata,
+					);
+			if (!empty($this->tax_id))
+				$recipient['tax_id'] = $this->tax_id;
+			return $recipient;
+		}
+		else{
+			$recipientObject->id = $this->id;
+			$recipientObject->name = $this->name;
+			$recipientObject->type = $this->type;
+			if (!empty($this->tax_id))
+				$recipientObject->tax_id = $this->tax_id;
+			$recipientObject->bank_account = $this->bank_account;			
+			$recipientObject->email = $this->email;
+			$recipientObject->description = $this->description;
+			$recipientObject->metadata = $this->metadata;
+			return $recipientObject;
+		}
+	  }
+  }
  
  /*
   * Inherit Main Stripe Class
