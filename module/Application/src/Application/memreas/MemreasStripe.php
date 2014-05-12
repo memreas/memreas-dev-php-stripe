@@ -189,6 +189,98 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	 }
 
 	/*
+	 * Add value to account
+	 * */
+	 public function addValueToAccount($data){
+	 	$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($this->session->offsetGet('user_id'));
+		$currency = 'USD';
+		if (empty ($account)) 
+			return array('status' => 'Failure', 'message' => 'You have no account at this time. Please add card first.');
+		
+		$accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account->account_id); 
+		
+		if (empty ($accountDetail))
+			return array('status' => 'Failure', 'message' => 'There is no data with your account.');
+		
+		//Check if this account has this card or not		
+		$paymentMethod = $this->memreasStripeTables->getPaymentMethodTable()->getPaymentMethodByStripeReferenceId($data['stripe_card_reference_id']);
+		
+		if (empty ($paymentMethod))
+			return array('status' => 'Failure', 'message' => 'This card not relate to your account');
+		
+		//Begin going to charge on Stripe
+		$cardToken = $paymentMethod->stripe_card_token;
+		$cardId = $paymentMethod->stripe_card_reference_id;
+		$customerId = $accountDetail->stripe_customer_id;
+		$transactionAmount = ((int)$data['amount']) * 100; //Stripe use minimum amount conver for transaction. Eg: input $5  
+															//convert request to stripe value is 500 
+		$stripeChargeParams = array(
+										'amount' => $transactionAmount,
+										'currency' => $currency,
+										'customer' => $customerId,
+										'card' => $cardId, //If this card param is null, Stripe will get primary customer card to charge
+										'description' => 'Add value to account', //Set description more details later
+									);		
+		$chargeResult = $this->stripeCard->createCharge($stripeChargeParams);
+		if ($chargeResult){
+			//Check if Charge is successful or not
+			if (!$chargeResult['paid'])
+				return array('status' => 'Failure', 'Transaction declined! Please check your Stripe account and cards');
+			
+			//Begin storing transaction to DB
+			$transactionRequest = $stripeChargeParams;
+			$transactionRequest['account_id'] = $account->account_id;
+			$transactionRequest['stripe_details'] = array(
+														'stripeCustomer' => $customerId,
+														'stripeCardToken' => $cardToken,
+														'stripeCardId' => $cardId,
+														);
+			$now = $now = date ( 'Y-m-d H:i:s' );		 
+			$transactionDetail = array(
+										'account_id' => $account->account_id,
+										'transaction_type' => 'add_value_to_account',
+										'amount' => (int)$data['amount'],
+										'currency' => $currency,
+										'transaction_request' => json_encode($transactionRequest),
+										'transaction_response' => json_encode($chargeResult),
+										'transaction_sent' => $now,
+										'transaction_receive' => $now
+									);	
+			$memreasTransaction = new Memreas_Transaction();
+			$memreasTransaction->exchangeArray($transactionDetail);
+			$transactionId = $this->memreasStripeTables->getTransactionTable()->saveTransaction($memreasTransaction);
+			
+			//Update Account Balance
+			$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($account->account_id);
+			$startingAccountBalance = (isset($currentAccountBalance)) ? $currentAccountBalance->ending_balance : '0.00';
+			$endingAccountBalance = $startingAccountBalance + (int)$data['amount'];
+			
+			$accountBalance = new AccountBalances ();
+			$accountBalance->exchangeArray ( array (
+					'account_id' => $account->account_id,
+					'transaction_id' => $transactionId,
+					'transaction_type' => "add_value_to_account",
+					'starting_balance' => $startingAccountBalance,
+					'amount' => (int)$data['amount'],
+					'ending_balance' => $endingAccountBalance,
+					'create_time' => $now
+			));
+			$balanceId = $this->memreasStripeTables->getAccountBalancesTable()->saveAccountBalances($accountBalance);
+			
+			//Update account table
+			$account = $this->memreasStripeTables->getAccountTable()->getAccount($account->account_id);
+			$account->exchangeArray(array(
+										'balance' => $endingAccountBalance,
+										'update_time' => $now
+									));
+			$accountId = $this->memreasStripeTables->getAccountTable()->saveAccount($account);
+			
+			return array('status' => 'Success', 'message' => 'Successfully added $' . $data['amount'] . ' to your account.');
+		}
+		else return array('status' => 'Failure', 'message' => 'Unable to process payment'); 		
+	 }
+
+	/*
 	 * Override stripe recipient function
 	 * */
 	 public function createRecipient($data){
@@ -296,7 +388,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 		$transactionid = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 		
 		// Add the new payment method
-		$payment_method = new PaymentMethod ();
+		$payment_method = new PaymentMethod ();		
 		$payment_method->exchangeArray ( array (
 				'account_id' => $account_id,
 				'stripe_card_reference_id' => $stripeCard['id'],
@@ -663,7 +755,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	/*
 	 * Define member variables
 	 * */
-	private $id;								//Card id - will get when generate card token
+	private $id;								//Card id - will get when generate card token	
  	private $number; 							//Credit card number
 	private $exp_month;							//Credit card expires month
 	private $exp_year;							//Credit card expires year
@@ -689,7 +781,14 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	
 	public function __construct($stripeClient){
 	 	$this->stripeClient = $stripeClient;			
-	}
+	}	
+	
+	/*
+	 * Charge value
+	 * */
+	 public function createCharge($data){
+	 	return $this->stripeClient->createCharge($data);
+	 }
 	
 	/*
 	 * Construct card class
@@ -855,7 +954,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	 * Update card information
 	 * */
 	 private function updateInfo($card_data){
-	 	$this->id 				= $card_data['id'];
+	 	$this->id 				= $card_data['id'];		
 	 	$this->type 			= $card_data['type'];
 		$this->fingerprint 		= $card_data['fingerprint'];
 		$this->last4			= $card_data['last4'];

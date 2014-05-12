@@ -35,8 +35,8 @@ class AccountDetailTable {
 		return $row;
 	}
 	
-	public function getAccountDetailByPayPalReferenceId($paypal_card_reference_id) {
-		$rowset = $this->tableGateway->select ( array ('paypal_card_reference_id' => $paypal_card_reference_id ) );
+	public function getAccountDetailByStripeReferenceId($stripe_card_reference_id) {
+		$rowset = $this->tableGateway->select ( array ('stripe_card_reference_id' => $stripe_card_reference_id ) );
 		$row = $rowset->current ();
 		if (! $row) {
 			throw new \Exception ( "Could not find row $payment_method_id" );
