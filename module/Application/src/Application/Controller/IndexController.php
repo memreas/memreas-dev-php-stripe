@@ -27,7 +27,8 @@ use Application\memreas\MemreasPayPalTables;
 use Application\memreas\MemreasStripe;
 
 class IndexController extends AbstractActionController {
-	protected $url = MemreasConstants::ORIGINAL_URL;
+	//protected $url = MemreasConstants::ORIGINAL_URL;
+	protected $url = 'http://memreas-dev-ws.localhost/';
 	protected $user_id;
 	protected $storage;
 	protected $authservice;
@@ -58,6 +59,15 @@ class IndexController extends AbstractActionController {
 		exit();
 	}
 	public function indexAction() {
+		
+		/*$testing_data = array(
+ 							'name' => 'John Meah',
+ 							'email' => 'demo recipient',
+ 							'description' => 1
+						);
+		$MemreasStripe = new MemreasStripe($this->getServiceLocator());
+		echo '<pre>'; print_r ($MemreasStripe->createRecipient($testing_data)); die();*/
+		
 		$path = $this->security ( "application/index/paypal.phtml" );
 		$view = new ViewModel ();
 		$view->setTemplate ( $path ); // path to phtml file under view folder
