@@ -20,6 +20,7 @@ use Application\Model\PaymentMethod;
 use Application\Model\Subscription;
 use Application\Model\Transaction as Memreas_Transaction;
 use Application\Model\TransactionReceiver;
+use Application\memreas\StripePlansConfig;
 
 
 /*
@@ -76,6 +77,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	private $stripeCustomer;
 	private $stripeRecipient;
 	private $stripeCard;
+	private $stripePlan;
 	
 	protected $session;
 	protected $memreasStripeTables;	
@@ -84,6 +86,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
  		$this->stripeCustomer = new StripeCustomer($stripeClient);
 		$this->stripeRecipient = new StripeRecipient($stripeClient);
 		$this->stripeCard = new StripeCard($stripeClient);		
+		$this->stripePlan = new StripePlansConfig($stripeClient);
 		$this->memreasStripeTables = $memreasStripeTables;
 		$this->session = new Container('user');		
  	}
@@ -280,6 +283,186 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 		else return array('status' => 'Failure', 'message' => 'Unable to process payment'); 		
 	 }
 
+	public function decrementAmount($data){
+		
+		$seller = $data ['seller'];
+		$memreas_master = $data['memreas_master'];
+		$amount = $data ['amount'];
+		
+		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ($this->session->offsetGet('user_id'));
+		if (!$account)
+			return array('status' => 'Failure', 'message' => 'Account does not exist');
+		$accountId = $account->account_id;
+		
+		$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($accountId);
+		
+		if (! isset ( $currentAccountBalance ) || ($currentAccountBalance->ending_balance <= 0)) {								
+				return array (
+						"status" => "Failure",
+						"Description" => "Account not found or does not have sufficient funds."
+				);				
+		}
+		$now = date ( 'Y-m-d H:i:s' );
+		$MemreasTransaction = new Memreas_Transaction();
+		$MemreasTransaction->exchangeArray ( array (
+					'account_id' => $accountId,
+					'transaction_type' => 'decrement_value_from_account',
+					'pass_fail' => 1,
+					'amount' => "-$amount",
+					'currency' => 'USD',
+					'transaction_request' => "N/a",
+					'transaction_sent' => $now,
+					'transaction_response' => "N/a",
+					'transaction_receive' => $now
+			) );
+		$transactionId = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ($MemreasTransaction);
+		
+		//Starting decrement account balance
+		$startingBalance = $currentAccountBalance->ending_balance;
+		$endingBalance = $startingBalance - $amount;
+
+		// Insert the new account balance
+		$now = date ( 'Y-m-d H:i:s' );
+		$endingAccountBalance = new AccountBalances ();
+		$endingAccountBalance->exchangeArray (array(
+				'account_id' => $accountId,
+				'transaction_id' => $transactionId,
+				'transaction_type' => "decrement_value_from_account",
+				'starting_balance' => $startingBalance,
+				'amount' => - $amount,
+				'ending_balance' => $endingBalance,
+				'create_time' => $now
+		));
+		$accountBalanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ($endingAccountBalance);
+		
+		// Update the account table
+		$now = date ( 'Y-m-d H:i:s' );
+		$account = $this->memreasStripeTables->getAccountTable()->getAccount($accountId);
+		$account->exchangeArray (array(
+				'balance' => $endingBalance,
+				'update_time' => $now
+		) );
+		$account_id = $this->memreasStripeTables->getAccountTable()->saveAccount ($account);
+		
+		$accountResult = array(
+								'status' => 'Success', 
+								'message' => 'Transaction completed',
+								'starting_balance' => $startingBalance,
+								'amount' => $amount,
+								'ending_balance' => $endingBalance
+								);	
+		
+		//For seller account
+		$sellerUser = $this->memreasStripeTables->getUserTable()->getUserByUsername($seller);
+		$seller_user_id = $sellerUser->user_id;
+		$seller_account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($seller_user_id);
+		
+		if (!$seller_account){
+			$sellerResult = array(
+									'status' => 'Failure',
+									'message' => 'Transaction failed! Seller does not exist',									
+								);
+		}
+		else{
+			$seller_account_id = $seller_account->account_id;
+			$currentSellerBalance = $this->memreasStripeTables->getAccountBalancesTable()->getAccountBalances ($seller_account_id);
+
+			// Log the transaction
+			$now = date ( 'Y-m-d H:i:s' );
+			$MemreasTransaction = new Memreas_Transaction();
+			$seller_amount = $amount * 0.8;
+			$memreas_master_amount = $amount - $seller_amount;
+
+			$memreasTransaction->exchangeArray ( array (
+					'account_id'=>$seller_account_id,
+					'transaction_type' =>'increment_value_to_account',
+					'pass_fail' => 1,
+					'amount' => $seller_amount,
+					'currency' => 'USD',
+					'transaction_request' => "N/a",
+					'transaction_sent' =>$now,
+					'transaction_response' => "N/a",
+					'transaction_receive' =>$now,
+			));
+			
+			$transactionId = $this->memreasStripeTables->getTransactionTable()->saveTransaction($memreasTransaction);
+			
+			$startingBalance = (isset($currentSellerBalance)) ? $currentSellerBalance->ending_balance : '0.00';
+			$endingBalance = $startingBalance + $seller_amount;
+
+			//Insert the new account balance
+			$now = date('Y-m-d H:i:s');
+			$endingSellerBalance = new AccountBalances();
+			$endingSellerBalance->exchangeArray(array(
+				'account_id' => $seller_account_id,
+				'transaction_id' => $transactionId,
+				'transaction_type' => "increment_value_to_account",
+				'starting_balance' => $startingBalance,
+				'amount' => "$seller_amount",
+				'ending_balance' => $endingBalance,
+				'create_time' => $now,
+				));
+			$sellerBalanceId = $this->memreasStripeTables->getAccountBalancesTable()->saveAccountBalances($endingSellerBalance);
+			
+			//Update the account table
+			$now = date('Y-m-d H:i:s');
+			$seller = $this->memreasStripeTables->getAccountTable()->getAccount($seller_account_id);
+			$seller->exchangeArray(array(
+				'balance' => $endingBalance,
+				'update_time' => $now,
+				));
+			$seller_account_id = $this->memreasStripeTables->getAccountTable()->saveAccount($seller);
+			
+			$sellerResult = array(
+									'status' => 'Success',
+									'message' => 'Transaction completed.',
+									'starting_balance' => $startingBalance,
+									'amount' => $amount,		
+									'ending_balance' => $endingBalance
+								);
+			
+		}
+		return array(
+						'account' => $accountResult,
+						'seller' => $sellerResult,
+					);
+	
+	}
+
+	public function AccountHistory($data){
+		$userName = $data['user_name'];
+		$user = $this->memreasStripeTables->getUserTable()->getUserByUsername($userName);
+		if(!$user)
+			return array('status' => 'Failure', 'message' => 'User is not found');
+		$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user->user_id);
+		if (!$account)
+			return array('status' => 'Failure', 'message' => 'Account associate to this user does not exist');
+		$accountId = $account->account_id;
+		$Transactions = $this->memreasStripeTables->getTransactionTable()->getTransactionByAccountId($accountId);
+		$TransactionsArray = array();
+		if ($Transactions){
+			foreach ($Transactions as $Transaction){
+				$row = array();
+				$row["transaction_id"] = $Transaction->transaction_id;
+				$row["account_id"] = $Transaction->account_id;
+				$row["transaction_type"] = $Transaction->transaction_type;
+				$row["pass_fail"] = $Transaction->pass_fail;
+				$row["amount"] = $Transaction->amount;
+				$row["currency"] = $Transaction->currency;
+				$row["transaction_request"] = $Transaction->transaction_request;
+				$row["transaction_response"] = $Transaction->transaction_response;
+				$row["transaction_sent"] = $Transaction->transaction_sent;
+				$row["transaction_receive"] = $Transaction->transaction_receive;
+				$TransactionsArray[] = $row;
+			}
+		}
+		return array(
+						'status' 		=> 'Success',
+						'account' 		=> $account,
+						'transactions' 	=> $TransactionsArray
+					);
+	}
+
 	/*
 	 * Override stripe recipient function
 	 * */
@@ -415,6 +598,33 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 
 		return $result;						
 	 }
+
+	public function setSubscription($data){		
+		
+		$checkExistStripePlan = $this->stripePlan->getPlan($data['plan']);
+		if (empty($checkExistStripePlan['plan'])) return array('status' => 'Failure', 'message' => 'Subscription plan was not found');
+		
+		
+		$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($this->session->offsetGet('user_id'));
+		if (!$account) return array('status' => 'Failure', 'message' => 'No account related to this user.');
+				
+		$account_id = $account->account_id;
+		$accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account_id);
+		
+		if (!$accountDetail) return array('status' => 'Failure', 'message' => 'Please update account detail first');
+		
+		$stripeCustomerId = $accountDetail->stripe_customer_id;
+		
+		//Set stripe subscription
+		$subscriptionParams = array(
+									'plan' => $data['plan'],
+									'customer' => $stripeCustomerId,
+									);
+		$createSubscribe = $this->stripeCustomer->setSubscription($subscriptionParams);
+		
+		return $createSubscribe;		
+		
+	}
 
 	/*
 	 * List card by user_id
@@ -641,6 +851,14 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 			return $customerObject;
 		}
 	  }
+
+	/*
+	 * Set customer subscription
+	 * @params: $data
+	 * */
+	 public function setSubscription($data){
+	 	return $this->stripeClient->createSubscription($data);
+	 }
  }
  
  /*
