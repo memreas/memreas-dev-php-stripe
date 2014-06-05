@@ -445,7 +445,7 @@ jQuery.paypalListMassPayees = function (element, list) {
 
 	$.ajax( {
 	  type:'post',
-	  url: payPalListMassPayee_url,
+	  url: stripeListMassPayee_url,
 	  dataType: 'jsonp',
 	  data: 'json=' + data,
 	  success: function(json){

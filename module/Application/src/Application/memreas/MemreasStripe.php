@@ -596,7 +596,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 				"payment_method_id" => $payment_method_id
 		);
 
-		return $result;						
+		return $result;
 	 }
 
 	public function setSubscription($data){		
@@ -624,6 +624,30 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 		
 		return $createSubscribe;		
 		
+	}
+
+	public function listMassPayee(){
+		$MassPees = $this->memreasStripeTables->getAccountTable()->listMassPayee();
+		
+		$countRow = count($MassPees);
+		
+		if (!$countRow) return array('status' => 'Failure', 'message' => 'No record found');
+		$massPeesArray = array();
+		foreach ($MassPees as $MassPee){
+			$massPeesArray[] = array(
+										'account_id' 	=> $MassPee->account_id,
+										'user_id' 		=> $MassPee->user_id,
+										'username' 		=> $MassPee->username,
+										'account_type' 	=> $MassPee->account_type,
+										'balance' 		=> $MassPee->balance,	
+									);
+		}
+		
+		return array(
+						'status' 	=> 'Success',
+						'Numrows'	=> $countRow,
+						'accounts'	=> $massPeesArray,
+					);
 	}
 
 	/*

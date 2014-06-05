@@ -145,6 +145,18 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode($accountHistory) . ")";
 			die();
 		}		
+	}	
+	
+	public function listMassPayeeAction(){
+		if (isset($_REQUEST['callback'])){
+			$callback = $_REQUEST['callback'];
+			$json = $_REQUEST['json'];
+			$jsonArr = json_decode($json, true);
+			$MemreasStripe = new MemreasStripe($this->getServiceLocator());
+			$accountHistory = $MemreasStripe->listMassPayee();
+			echo $callback . "(" . json_encode($accountHistory) . ")";
+			die();
+		}
 	}
 	
 	public function testAction(){
