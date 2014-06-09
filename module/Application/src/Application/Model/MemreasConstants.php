@@ -10,8 +10,8 @@ class MemreasConstants {
         const MEMREASPAYMENTSDB	= 'memreaspaymentsdb';
         const S3BUCKET     		= "memreasdev";
         const TOPICARN			= "arn:aws:sns:us-east-1:004184890641:us-east-upload-transcode-worker-int";
-        const ORIGINAL_URL		= "http://memreasdev-ws-etc.elasticbeanstalk.com/";
-        const MEDIA_URL			= "http://memreasdev-ws-etc.elasticbeanstalk.com/app/?action=addmediaevent";
+        const ORIGINAL_URL		= "http://memreasdev-wsu.elasticbeanstalk.com/";
+        const MEDIA_URL			= "http://memreasdev-wsu.elasticbeanstalk.com/app/?action=addmediaevent";
         const URL				= "/index";
 
         const ACCOUNT_MEMREAS_FLOAT = "memreasfloat";
