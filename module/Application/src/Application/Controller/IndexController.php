@@ -27,8 +27,8 @@ use Application\memreas\MemreasPayPalTables;
 use Application\memreas\MemreasStripe;
 
 class IndexController extends AbstractActionController {
-	//protected $url = MemreasConstants::ORIGINAL_URL;
-	protected $url = 'http://memreas-dev-ws.localhost/';
+	protected $url = MemreasConstants::ORIGINAL_URL;
+	//protected $url = 'http://memreas-dev-ws.localhost/';
 	protected $user_id;
 	protected $storage;
 	protected $authservice;
