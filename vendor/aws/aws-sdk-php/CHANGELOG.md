@@ -1,6 +1,56 @@
 CHANGELOG
 =========
 
+2.6.6 (2014-05-29)
+------------------
+
+* Added support for the [Desired Partition Count scaling
+  option](http://aws.amazon.com/releasenotes/2440176739861815) to the
+  CloudSearch client. Hebrew is also now a supported language.
+* Updated the STS service description to the latest version.
+* [Docs] Updated some of the documentation about credential profiles.
+* Fixed an issue with the regular expression in the `S3Client::isValidBucketName`
+  method. See #298.
+
+2.6.5 (2014-05-22)
+------------------
+
+* Added cross-region support for the Amazon EC2 CopySnapshot operation.
+* Added AWS Relational Database (RDS) support to the AWS OpsWorks client.
+* Added support for tagging environments to the AWS Elastic Beanstalk client.
+* Refactored the signature version 4 implementation to be able to pre-sign
+  most operations.
+
+2.6.4 (2014-05-20)
+------------------
+
+* Added support for lifecycles on versioning enabled buckets to the Amazon S3
+  client.
+* Fixed an Amazon S3 sync issue which resulted in unnecessary transfers when no
+  `$keyPrefix` argument was utilized.
+* Corrected the `CopySourceIfMatch` and `CopySourceIfNoneMatch` parameter for
+  Amazon S3 to not use a timestamp shape.
+* Corrected the sending of Amazon S3 PutBucketVersioning requests that utilize
+  the `MFADelete` parameter.
+
+2.6.3 (2014-05-14)
+------------------
+
+* Added the ability to modify Amazon SNS topic settings to the UpdateStack
+  operation of the AWS CloudFormation client.
+* Added support for the us-west-1, ap-southeast-2, and eu-west-1 regions to the
+  AWS CloudTrail client.
+* Removed no longer utilized AWS CloudTrail shapes from the model.
+
+2.6.2 (2014-05-06)
+------------------
+
+* Added support for Amazon SQS message attributes.
+* Fixed Amazon S3 multi-part uploads so that manually set ContentType values are not overwritten.
+* No longer recalculating file sizes when an Amazon S3 socket timeout occurs because this was causing issues with
+  multi-part uploads and it is very unlikely ever the culprit of a socket timeout.
+* Added better environment variable detection.
+
 2.6.1 (2014-04-25)
 ------------------
 

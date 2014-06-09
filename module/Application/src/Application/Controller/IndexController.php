@@ -68,6 +68,8 @@ class IndexController extends AbstractActionController {
 		$MemreasStripe = new MemreasStripe($this->getServiceLocator());
 		echo '<pre>'; print_r ($MemreasStripe->createRecipient($testing_data)); die();*/
 		
+		//$path = $this->security ( "application/index/paypal.phtml" );
+		//Edited for Stripe
 		$path = $this->security ( "application/index/paypal.phtml" );
 		$view = new ViewModel ();
 		$view->setTemplate ( $path ); // path to phtml file under view folder
