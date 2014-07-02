@@ -7,7 +7,7 @@
 namespace Application\Model;
 class MemreasConstants {
         const MEMREASDB     	= 'memreasdb';
-        const MEMREASPAYMENTSDB	= 'memreaspaymentstripedb';
+        const MEMREASPAYMENTSDB	= 'memreaspaymentstripe';
         const S3BUCKET     		= "memreasdev";
         const TOPICARN			= "arn:aws:sns:us-east-1:004184890641:us-east-upload-transcode-worker-int";
         const ORIGINAL_URL		= "http://memreasdev-wsu.elasticbeanstalk.com/";
