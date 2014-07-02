@@ -32,13 +32,29 @@ class StripeController extends AbstractActionController {
 		$view->setTemplate('application/stripe/index.phtml');
 		return $view;
 	}
-	
+
+    /*
+     * List stripe plan
+     * */
+    public function listPlanAction(){
+        if (isset($_REQUEST['callback'])){
+            $callback = $_REQUEST['callback'];
+            $json = $_REQUEST['json'];
+            $jsonArr = json_decode($json, true);
+            $message_data = $jsonArr['json'];
+            $MemreasStripe = new MemreasStripe($this->getServiceLocator());
+            echo $callback . "(" . json_encode($MemreasStripe->listPlans()) . ")";
+            die();
+        }
+    }
+
 	/*
 	 * Ajax functions
 	 * */
 	public function storeCardAction(){
 		if (isset($_REQUEST['callback'])){
-			$callback = $_REQUEST['callback'];$json = $_REQUEST['json'];
+			$callback = $_REQUEST['callback'];
+            $json = $_REQUEST['json'];
 			$json = $_REQUEST['json'];
 			$jsonArr = json_decode($json, true);						
 			$message_data = $jsonArr['json'];
@@ -46,6 +62,7 @@ class StripeController extends AbstractActionController {
 			
 			//Prepare card data
 			$card_data = array(
+                'user_id'           => $message_data['user_id'],
 				'number' 			=> $message_data['credit_card_number'],
 				'exp_month' 		=> $message_data['expiration_month'],
 				'exp_year' 			=> $message_data['expiration_year'],
@@ -69,9 +86,13 @@ class StripeController extends AbstractActionController {
 		if (isset($_REQUEST['callback'])){
 			$callback = $_REQUEST['callback'];
 			$json = $_REQUEST['json'];
-			$jsonArr = json_decode($json, true);
+            $jsonArr = json_decode($json, true);
+            if (isset($jsonArr['json']['userid']))
+               $userid = $jsonArr['json']['userid'];
+            else $userid = null;
+
 			$MemreasStripe = new MemreasStripe($this->getServiceLocator());
-			echo $callback . "(" . json_encode($MemreasStripe->listCards()) . ")";
+			echo $callback . "(" . json_encode($MemreasStripe->listCards($userid)) . ")";
 			die();
 		}
 	}

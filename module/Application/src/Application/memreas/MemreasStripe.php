@@ -90,6 +90,10 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 		$this->memreasStripeTables = $memreasStripeTables;
 		$this->session = new Container('user');		
  	}
+
+     public function listPlans(){
+         return $this->stripePlan->getAllPlans();
+     }
 		
 	/*
 	 * Override customer's function
@@ -477,21 +481,24 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	 * */	 
 	 
 	 public function storeCard($card_data = null){
-	 	
+         if (isset($card_data['user_id']))
+            $user_id = $card_data['user_id'];
+         else $user_id = $this->session->offsetGet('user_id');
+
 		//Check if valid Credit Card
 		$ccChecking = new ZendCreditCard();
 		if (!$ccChecking->isValid($card_data['number'])){
 			return array (
-					"Status" => "Failure",
+					"status" => "Failure",
 					"message" => "Card number is not valid"
 			);
 		}
 				
-	 	$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($this->session->offsetGet('user_id'));
+	 	$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user_id);
 		if (!$account){
 			
 			//Create new stripe customer
-			$user = $this->memreasStripeTables->getUserTable()->getUser($this->session->offsetGet('user_id'));			
+			$user = $this->memreasStripeTables->getUserTable()->getUser($user_id);
 			$userStripeParams = array(
 							'email' => $user->email_address,
 							'description' => 'Stripe account accociated with memreas user id : ' . $user->user_id, 
@@ -506,8 +513,8 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 			$now = date ( 'Y-m-d H:i:s' );
 			$account = new Account ();
 			$account->exchangeArray ( array (
-					'user_id' => $this->session->offsetGet('user_id'),
-					'username' => $this->session->offsetGet('username'),
+					'user_id' => $user_id,
+					'username' => $user->username,
 					'account_type' => 'buyer',
 					'balance' => 0,
 					'create_time' => $now,
@@ -588,7 +595,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 		
 		// Return a success message:
 		$result = array (
-				"Status" => "Success",
+				"status" => "Success",
 				"stripe_card_reference_id" => $stripeCard['id'],
 				"account_id" => $account_id,
 				"account_detail_id" => $account_detail_id,
@@ -653,8 +660,9 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	/*
 	 * List card by user_id
 	 * */
-	 public function listCards(){
-	 	$user_id = $this->session->offsetGet('user_id');
+	 public function listCards($user_id){
+         if (empty($user_id))
+	 	    $user_id = $this->session->offsetGet('user_id');
 		$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user_id);
 		
 		//Check if exist account
