@@ -27,8 +27,8 @@ use Application\memreas\MemreasPayPalTables;
 use Application\memreas\MemreasStripe;
 
 class IndexController extends AbstractActionController {
-	//protected $url = MemreasConstants::ORIGINAL_URL;
-	protected $url = 'http://memreas-dev-ws.localhost/';
+	protected $url = MemreasConstants::ORIGINAL_URL;
+	//protected $url = 'http://memreas-dev-ws.localhost/';
 	protected $user_id;
 	protected $storage;
 	protected $authservice;
@@ -68,7 +68,10 @@ class IndexController extends AbstractActionController {
 		$MemreasStripe = new MemreasStripe($this->getServiceLocator());
 		echo '<pre>'; print_r ($MemreasStripe->createRecipient($testing_data)); die();*/
 		
-		$path = $this->security ( "application/index/paypal.phtml" );
+		//$path = $this->security ( "application/index/paypal.phtml" );
+		//Edited for Stripe
+		echo "Setting path to application/stripe/index.phtml".PHP_EOL;
+		$path = $this->security ( "application/stripe/index.phtml" );
 		$view = new ViewModel ();
 		$view->setTemplate ( $path ); // path to phtml file under view folder
 		return $view;
@@ -399,8 +402,9 @@ error_log("Inside paypalPayoutMassPayeesAction.json --> $json" . PHP_EOL);
 		
 		//
     	
-	    $path = $this->security("application/index/paypal.phtml");
-
+	    //$path = $this->security("application/index/paypal.phtml");
+	    $path = $this->security("application/stripe/index.phtml");
+	     
 		if (isset($_REQUEST['callback'])) {
 			//Fetch parms
 			$callback = $_REQUEST['callback'];
@@ -454,7 +458,8 @@ error_log("Inside loginAction success for $username");
 error_log("Inside loginAction redirect ---> $redirect");
 			$this->setSession($username);
             //Redirect here
-			return $this->redirect()->toRoute('index', array('action' => $redirect));
+			//return $this->redirect()->toRoute('index', array('action' => $redirect));
+			return $this->redirect()->toRoute('stripe', array('action' => "index"));
 		} else {
 			return $this->redirect()->toRoute('index', array('action' => "index"));
 		}
@@ -519,6 +524,7 @@ error_log("Inside loginAction redirect ---> $redirect");
 	    	$this->logoutAction();
     	  return "application/index/index.phtml";
 	    }
+	    echo "Inside security($path);".PHP_EOL;
 		return $path;			
         //return $this->redirect()->toRoute('index', array('action' => 'login'));
     }

@@ -1,22 +1,23 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
     ],
-    "hash": "0ef9d49dae883b5930abb427c958288b",
+    "hash": "e2a7908d9747caae15cfe880b10319e2",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "2.6.1",
+            "version": "2.6.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "d623ebdf433dd0e4ff6727ad7735f8dabdb03b33"
+                "reference": "37d5572e2408c5ea7104c361b64a187b1a0a53bd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d623ebdf433dd0e4ff6727ad7735f8dabdb03b33",
-                "reference": "d623ebdf433dd0e4ff6727ad7735f8dabdb03b33",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/37d5572e2408c5ea7104c361b64a187b1a0a53bd",
+                "reference": "37d5572e2408c5ea7104c361b64a187b1a0a53bd",
                 "shasum": ""
             },
             "require": {
@@ -71,7 +72,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2014-04-25 04:22:25"
+            "time": "2014-05-29 18:57:57"
         },
         {
             "name": "guzzle/guzzle",
@@ -369,24 +370,27 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.4.4",
+            "version": "v2.5.0",
             "target-dir": "Symfony/Component/EventDispatcher",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/EventDispatcher.git",
-                "reference": "e539602e5455aa086c0e81e604745af7789e4d8a"
+                "reference": "cb62ec8dd05893fc8e4f0e6e21e326e1fc731fe8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/e539602e5455aa086c0e81e604745af7789e4d8a",
-                "reference": "e539602e5455aa086c0e81e604745af7789e4d8a",
+                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/cb62ec8dd05893fc8e4f0e6e21e326e1fc731fe8",
+                "reference": "cb62ec8dd05893fc8e4f0e6e21e326e1fc731fe8",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
             "require-dev": {
-                "symfony/dependency-injection": "~2.0"
+                "psr/log": "~1.0",
+                "symfony/config": "~2.0",
+                "symfony/dependency-injection": "~2.0",
+                "symfony/stopwatch": "~2.2"
             },
             "suggest": {
                 "symfony/dependency-injection": "",
@@ -395,7 +399,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.4-dev"
+                    "dev-master": "2.5-dev"
                 }
             },
             "autoload": {
@@ -421,7 +425,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "http://symfony.com",
-            "time": "2014-04-16 10:34:31"
+            "time": "2014-04-29 10:13:57"
         },
         {
             "name": "zendframework/zendframework",
@@ -588,16 +592,16 @@
         },
         {
             "name": "zfr/zfr-stripe",
-            "version": "v1.6.1",
+            "version": "v1.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zf-fr/zfr-stripe.git",
-                "reference": "3aff7be2ef30c4fc78fd76384338dbf0731d1ac1"
+                "reference": "7d5107ebf84baf6b5c3e1076b942f4abd37859c8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zf-fr/zfr-stripe/zipball/3aff7be2ef30c4fc78fd76384338dbf0731d1ac1",
-                "reference": "3aff7be2ef30c4fc78fd76384338dbf0731d1ac1",
+                "url": "https://api.github.com/repos/zf-fr/zfr-stripe/zipball/7d5107ebf84baf6b5c3e1076b942f4abd37859c8",
+                "reference": "7d5107ebf84baf6b5c3e1076b942f4abd37859c8",
                 "shasum": ""
             },
             "require": {
@@ -633,7 +637,7 @@
                 "payment",
                 "stripe"
             ],
-            "time": "2014-04-16 10:25:18"
+            "time": "2014-05-28 09:25:36"
         },
         {
             "name": "zfr/zfr-stripe-module",

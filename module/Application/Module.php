@@ -183,7 +183,7 @@ class Module
 									return $table;
 							}, 
 							'TransactionTableGateway' => function ($sm) {
-									$dbAdapter = $sm->get ( 'memreaspaymentstripe' );
+									$dbAdapter = $sm->get ( MemreasConstants::MEMREASPAYMENTSDB );
 									$resultSetPrototype = new ResultSet ();
 									$resultSetPrototype->setArrayObjectPrototype ( new Transaction () );
 									return new TableGateway ( 'transaction', $dbAdapter, null, $resultSetPrototype );
@@ -194,7 +194,7 @@ class Module
 									return $table;
 							},
 							'AccountTableGateway' => function ($sm) {
-									$dbAdapter = $sm->get ( 'memreaspaymentstripe' );
+									$dbAdapter = $sm->get ( MemreasConstants::MEMREASPAYMENTSDB );
 									$resultSetPrototype = new ResultSet ();
 									$resultSetPrototype->setArrayObjectPrototype ( new Account());
 									return new TableGateway ( 'account', $dbAdapter, null, $resultSetPrototype );
@@ -205,7 +205,7 @@ class Module
 									return $table;
 							},
 							'AccountBalancesTableGateway' => function ($sm) {
-									$dbAdapter = $sm->get ( 'memreaspaymentstripe' );
+									$dbAdapter = $sm->get ( MemreasConstants::MEMREASPAYMENTSDB );
 									$resultSetPrototype = new ResultSet ();
 									$resultSetPrototype->setArrayObjectPrototype ( new AccountBalances());
 									return new TableGateway ( 'account_balances', $dbAdapter, null, $resultSetPrototype );
@@ -216,7 +216,7 @@ class Module
 									return $table;
 							},
 							'AccountDetailTableGateway' => function ($sm) {
-									$dbAdapter = $sm->get ( 'memreaspaymentstripe' );
+									$dbAdapter = $sm->get ( MemreasConstants::MEMREASPAYMENTSDB );
 									$resultSetPrototype = new ResultSet ();
 									$resultSetPrototype->setArrayObjectPrototype ( new AccountDetail());
 									return new TableGateway ( 'account_detail', $dbAdapter, null, $resultSetPrototype );
@@ -227,7 +227,7 @@ class Module
 									return $table;
 							},
 							'SubscriptionTableGateway' => function ($sm) {
-									$dbAdapter = $sm->get ( 'memreaspaymentstripe' );
+									$dbAdapter = $sm->get ( MemreasConstants::MEMREASPAYMENTSDB );
 									$resultSetPrototype = new ResultSet ();
 									$resultSetPrototype->setArrayObjectPrototype ( new Subscription());
 									return new TableGateway ( 'subscription', $dbAdapter, null, $resultSetPrototype );
@@ -238,7 +238,7 @@ class Module
 									return $table;
 							},
 							'TransactionReceiverTableGateway' => function ($sm) {
-									$dbAdapter = $sm->get ( 'memreaspaymentstripe' );
+									$dbAdapter = $sm->get ( MemreasConstants::MEMREASPAYMENTSDB );
 									$resultSetPrototype = new ResultSet ();
 									$resultSetPrototype->setArrayObjectPrototype ( new TransactionReceiver());
 									return new TableGateway ( 'transaction_receiver', $dbAdapter, null, $resultSetPrototype );
@@ -249,7 +249,7 @@ class Module
 									return $table;
 							},
 							'PaymentMethodTableGateway' => function ($sm) {
-									$dbAdapter = $sm->get ( 'memreaspaymentstripe' );
+									$dbAdapter = $sm->get ( MemreasConstants::MEMREASPAYMENTSDB );
 									$resultSetPrototype = new ResultSet ();
 									$resultSetPrototype->setArrayObjectPrototype ( new PaymentMethod());
 									return new TableGateway ( 'payment_method', $dbAdapter, null, $resultSetPrototype );
