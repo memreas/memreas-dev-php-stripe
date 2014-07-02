@@ -31,7 +31,7 @@ return array(
 		            PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES \'UTF8\''
 				),
 			),
-			'memreaspaymentstripe' => array(
+			'memreaspaymentstripedb' => array(
 		        'driver'         => 'Pdo',
     			'driver_options' => array(
 		            PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES \'UTF8\''
