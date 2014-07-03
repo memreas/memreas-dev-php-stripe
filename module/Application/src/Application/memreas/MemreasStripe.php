@@ -607,12 +607,19 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	 }
 
 	public function setSubscription($data){		
-		
+		if (isset($data['userid']))
+            $userid = $data['userid'];
+        else $userid = $this->session->offsetGet('user_id');
+
+        if (isset($data['card_id']))
+            $card = $data['card_id'];
+        else $card = null;
+
 		$checkExistStripePlan = $this->stripePlan->getPlan($data['plan']);
 		if (empty($checkExistStripePlan['plan'])) return array('status' => 'Failure', 'message' => 'Subscription plan was not found');
 		
 		
-		$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($this->session->offsetGet('user_id'));
+		$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($userid);
 		if (!$account) return array('status' => 'Failure', 'message' => 'No account related to this user.');
 				
 		$account_id = $account->account_id;
@@ -621,16 +628,47 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 		if (!$accountDetail) return array('status' => 'Failure', 'message' => 'Please update account detail first');
 		
 		$stripeCustomerId = $accountDetail->stripe_customer_id;
+
+        //Create a charge for this subscription
+        $paymentMethod = $this->memreasStripeTables->getPaymentMethodTable()->getPaymentMethodByStripeReferenceId($card);
+
+        if (empty ($paymentMethod))
+            return array('status' => 'Failure', 'message' => 'This card not relate to your account');
+
+        //Begin going to charge on Stripe
+        $cardId = $paymentMethod->stripe_card_reference_id;
+        $customerId = $accountDetail->stripe_customer_id;
+        $transactionAmount = ((int)$data['amount']) * 100; //Stripe use minimum amount conver for transaction. Eg: input $5
+        //convert request to stripe value is 500
+        $stripeChargeParams = array(
+            'amount' => $transactionAmount,
+            'currency' => 'USD',
+            'customer' => $customerId,
+            'card' => $cardId, //If this card param is null, Stripe will get primary customer card to charge
+            'description' => 'Charge for subscription : ' . $data['plan'], //Set description more details later
+        );
+        $chargeResult = $this->stripeCard->createCharge($stripeChargeParams);
+        if ($chargeResult){
+            //Check if Charge is successful or not
+            if (!$chargeResult['paid'])
+                return array('status' => 'Failure', 'Transaction declined! Please check your Stripe account and cards');
+        }
 		
 		//Set stripe subscription
 		$subscriptionParams = array(
 									'plan' => $data['plan'],
 									'customer' => $stripeCustomerId,
 									);
+
+        //Set customer card for charging
+        if (!empty($card))
+            $this->stripeCustomer->setCustomerCardDefault($stripeCustomerId, $card);
+
 		$createSubscribe = $this->stripeCustomer->setSubscription($subscriptionParams);
-		
-		return $createSubscribe;		
-		
+
+        if (isset($createSubscribe['id']))
+		    return array('status' => 'Success');
+       else return array('status' => 'Failure', 'message' => 'Subscription registering failed.');
 	}
 
 	public function listMassPayee(){
@@ -891,6 +929,10 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	 public function setSubscription($data){
 	 	return $this->stripeClient->createSubscription($data);
 	 }
+
+     public function setCustomerCardDefault($customerId, $cardId){
+         return $this->stripeClient->updateCustomer(array('id' => $customerId, 'default_card' => $cardId));
+     }
  }
  
  /*
