@@ -91,6 +91,21 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 		$this->session = new Container('user');		
  	}
 
+     public function getCustomer($data){
+         $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($data['userid']);
+
+         //Check if exist account
+         if (empty($account))
+             return array('status' => 'Failure', 'message' => 'No account related to this user.');
+
+         $accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account->account_id);
+
+         return array(
+                'status' => 'Success',
+                'customer' => $this->stripeCustomer->getCustomer($accountDetail->stripe_customer_id),
+         );
+     }
+
      public function listPlans(){
          return $this->stripePlan->getAllPlans();
      }
@@ -565,7 +580,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 		) );
 		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 		 
-		//Save customer card to Stripe 
+		//Save customer card to Stripe
 	 	$stripeCard = $this->stripeCard->storeCard($card_data);
 		$stripeCard = $stripeCard['response'];		
 		
@@ -1155,13 +1170,22 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	 * 			You can pass data when init class or directly input without data init
 	 * @return: JSON Object result	 
 	 * */
-	 public function storeCard($card_data = null){	 	
+	 public function storeCard($card_data = null){
 	 	if ($card_data){
 	 		$this->setCarddata($card_data);
-	 		$cardToken = $this->stripeClient->createCardToken(array('card' => $card_data));
+            try{
+	 		    $cardToken = $this->stripeClient->createCardToken(array('card' => $card_data));
+            }catch(CardErrorException $exception){
+
+            }
 		}			 				
-		else 			
-			$cardToken = $this->stripeClient->createCardToken(array('card' => $this->getCardValues()));		
+		else{
+            try{
+			    $cardToken = $this->stripeClient->createCardToken(array('card' => $this->getCardValues()));
+            }catch(CardErrorException $exception){
+
+            }
+        }
 		$this->updateInfo($cardToken['card']);	
 		$this->setCardAttribute('card_token', $cardToken['id']);						
 		$args = $this->getCardValues();					

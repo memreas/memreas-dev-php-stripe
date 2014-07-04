@@ -179,11 +179,24 @@ class StripeController extends AbstractActionController {
 			die();
 		}
 	}
+
+    public function getCustomerInfoAction(){
+        if (isset($_REQUEST['callback'])){
+            $callback = $_REQUEST['callback'];
+            $json = $_REQUEST['json'];
+            $jsonArr = json_decode($json, true);
+            $MemreasStripe = new MemreasStripe($this->getServiceLocator());
+            $customer = $MemreasStripe->getCustomer($jsonArr['json']);
+            echo $callback . "(" . json_encode($customer) . ")";
+            die();
+        }
+    }
 	
 	public function testAction(){
-		$stripePlan = new StripePlansConfig($this->getServiceLocator());
-		$plans = $stripePlan->deletePlan('GOLD');
-		echo '<pre>'; print_r ($plans);
+		$customer = 'cus_4KPtsCZTOcGKyB';
+        $MemreasStripe = new MemreasStripe($this->getServiceLocator());
+        $customerStripe = $MemreasStripe->getCustomer($customer);
+		echo '<pre>'; print_r ($customerStripe);
 		die();
 	}
 	
