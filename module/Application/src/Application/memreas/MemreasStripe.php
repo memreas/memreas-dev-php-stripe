@@ -104,6 +104,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
          return array(
                 'status' => 'Success',
                 'customer' => $this->stripeCustomer->getCustomer($accountDetail->stripe_customer_id),
+                'account' => $account,
          );
      }
 
@@ -215,7 +216,10 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	 * Add value to account
 	 * */
 	 public function addValueToAccount($data){
-	 	$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($this->session->offsetGet('user_id'));
+        if (isset($data['userid']))
+            $userid = $data['userid'];
+        else $userid = $this->session->offsetGet('user_id');
+	 	$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($userid);
 		$currency = 'USD';
 		if (empty ($account)) 
 			return array('status' => 'Failure', 'message' => 'You have no account at this time. Please add card first.');
@@ -565,27 +569,27 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 				'postal_code' 			=> $card_data ['address_zip'],
 		) );
 		$account_detail_id = $this->memreasStripeTables->getAccountDetailTable()->saveAccountDetail($accountDetail);
-		
-		$now = date ( 'Y-m-d H:i:s' );
-		$transaction = new Memreas_Transaction ();
 
-		// Copy the card and obfuscate the card number before storing the transaction
-		$obfuscated_card = json_decode ( json_encode($card_data), true );
-		$obfuscated_card ['number'] = $this->obfuscateAccountNumber ( $obfuscated_card ['number'] );
-		
-		$transaction->exchangeArray ( array (
-				'account_id' => $account_id,
-				'transaction_type' => 'store_credit_card',
-				'transaction_request' => json_encode ( $obfuscated_card ),
-				'transaction_sent' => $now
-		) );
-		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-		 
 		//Save customer card to Stripe
 	 	$stripeCard = $this->stripeCard->storeCard($card_data);
         if (!$stripeCard['card_added'])
             return array('status' => 'Failure', 'message' => $stripeCard['message']);
-		$stripeCard = $stripeCard['response'];		
+		$stripeCard = $stripeCard['response'];
+
+         $now = date ( 'Y-m-d H:i:s' );
+         $transaction = new Memreas_Transaction ();
+
+         // Copy the card and obfuscate the card number before storing the transaction
+         $obfuscated_card = json_decode ( json_encode($card_data), true );
+         $obfuscated_card ['number'] = $this->obfuscateAccountNumber ( $obfuscated_card ['number'] );
+
+         $transaction->exchangeArray ( array (
+             'account_id' => $account_id,
+             'transaction_type' => 'store_credit_card',
+             'transaction_request' => json_encode ( $obfuscated_card ),
+             'transaction_sent' => $now
+         ) );
+         $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 		
 		$transaction->exchangeArray ( array (
 				'transaction_id' => $transaction_id,
