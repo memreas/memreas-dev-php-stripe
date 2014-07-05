@@ -32,6 +32,7 @@ use ZfrStripeModule;
 use ZfrStripe\Client\StripeClient;
 use ZfrStripe\Exception\TransactionErrorException;
 use ZfrStripe\Exception\NotFoundException;
+use ZfrStripe\Exception\CardErrorException;
 use Zend\Validator\CreditCard as ZendCreditCard;
  
  class MemreasStripe extends StripeInstance{
@@ -582,6 +583,8 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 		 
 		//Save customer card to Stripe
 	 	$stripeCard = $this->stripeCard->storeCard($card_data);
+        if (!$stripeCard['card_added'])
+            return array('status' => 'Failure', 'message' => $stripeCard['message']);
 		$stripeCard = $stripeCard['response'];		
 		
 		$transaction->exchangeArray ( array (
@@ -1176,14 +1179,14 @@ use Zend\Validator\CreditCard as ZendCreditCard;
             try{
 	 		    $cardToken = $this->stripeClient->createCardToken(array('card' => $card_data));
             }catch(CardErrorException $exception){
-
+                return array('card_added' => false, 'message' => $exception->getMessage());
             }
 		}			 				
 		else{
             try{
 			    $cardToken = $this->stripeClient->createCardToken(array('card' => $this->getCardValues()));
             }catch(CardErrorException $exception){
-
+                return array('card_added' => false, 'message' => $exception->getMessage());
             }
         }
 		$this->updateInfo($cardToken['card']);	
