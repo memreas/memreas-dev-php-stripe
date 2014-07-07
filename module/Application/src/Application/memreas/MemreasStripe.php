@@ -120,11 +120,15 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 		//Get memreas user name
 		$user_name = $seller_data['user_name'];
 		$user = $this->memreasStripeTables->getUserTable()->getUserByUsername($user_name);
+
+         if (!$user)
+             return array('status' => 'Failure', 'message' => 'No user related to this username');
+
 		//Get Paypal email address
 		$stripe_email_address = $seller_data['stripe_email_address'];			
 
 		//Fetch the Account
-		$row = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user->user_id);
+		$row = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user->user_id, 'seller');
 		if (!$row) {
 			//Create Stripe Recipient data
 			$recipientParams = array(
@@ -133,7 +137,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 									'description' => 1,
 								);
 			$this->stripeRecipient->setRecipientInfo($recipientParams);
-			$recipientResponse = $this->stripeRecipient->createRecipient();						
+			$recipientResponse = $this->stripeRecipient->createRecipient();
 			
 			//Create an account entry
 			$now = date('Y-m-d H:i:s');
@@ -148,10 +152,11 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 			));
 			$account_id =  $this->memreasStripeTables->getAccountTable()->saveAccount($account);
 		} else {
+            //If user has an account with type is buyer, register a new seller account
 			$account_id = $row->account_id;
 			//Return a success message:
 			$result = array (
-				"Status"=>"Failure",
+				"status"=>"Failure",
 				"account_id"=> $account_id,
 				"Error"=>"Seller already exists",
 			);
@@ -202,7 +207,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 
 		//Return a success message:
 		$result = array (
-			"Status"=>"Success",
+			"status"=>"Success",
 			"account_id"=> $account_id,
 			"account_detail_id"=>$account_detail_id,
 			"transaction_id"=>$transaction_id,

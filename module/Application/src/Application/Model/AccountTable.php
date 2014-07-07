@@ -34,8 +34,8 @@ class AccountTable {
 		return $row;
 	}
 	
-	public function getAccountByUserId($user_id) {
-		$rowset = $this->tableGateway->select ( array ('user_id' => $user_id ) );
+	public function getAccountByUserId($user_id, $account_type = 'buyer') {
+		$rowset = $this->tableGateway->select ( array ('user_id' => $user_id, 'account_type' => $account_type ) );
 		$row = $rowset->current ();
 		if (! $row) {
 			return null;

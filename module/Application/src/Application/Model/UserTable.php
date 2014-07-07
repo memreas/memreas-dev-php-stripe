@@ -78,7 +78,7 @@ class UserTable
         $rowset = $this->tableGateway->select(array('username' => $username));
         $row = $rowset->current();
         if (!$row) {
-            throw new \Exception("Could not find row $username");
+            return false;
         }
         return $row;
     }
