@@ -7,6 +7,7 @@ class AccountDetail{
 	public $account_id = NULL;
 	public $first_name = NULL;
 	public $stripe_customer_id = NULL;
+    public $stripe_email_address = NULL;
 	public $last_name = NULL;
 	public $address_line_1 = NULL;
 	public $address_line_2 = NULL;

@@ -411,7 +411,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 					'transaction_request' => "N/a",
 					'transaction_sent' =>$now,
 					'transaction_response' => "N/a",
-					'transaction_receive' =>$now,
+					'transaction_receive' =>$now
 			));
 			
 			$transactionId = $this->memreasStripeTables->getTransactionTable()->saveTransaction($memreasTransaction);
@@ -571,7 +571,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 				'city' 					=> $card_data ['address_city'],
 				'state' 				=> $card_data ['address_state'],
 				'zip_code' 				=> $card_data ['address_zip'],
-				'postal_code' 			=> $card_data ['address_zip'],
+				'postal_code' 			=> $card_data ['address_zip']
 		) );
 		$account_detail_id = $this->memreasStripeTables->getAccountDetailTable()->saveAccountDetail($accountDetail);
 
