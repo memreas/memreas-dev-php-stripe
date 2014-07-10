@@ -674,7 +674,10 @@ use Zend\Validator\CreditCard as ZendCreditCard;
             'card' => $cardId, //If this card param is null, Stripe will get primary customer card to charge
             'description' => 'Charge for subscription : ' . $data['plan'], //Set description more details later
         );
-        $chargeResult = $this->stripeCard->createCharge($stripeChargeParams);
+        if ($transactionAmount > 0)
+            $chargeResult = $this->stripeCard->createCharge($stripeChargeParams);
+        else $chargeResult = false;
+
         if ($chargeResult){
             //Check if Charge is successful or not
             if (!$chargeResult['paid'])
