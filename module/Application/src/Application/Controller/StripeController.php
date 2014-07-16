@@ -97,6 +97,30 @@ class StripeController extends AbstractActionController {
 		}
 	}
 
+    public function viewCardAction(){
+        if (isset($_REQUEST['callback'])){
+            $callback = $_REQUEST['callback'];
+            $json = $_REQUEST['json'];
+            $jsonArr = json_decode($json, true);
+
+            $MemreasStripe = new MemreasStripe($this->getServiceLocator());
+            echo $callback . "(" . json_encode($MemreasStripe->listCard($jsonArr['json'])) . ")";
+            die();
+        }
+    }
+
+    public  function updateCardAction(){
+        if (isset($_REQUEST['callback'])){
+            $callback = $_REQUEST['callback'];
+            $json = $_REQUEST['json'];
+            $jsonArr = json_decode($json, true);
+
+            $MemreasStripe = new MemreasStripe($this->getServiceLocator());
+            echo $callback . "(" . json_encode($MemreasStripe->saveCard($jsonArr['json'])) . ")";
+            die();
+        }
+    }
+
 	public function deleteCardsAction(){
 		if (isset($_REQUEST['callback'])){
 			$callback = $_REQUEST['callback'];

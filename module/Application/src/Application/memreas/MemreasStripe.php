@@ -33,6 +33,7 @@ use ZfrStripe\Client\StripeClient;
 use ZfrStripe\Exception\TransactionErrorException;
 use ZfrStripe\Exception\NotFoundException;
 use ZfrStripe\Exception\CardErrorException;
+use Guzzle\Service\Exception\ValidationException;
 use Zend\Validator\CreditCard as ZendCreditCard;
  
  class MemreasStripe extends StripeInstance{
@@ -729,7 +730,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	 * List card by user_id
 	 * */
 	 public function listCards($user_id){
-         if (empty($user_id))
+        if (empty($user_id))
 	 	    $user_id = $this->session->offsetGet('user_id');
 		$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user_id);
 		
@@ -791,6 +792,50 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 				);
 	 }
 
+     public function listCard($data){
+         if (empty($data['user_id']))
+             $user_id = $this->session->offsetGet('user_id');
+         else $user_id = $data['user_id'];
+         $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user_id);
+
+         //Check if exist account
+         if (empty($account))
+             return array('status' => 'Failure', 'message' => 'No account related to this user.');
+
+         $paymentMethods = $this->memreasStripeTables->getPaymentMethodTable()->getPaymentMethodsByAccountId($account->account_id);
+
+         //Check if account has payment method
+         if (empty($paymentMethods))
+             return array('status' => 'Failure', 'message' => 'No record found.');
+
+         $accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account->account_id);
+
+         if (empty($accountDetail))
+             return array('status' => 'Failure', 'message' => 'Data corrupt with this account. Please try add new card first.');
+
+         //Check if this card has exist at Stripe
+         $stripeCard = $this->stripeCard->getCard($accountDetail->stripe_customer_id, $data['card_id']);
+         if (!$stripeCard['exist'])
+             return array('status' => 'Failure', 'message' => 'This card is not belong to you.');
+         else
+             return array('status' => 'Success', 'card' => $stripeCard['info']);
+     }
+
+     public function saveCard($card_data){
+         if (empty($card_data['user_id']))
+             $user_id = $this->session->offsetGet('user_id');
+         else $user_id = $card_data['user_id'];
+         $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user_id);
+
+         //Check if exist account
+         if (empty($account))
+             return array('status' => 'Failure', 'message' => 'No account related to this user.');
+
+         $accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account->account_id);
+         $card_data['customer'] = $accountDetail->stripe_customer_id;
+
+         return $this->stripeCard->updateCard($card_data);
+     }
 	/*
 	 * Delete cards
 	 * */
@@ -1229,6 +1274,29 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	  	}		
 		return $result;
 	  }
+
+     /*
+      * Update card's info
+      * */
+     public function updateCard($card_data){
+         try{
+            $this->stripeClient->updateCard(array(
+                'id' => $card_data['id'],
+                'customer' => $card_data['customer'],
+                'address_city' => $card_data['address_city'],
+                'address_line1' => $card_data['address_line1'],
+                'address_line2' => $card_data['address_line2'],
+                'address_state' => $card_data['address_state'],
+                'address_zip' => $card_data['address_zip'],
+                'exp_month' => $card_data['exp_month'],
+                'exp_year' => $card_data['exp_year'],
+                'name' => $card_data['name']
+            ));
+             return array('status' => 'Success');
+         }catch (ValidationException $e){
+            return array('status' => 'Failure', 'message' => $e->getMessage());
+         }
+     }
 	  
 	  /*
 	   * Remove a card
