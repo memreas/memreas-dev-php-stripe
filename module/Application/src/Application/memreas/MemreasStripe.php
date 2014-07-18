@@ -109,6 +109,19 @@ use Zend\Validator\CreditCard as ZendCreditCard;
          );
      }
 
+     public function getCustomerPlans($user_id){
+         $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user_id);
+
+         //Check if exist account
+         if (empty($account))
+             return array('status' => 'Failure', 'message' => 'No account related to this user.');
+
+         $accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account->account_id);
+         $customer = $this->stripeCustomer->getCustomer($accountDetail->stripe_customer_id);
+         $customerPlans = $customer['info']['subscriptions']['data'];
+         return array('status' => 'Success', 'plans' => $customerPlans);
+     }
+
      public function listPlans(){
          return $this->stripePlan->getAllPlans();
      }

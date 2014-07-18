@@ -27,7 +27,7 @@ use Application\memreas\MemreasPayPalTables;
 use Application\memreas\MemreasStripe;
 
 class IndexController extends AbstractActionController {
-	protected $url = MemreasConstants::ORIGINAL_URL;
+    protected $url = MemreasConstants::ORIGINAL_URL;
 	//protected $url = 'http://memreas-dev-ws.localhost/';
 	protected $user_id;
 	protected $storage;
@@ -59,7 +59,36 @@ class IndexController extends AbstractActionController {
 		exit();
 	}
 	public function indexAction() {
-		
+
+        if (isset($_POST['action'])){
+            $action = $_POST['action'];
+            $user_id = $_POST['user_id'];
+            $MemreasStripe = new MemreasStripe($this->getServiceLocator());
+            switch ($action){
+                case 'listplans':
+                    $plans = $MemreasStripe->getCustomerPlans($user_id);
+                    if ($plans['status'] == 'Success'){
+                        $plans = $plans['plans'];
+                        if (!empty($plans))
+                            $status = 'Success';
+                        else{
+                            $status = 'Failure';
+                            $message = 'There is no plan at this time';
+                        }
+                    }else{
+                        $status = 'Failure';
+                        $message = $plans['message'];
+                    }
+
+                    if ($status == 'Success')
+                        $result = array('status' => 'Success', 'plans' => $plans);
+                    else $result = array('status' => 'Failure', 'message' => $message);
+                    echo json_encode($result); die();
+                    break;
+                default:
+            }
+        }
+
 		/*$testing_data = array(
  							'name' => 'John Meah',
  							'email' => 'demo recipient',
