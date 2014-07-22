@@ -85,6 +85,7 @@ jQuery.paypalAddSeller = function () {
 jQuery.stripeStoreCard = function () {
 
 	var obj = new Object();
+    obj.user_id = $("input[name=user_id]").val();
 	obj.first_name = $("#first_name").val();
 	obj.last_name = $("#last_name").val();
 	obj.credit_card_type = $("#credit_card_type").val();
