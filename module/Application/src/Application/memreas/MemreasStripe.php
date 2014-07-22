@@ -683,6 +683,18 @@ use Zend\Validator\CreditCard as ZendCreditCard;
         if (empty ($paymentMethod))
             return array('status' => 'Failure', 'message' => 'This card not relate to your account');
 
+        //Check if user has actived subscription or not
+        $stripeCustomerInfo = $this->stripeCustomer->getCustomer($stripeCustomerId);
+
+        if ($stripeCustomerInfo['info']['subscriptions']['total_count'] > 0){
+            $subscriptions = $stripeCustomerInfo['info']['subscriptions']['data'];
+            foreach ($subscriptions as $subscription){
+                if ($subscription['plan']['id'] == $data['plan'])
+                    return array('status' => 'Failure', 'message' => 'You have actived this plan before.');
+            }
+            return array('status' => 'Failure', 'message' => 'No more than one subscription allowed.');
+        }
+
         //Begin going to charge on Stripe
         $cardId = $paymentMethod->stripe_card_reference_id;
         $customerId = $accountDetail->stripe_customer_id;
