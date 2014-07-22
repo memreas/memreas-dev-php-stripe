@@ -217,9 +217,8 @@ class StripeController extends AbstractActionController {
     }
 	
 	public function testAction(){
-		$customer = 'cus_4KPtsCZTOcGKyB';
         $MemreasStripe = new MemreasStripe($this->getServiceLocator());
-        $customerStripe = $MemreasStripe->getCustomer($customer);
+        $customerStripe = $MemreasStripe->get('stripePlan')->getPlan('PLAN_C_50GB_MONTHLY');
 		echo '<pre>'; print_r ($customerStripe);
 		die();
 	}

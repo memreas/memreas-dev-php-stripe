@@ -8,6 +8,7 @@ use ZfrStripeModule;
 use ZfrStripe\Client\StripeClient;
 use ZfrStripe\Exception\TransactionErrorException;
 use ZfrStripe\Exception\NotFoundException;
+use Application\Model\MemreasConstants;
 
 class StripePlansConfig{
 	
@@ -70,27 +71,32 @@ class StripePlansConfig{
 	}
 	
 	private function preConfigPlans(){
+        $MemreasConstants = new MemreasConstants();
 		$StripePlans = array(
-				'PLAN_A_2GB_MONTHLY' 	=> array(
-												'plan_id' 		=> 'PLAN_A_2GB_MONTHLY',
-												'plan_amount' 	=> 0,
-												'plan_name' 	=> 'Plan A: Free 2GB monthly',								
+				$MemreasConstants::PLAN_ID_A 	=> array(
+												'plan_id' 		=> $MemreasConstants::PLAN_ID_A,
+												'plan_amount' 	=> $MemreasConstants::PLAN_AMOUNT_A,
+												'plan_name' 	=> $MemreasConstants::PLAN_DETAILS_A,
+                                                'storage'       => $MemreasConstants::PLAN_GB_STORAGE_AMOUNT_A
 											),
-				'PLAN_B_10GB_MONTHLY'	=> array(
-												'plan_id' 		=> 'PLAN_B_10GB_MONTHLY',
-												'plan_amount' 	=> 2.5,
-												'plan_name' 	=> 'Plan B: 10GB monthly',
+                $MemreasConstants::PLAN_ID_B	=> array(
+												'plan_id' 		=> $MemreasConstants::PLAN_ID_B,
+												'plan_amount' 	=> $MemreasConstants::PLAN_AMOUNT_B,
+												'plan_name' 	=> $MemreasConstants::PLAN_DETAILS_B,
+                                                'storage'       => $MemreasConstants::PLAN_GB_STORAGE_AMOUNT_B
 											),
-				'PLAN_C_50GB_MONTHLY'	=> array(
-												'plan_id'		=> 'PLAN_C_50GB_MONTHLY',
-												'plan_amount'	=> 4.95,
-												'plan_name'		=> 'Plan C: 50GB monthly',		
+                $MemreasConstants::PLAN_ID_C	=> array(
+												'plan_id'		=> $MemreasConstants::PLAN_ID_C,
+												'plan_amount'	=> $MemreasConstants::PLAN_AMOUNT_C,
+												'plan_name'		=> $MemreasConstants::PLAN_DETAILS_C,
+                                                'storage'       => $MemreasConstants::PLAN_GB_STORAGE_AMOUNT_C
 											),
-				'PLAN_D_100GB_MONTHLY'	=> array(
-												'plan_id'		=> 'PLAN_D_100GB_MONTHLY',
-												'plan_amount'	=> 9.95,
-												'plan_name'		=> 'Plan D: 100GB monthly',
-											),
+                $MemreasConstants::PLAN_ID_D	=> array(
+												'plan_id'		=> $MemreasConstants::PLAN_ID_D,
+												'plan_amount'	=> $MemreasConstants::PLAN_AMOUNT_D,
+												'plan_name'		=> $MemreasConstants::PLAN_DETAILS_D,
+                                                'storage'       => $MemreasConstants::PLAN_GB_STORAGE_AMOUNT_D
+											)
 		);
 		return $StripePlans;
 	}  

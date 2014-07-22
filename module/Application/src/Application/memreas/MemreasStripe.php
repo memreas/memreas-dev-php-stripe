@@ -12,6 +12,8 @@ namespace Application\memreas;
  * Pre-include App Model
  * * */
 use Application\Model\MemreasConstants;
+use Zend\View\Model\ViewModel;
+use Application\memreas\AWSManagerSender;
 use Application\Model\User;
 use Application\Model\Account;
 use Application\Model\AccountBalances;
@@ -37,8 +39,7 @@ use Guzzle\Service\Exception\ValidationException;
 use Zend\Validator\CreditCard as ZendCreditCard;
  
  class MemreasStripe extends StripeInstance{
- 	
-	private $serviceLocator;
+
 	private $stripeClient;	
 	private $stripeInstance;
 	protected $memreasStripeTables;
@@ -75,7 +76,8 @@ use Zend\Validator\CreditCard as ZendCreditCard;
  * Mail Class
  * */
  class StripeInstance{
- 	
+
+    public $serviceLocator;
 	private $stripeCustomer;
 	private $stripeRecipient;
 	private $stripeCard;
@@ -92,6 +94,10 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 		$this->memreasStripeTables = $memreasStripeTables;
 		$this->session = new Container('user');		
  	}
+
+     public function get($propertyName){
+         return $this->{$propertyName};
+     }
 
      public function getCustomer($data){
          $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($data['userid']);
@@ -412,7 +418,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 
 			// Log the transaction
 			$now = date ( 'Y-m-d H:i:s' );
-			$MemreasTransaction = new Memreas_Transaction();
+			$memreasTransaction = new Memreas_Transaction();
 			$seller_amount = $amount * 0.8;
 			$memreas_master_amount = $amount - $seller_amount;
 
@@ -532,12 +538,12 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 					"message" => "Card number is not valid"
 			);
 		}
-				
+
+        $user = $this->memreasStripeTables->getUserTable()->getUser($user_id);
 	 	$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user_id);
 		if (!$account){
 			
 			//Create new stripe customer
-			$user = $this->memreasStripeTables->getUserTable()->getUser($user_id);
 			$userStripeParams = array(
 							'email' => $user->email_address,
 							'description' => 'Stripe account accociated with memreas user id : ' . $user->user_id, 
@@ -578,6 +584,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 		$accountDetail->exchangeArray ( array (
 				'account_id' 			=> $account_id,
 				'stripe_customer_id' 	=> $stripeCusId,
+                'stripe_email_address'  => $user->email_address,
 				'first_name' 			=> $firstName,
 				'last_name' 			=> $lastName,
 				'address_line_1' 		=> $card_data ['address_line1'],
@@ -710,9 +717,25 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 
 		$createSubscribe = $this->stripeCustomer->setSubscription($subscriptionParams);
 
-        if (isset($createSubscribe['id']))
-		    return array('status' => 'Success');
-       else return array('status' => 'Failure', 'message' => 'Subscription registering failed.');
+        if (isset($createSubscribe['id'])){
+            $plan = $this->stripePlan->getPlan($data['plan']);
+            $viewModel = new ViewModel (array(
+                'username' => $accountDetail->first_name . ' ' . $accountDetail->last_name,
+                'plan_name' => $plan['plan']['name']
+            ));
+            $viewModel->setTemplate ( 'email/subscription' );
+            $viewRender = $this->serviceLocator->get ( 'ViewRenderer' );
+
+            $html = $viewRender->render ( $viewModel );
+            $subject = 'Your subscription plan has been actived';
+
+            if (empty ( $aws_manager ))
+                $aws_manager = new AWSManagerSender ( $this->serviceLocator );
+            $aws_manager->sendSeSMail ( array($accountDetail->stripe_email_address), $subject, $html );
+
+            return array('status' => 'Success');
+        }
+        else return array('status' => 'Failure', 'message' => 'Subscription registering failed.');
 	}
 
 	public function listMassPayee(){
@@ -1004,7 +1027,8 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	  	if ($outputFormat)
 			return array('email' => $this->email, 'description' => $this->description);
 		else{
-			$customerObject->email = $this->email;
+			$customerObject = new StripeCustomer($this->stripeClient);
+            $customerObject->email = $this->email;
 			$customerObject->description = $this->description;
 			return $customerObject;
 		}
@@ -1110,6 +1134,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 			return $recipient;
 		}
 		else{
+            $recipientObject = new StripeRecipient($this->stripeClient);
 			$recipientObject->id = $this->id;
 			$recipientObject->name = $this->name;
 			$recipientObject->type = $this->type;
@@ -1212,7 +1237,8 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 							'address_zip_check' 	=> $this->address_zip_check,
 						);
 		else{
-			$cardObject->id		 				= $this->id;
+			$cardObject = new StripeCard($this->stripeClient);
+            $cardObject->id		 				= $this->id;
 			$cardObject->number 				= $this->number;
 			$cardObject->exp_month 				= $this->exp_month;
 			$cardObject->exp_year 				= $this->exp_year;
