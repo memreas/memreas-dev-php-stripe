@@ -1,5 +1,5 @@
 <?php
 
-echo "Inside Deploy test pay-1";
+echo "Deploy for pay v1.0 - ready for review";
 
 ?>
