@@ -23,7 +23,7 @@ use Application\Model\Subscription;
 use Application\Model\Transaction as Memreas_Transaction;
 use Application\Model\TransactionReceiver;
 use Application\memreas\StripePlansConfig;
-
+use Aws\Ses\Exception\SesException;
 
 /*
  * Include core Module - Libraries
@@ -698,6 +698,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
             'card' => $cardId, //If this card param is null, Stripe will get primary customer card to charge
             'description' => 'Charge for subscription : ' . $data['plan'], //Set description more details later
         );
+
         if ($transactionAmount > 0)
             $chargeResult = $this->stripeCard->createCharge($stripeChargeParams);
         else $chargeResult = false;
@@ -732,9 +733,11 @@ use Zend\Validator\CreditCard as ZendCreditCard;
             $html = $viewRender->render ( $viewModel );
             $subject = 'Your subscription plan has been actived';
 
-            if (empty ( $aws_manager ))
+            if (!isset($aws_manager) || empty ( $aws_manager ))
                 $aws_manager = new AWSManagerSender ( $this->serviceLocator );
-            $aws_manager->sendSeSMail ( array($accountDetail->stripe_email_address), $subject, $html );
+            try{
+                $aws_manager->sendSeSMail ( array($accountDetail->stripe_email_address), $subject, $html );
+            }catch (SesException $e){}
 
             return array('status' => 'Success');
         }
