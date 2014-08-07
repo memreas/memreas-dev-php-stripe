@@ -69,7 +69,7 @@ class PaymentMethodTable {
 		$rowset = $this->tableGateway->select ( array ('stripe_card_reference_id' => $stripe_card_reference_id ) );
 		$row = $rowset->current ();
 		if (! $row) {
-			throw new \Exception ( "Could not find row $payment_method_id" );
+			return null;
 		}
 		return $row;
 	}
