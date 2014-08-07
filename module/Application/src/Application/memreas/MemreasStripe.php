@@ -530,15 +530,6 @@ use Zend\Validator\CreditCard as ZendCreditCard;
             $user_id = $card_data['user_id'];
          else $user_id = $this->session->offsetGet('user_id');
 
-		//Check if valid Credit Card
-		$ccChecking = new ZendCreditCard();
-		if (!$ccChecking->isValid($card_data['number'])){
-			return array (
-					"status" => "Failure",
-					"message" => "Card number is not valid"
-			);
-		}
-
         $user = $this->memreasStripeTables->getUserTable()->getUser($user_id);
 	 	$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user_id);
 		if (!$account){
