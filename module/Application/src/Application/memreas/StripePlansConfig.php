@@ -43,6 +43,11 @@ class StripePlansConfig{
 			return array('plan' => null, 'message' => $e->getMessage());
 		}
 	}
+
+    public function getPlanLevel($planId){
+        $plans = $this->preConfigPlans();
+        return $plans[$planId]['level'];
+    }
 	
 	public function getAllPlans(){
 		$stripePlans = $this->stripeClient->getPlans();
@@ -77,25 +82,29 @@ class StripePlansConfig{
 												'plan_id' 		=> $MemreasConstants::PLAN_ID_A,
 												'plan_amount' 	=> $MemreasConstants::PLAN_AMOUNT_A,
 												'plan_name' 	=> $MemreasConstants::PLAN_DETAILS_A,
-                                                'storage'       => $MemreasConstants::PLAN_GB_STORAGE_AMOUNT_A
+                                                'storage'       => $MemreasConstants::PLAN_GB_STORAGE_AMOUNT_A,
+                                                'level'         => 1
 											),
                 $MemreasConstants::PLAN_ID_B	=> array(
 												'plan_id' 		=> $MemreasConstants::PLAN_ID_B,
 												'plan_amount' 	=> $MemreasConstants::PLAN_AMOUNT_B,
 												'plan_name' 	=> $MemreasConstants::PLAN_DETAILS_B,
-                                                'storage'       => $MemreasConstants::PLAN_GB_STORAGE_AMOUNT_B
+                                                'storage'       => $MemreasConstants::PLAN_GB_STORAGE_AMOUNT_B,
+                                                'level'         => 2
 											),
                 $MemreasConstants::PLAN_ID_C	=> array(
 												'plan_id'		=> $MemreasConstants::PLAN_ID_C,
 												'plan_amount'	=> $MemreasConstants::PLAN_AMOUNT_C,
 												'plan_name'		=> $MemreasConstants::PLAN_DETAILS_C,
-                                                'storage'       => $MemreasConstants::PLAN_GB_STORAGE_AMOUNT_C
+                                                'storage'       => $MemreasConstants::PLAN_GB_STORAGE_AMOUNT_C,
+                                                'level'         => 3
 											),
                 $MemreasConstants::PLAN_ID_D	=> array(
 												'plan_id'		=> $MemreasConstants::PLAN_ID_D,
 												'plan_amount'	=> $MemreasConstants::PLAN_AMOUNT_D,
 												'plan_name'		=> $MemreasConstants::PLAN_DETAILS_D,
-                                                'storage'       => $MemreasConstants::PLAN_GB_STORAGE_AMOUNT_D
+                                                'storage'       => $MemreasConstants::PLAN_GB_STORAGE_AMOUNT_D,
+                                                'level'         => 4
 											)
 		);
 		return $StripePlans;

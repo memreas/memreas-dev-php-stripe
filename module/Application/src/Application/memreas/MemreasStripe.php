@@ -680,10 +680,21 @@ use Zend\Validator\CreditCard as ZendCreditCard;
         if ($stripeCustomerInfo['info']['subscriptions']['total_count'] > 0){
             $subscriptions = $stripeCustomerInfo['info']['subscriptions']['data'];
             foreach ($subscriptions as $subscription){
-                if ($subscription['plan']['id'] == $data['plan'])
+
+                //User has actived plan
+                if ($subscription['plan']['id'] == $data['plan']){
                     return array('status' => 'Failure', 'message' => 'You have actived this plan before.');
+                }
             }
-            return array('status' => 'Failure', 'message' => 'No more than one subscription allowed.');
+
+            $planLevel = $this->stripePlan->getPlanLevel($data['plan']);
+            $customerPlanLevel = $this->stripePlan->getPlanLevel($subscription['plan']['id']);
+
+            //Checking for upgrade plan
+            if ($planLevel > $customerPlanLevel){
+                $result = $this->stripeCustomer->cancelSubscription($subscriptions[0]['id'], $stripeCustomerId);
+            }
+            else return array('status' => 'Failure', 'message' => 'You can not upgrade to lower plan.');
         }
 
         //Begin going to charge on Stripe
@@ -743,6 +754,10 @@ use Zend\Validator\CreditCard as ZendCreditCard;
         }
         else return array('status' => 'Failure', 'message' => 'Subscription registering failed.');
 	}
+
+     public function cancelSubscription($subscriptionId, $customerId){
+         $this->stripeCustomer->cancelSubscription($subscriptionId, $customerId);
+     }
 
 	public function listMassPayee(){
 		$MassPees = $this->memreasStripeTables->getAccountTable()->listMassPayee();
@@ -1047,6 +1062,10 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 	 public function setSubscription($data){
 	 	return $this->stripeClient->createSubscription($data);
 	 }
+
+     public function cancelSubscription($subscriptionId, $customerId){
+         return $this->stripeClient->cancelSubscription(array('customer' => $customerId, 'id' => $subscriptionId));
+     }
 
      public function setCustomerCardDefault($customerId, $cardId){
          return $this->stripeClient->updateCustomer(array('id' => $customerId, 'default_card' => $cardId));
