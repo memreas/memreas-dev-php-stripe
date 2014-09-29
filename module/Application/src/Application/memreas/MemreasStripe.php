@@ -136,6 +136,23 @@ use Zend\Validator\CreditCard as ZendCreditCard;
          $countUserPlan = $this->memreasStripeTables->getSubscriptionTable()->countUser($planId);
          return $countUserPlan;
      }
+
+     public function getOrderHistories($user_id){
+         $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user_id);
+
+         //Check if exist account
+         if (empty($account))
+             return array('status' => 'Failure', 'message' => 'No account related to this user.');
+
+         $transactions = $this->memreasStripeTables->getTransactionTable()->getTransactionByAccountId($account->account_id);
+         $orders = array();
+         foreach ($transactions as $transaction)
+             $orders[] = $transaction;
+         return array(
+             'status' => 'Success',
+             'transactions' => $orders
+         );
+     }
 		
 	/*
 	 * Override customer's function

@@ -110,6 +110,20 @@ class IndexController extends AbstractActionController {
                     else $result = array('status' => 'Failure', 'message' => $message);
                     echo json_encode($result); die();
                     break;
+
+                case 'getorderhistory':
+                    $user_id = $_POST['user_id'];
+                    $orderHistories = $MemreasStripe->getOrderHistories($user_id);
+
+                    if ($orderHistories['status'] == "Success"){
+                        $orders = $orderHistories['transactions'];
+                        if (!empty($orders))
+                            $result = array('status' => 'Success', 'orders' => $orders);
+                        else $result = array('status' => 'Failure', 'message' => 'No record found');
+                    }
+                    else $result = array('status' => 'Failure', 'message' => $orderHistories['message']);
+                    echo json_encode($result); die();
+                    break;
                 default:
             }
         }
