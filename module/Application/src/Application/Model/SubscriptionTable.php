@@ -66,4 +66,11 @@ error_log("About to saveSubscription....".PHP_EOL);
 				'subscription_id' => $subscription_id 
 		) );
 	}
+
+    public function countUser($planId){
+        $rowset = $this->tableGateway->select ( array (
+            'plan' => $planId
+        ))->current ();
+        return count($rowset);
+    }
 }

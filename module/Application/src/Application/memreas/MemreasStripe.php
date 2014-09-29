@@ -131,6 +131,11 @@ use Zend\Validator\CreditCard as ZendCreditCard;
      public function listPlans(){
          return $this->stripePlan->getAllPlans();
      }
+
+     public function getTotalPlanUser($planId){
+         $countUserPlan = $this->memreasStripeTables->getSubscriptionTable()->countUser($planId);
+         return $countUserPlan;
+     }
 		
 	/*
 	 * Override customer's function
@@ -749,6 +754,26 @@ use Zend\Validator\CreditCard as ZendCreditCard;
             try{
                 $aws_manager->sendSeSMail ( array($accountDetail->stripe_email_address), $subject, $html );
             }catch (SesException $e){}
+
+            //Save subscription table
+            $now = date('Y-m-d H:i:s');
+            $memreasSubscription  = new Subscription();
+            $memreasSubscription->exchangeArray(array(
+                'account_id'=> $account->account_id,
+                'currency_code'=> 'USD',
+                'plan' => $data['plan'],
+                'plan_amount' => $transactionAmount,
+                'plan_description' => $plan['plan']['name'],
+                'gb_storage_amount' => '',
+                'billing_frequency' => MemreasConstants::PLAN_BILLINGFREQUENCY,
+                'start_date' => $now,
+                'end_date' => null,
+                'paypal_subscription_profile_id' => $createSubscribe['id'],
+                'paypal_subscription_profile_status' => 'Active',
+                'create_date' => $now,
+                'update_time' => $now
+            ));
+            $this->memreasStripeTables->getSubscriptionTable()->saveSubscription($memreasSubscription);
 
             return array('status' => 'Success');
         }

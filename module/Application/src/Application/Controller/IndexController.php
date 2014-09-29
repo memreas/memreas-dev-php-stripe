@@ -27,8 +27,8 @@ use Application\memreas\MemreasPayPalTables;
 use Application\memreas\MemreasStripe;
 
 class IndexController extends AbstractActionController {
-    protected $url = MemreasConstants::ORIGINAL_URL;
-	//protected $url = 'http://memreas-dev-ws.localhost/';
+    //protected $url = MemreasConstants::ORIGINAL_URL;
+	protected $url = 'http://memreas-dev-ws.localhost/';
 	protected $user_id;
 	protected $storage;
 	protected $authservice;
@@ -62,10 +62,10 @@ class IndexController extends AbstractActionController {
 
         if (isset($_POST['action'])){
             $action = $_POST['action'];
-            $user_id = $_POST['user_id'];
             $MemreasStripe = new MemreasStripe($this->getServiceLocator());
             switch ($action){
                 case 'listplans':
+                    $user_id = $_POST['user_id'];
                     $plans = $MemreasStripe->getCustomerPlans($user_id);
                     if ($plans['status'] == 'Success'){
                         $plans = $plans['plans'];
@@ -78,6 +78,31 @@ class IndexController extends AbstractActionController {
                     }else{
                         $status = 'Failure';
                         $message = $plans['message'];
+                    }
+
+                    if ($status == 'Success')
+                        $result = array('status' => 'Success', 'plans' => $plans);
+                    else $result = array('status' => 'Failure', 'message' => $message);
+                    echo json_encode($result); die();
+                    break;
+                case 'listplansstatic':
+                    $static = $_POST['static'];
+                    if (!$static){
+                        $status = 'Success';
+                        $plans = $MemreasStripe->listPlans();
+                    }
+                    else{
+                        $status = 'Success';
+                        $plans = $MemreasStripe->listPlans();
+                        foreach ($plans as $key => $plan){
+                            $totaluser = $MemreasStripe->getTotalPlanUser($plan['id']);
+                            $plans[$key]['total_user'] = $totaluser ? $totaluser : 0;
+                        }
+                    }
+
+                    if (empty($plans)){
+                        $status = 'Failure';
+                        $message = 'There is no available plan';
                     }
 
                     if ($status == 'Success')
