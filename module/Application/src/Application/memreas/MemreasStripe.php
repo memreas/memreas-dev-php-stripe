@@ -157,6 +157,10 @@ use Zend\Validator\CreditCard as ZendCreditCard;
              'transactions' => $orders
          );
      }
+
+     public function getOrder($transaction_id){
+        return $this->memreasStripeTables->getTransactionTable()->getTransaction($transaction_id);
+     }
 		
 	/*
 	 * Override customer's function

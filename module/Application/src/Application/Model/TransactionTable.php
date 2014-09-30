@@ -62,7 +62,7 @@ class TransactionTable {
 		) );
 		$row = $rowset->current ();
 		if (! $row) {
-			throw new \Exception ( "Could not find row $transactionId" );
+			return null;
 		}
 		return $row;
 	}
