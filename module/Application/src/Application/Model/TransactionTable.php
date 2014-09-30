@@ -8,6 +8,11 @@ use Application\memreas\MUUID;
 
 class TransactionTable {
 	protected $tableGateway;
+
+    public $account_id;
+    public $offset = 0;
+    public $limit = 0;
+
 	public function __construct(TableGateway $tableGateway) {
 		$this->tableGateway = $tableGateway;
 	}
@@ -15,16 +20,33 @@ class TransactionTable {
 		$resultSet = $this->tableGateway->select ();
 		return $resultSet;
 	}
-    public function getAllTransactions(){
+    public function getAllTransactions($page, $limit){
+        $this->offset = ($page - 1) * $limit;
+        $this->limit = $limit;
         $resultSet = $this->tableGateway->select(function(Select $select){
-            $select->order('transaction_sent DESC');
+            $select->order('transaction_sent DESC')
+                    ->offset($this->offset)
+                    ->limit($this->limit);
         });
         return $resultSet;
     }
-	public function getTransactionByAccountId($account_id) {
-		$resultSet = $this->tableGateway->select ( array (
-				'account_id' => $account_id 
-		) );
+	public function getTransactionByAccountId($account_id, $page = null, $limit = null) {
+        $this->account_id = $account_id;
+        if ($page && $limit){
+            $this->offset = ($page - 1) * $limit;
+            $this->limit = $limit;
+            $resultSet = $this->tableGateway->select(function (Select $select){
+                $select->where(array('account_id' => $this->account_id))
+                        ->order('transaction_sent DESC')
+                        ->offset($this->offset)
+                        ->limit($this->limit);
+            });
+        }
+		else {
+            $resultSet = $this->tableGateway->select ( array (
+                'account_id' => $account_id
+            ) );
+        }
 		return $resultSet;
 	}
 	public function getTransactionByPayPalTxnId($paypal_txn_id) {

@@ -112,8 +112,9 @@ class IndexController extends AbstractActionController {
                     break;
 
                 case 'getorderhistory':
-                    $user_id = $_POST['user_id'];
-                    $orderHistories = $MemreasStripe->getOrderHistories($user_id);
+                    $data = json_decode($_POST['data'], true);
+
+                    $orderHistories = $MemreasStripe->getOrderHistories($data['user_id'], (int)$data['page'], (int)$data['limit']);
 
                     if ($orderHistories['status'] == "Success"){
                         $orders = $orderHistories['transactions'];
