@@ -138,13 +138,17 @@ use Zend\Validator\CreditCard as ZendCreditCard;
      }
 
      public function getOrderHistories($user_id){
-         $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user_id);
+         if ($user_id){
+             $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user_id);
 
-         //Check if exist account
-         if (empty($account))
-             return array('status' => 'Failure', 'message' => 'No account related to this user.');
+             //Check if exist account
+             if (empty($account))
+                 return array('status' => 'Failure', 'message' => 'No account related to this user.');
 
-         $transactions = $this->memreasStripeTables->getTransactionTable()->getTransactionByAccountId($account->account_id);
+            $transactions = $this->memreasStripeTables->getTransactionTable()->getTransactionByAccountId($account->account_id);
+         }
+         else $transactions = $this->memreasStripeTables->getTransactionTable()->getAllTransactions();
+
          $orders = array();
          foreach ($transactions as $transaction)
              $orders[] = $transaction;

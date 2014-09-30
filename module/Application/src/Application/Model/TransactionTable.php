@@ -2,6 +2,7 @@
 
 namespace Application\Model;
 
+use Zend\Db\Sql\Select;
 use Zend\Db\TableGateway\TableGateway;
 use Application\memreas\MUUID;
 
@@ -14,6 +15,12 @@ class TransactionTable {
 		$resultSet = $this->tableGateway->select ();
 		return $resultSet;
 	}
+    public function getAllTransactions(){
+        $resultSet = $this->tableGateway->select(function(Select $select){
+            $select->order('transaction_sent DESC');
+        });
+        return $resultSet;
+    }
 	public function getTransactionByAccountId($account_id) {
 		$resultSet = $this->tableGateway->select ( array (
 				'account_id' => $account_id 
