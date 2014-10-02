@@ -99,7 +99,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
          return $this->{$propertyName};
      }
 
-     public function getCustomer($data){
+     public function getCustomer($data, $stripe = false){
          $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($data['userid']);
 
          //Check if exist account
@@ -110,8 +110,9 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 
          return array(
                 'status' => 'Success',
-                'customer' => $this->stripeCustomer->getCustomer($accountDetail->stripe_customer_id),
+                'customer' => ($stripe) ? $this->stripeCustomer->getCustomer($accountDetail->stripe_customer_id) : null,
                 'account' => $account,
+                'accountDetail' => $accountDetail
          );
      }
 

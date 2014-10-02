@@ -83,7 +83,6 @@ class IndexController extends AbstractActionController {
                     if ($status == 'Success')
                         $result = array('status' => 'Success', 'plans' => $plans);
                     else $result = array('status' => 'Failure', 'message' => $message);
-                    echo json_encode($result); die();
                     break;
                 case 'listplansstatic':
                     $static = $_POST['static'];
@@ -108,7 +107,6 @@ class IndexController extends AbstractActionController {
                     if ($status == 'Success')
                         $result = array('status' => 'Success', 'plans' => $plans);
                     else $result = array('status' => 'Failure', 'message' => $message);
-                    echo json_encode($result); die();
                     break;
 
                 case 'getorderhistory':
@@ -123,18 +121,27 @@ class IndexController extends AbstractActionController {
                         else $result = array('status' => 'Failure', 'message' => 'No record found');
                     }
                     else $result = array('status' => 'Failure', 'message' => $orderHistories['message']);
-                    echo json_encode($result); die();
                     break;
+
                 case 'getorder':
                     $transaction_id = $_POST['transaction_id'];
                     $Order = $MemreasStripe->getOrder($transaction_id);
                     if (!empty($Order))
                         $result = array('status' => 'Success', 'order' => $Order);
                     else $result = array('status' => 'Failure', 'message' => 'Record is not exist');
-                    echo json_encode($result); die();
+
                     break;
+
+                case 'getaccountdetail':
+                    $user_id = $_POST['user_id'];
+                    $result = $MemreasStripe->getCustomer(array('userid' => $user_id));
+                    break;
+
                 default:
             }
+
+            header ("Content-Type: application/json");
+            echo json_encode($result); die();
         }
 
 		/*$testing_data = array(
