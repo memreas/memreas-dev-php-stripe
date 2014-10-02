@@ -780,8 +780,29 @@ use Zend\Validator\CreditCard as ZendCreditCard;
                 $aws_manager->sendSeSMail ( array($accountDetail->stripe_email_address), $subject, $html );
             }catch (SesException $e){}
 
-            //Save subscription table
             $now = date('Y-m-d H:i:s');
+
+            //Save transaction table
+            $transaction = new Memreas_Transaction ();
+
+            $transaction->exchangeArray ( array (
+                'account_id' => $account_id,
+                'transaction_type' => 'buy_subscription',
+                'transaction_request' => json_encode ( $paymentMethod ),
+                'transaction_sent' => $now
+            ) );
+            $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+
+            $transaction->exchangeArray ( array (
+                'transaction_id' => $transaction_id,
+                'pass_fail' => 1,
+                'transaction_response' => json_encode($createSubscribe),
+                'transaction_receive' => $now
+            ) );
+            $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+
+
+            //Save subscription table
             $memreasSubscription  = new Subscription();
             $memreasSubscription->exchangeArray(array(
                 'account_id'=> $account->account_id,
