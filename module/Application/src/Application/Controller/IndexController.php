@@ -115,9 +115,10 @@ class IndexController extends AbstractActionController {
                     $orderHistories = $MemreasStripe->getOrderHistories($data['user_id'], (int)$data['page'], (int)$data['limit']);
 
                     if ($orderHistories['status'] == "Success"){
+                        $userDetail = $MemreasStripe->getUserById($data['user_id']);
                         $orders = $orderHistories['transactions'];
                         if (!empty($orders))
-                            $result = array('status' => 'Success', 'orders' => $orders);
+                            $result = array('status' => 'Success', 'orders' => $orders, 'user' => $userDetail);
                         else $result = array('status' => 'Failure', 'message' => 'No record found');
                     }
                     else $result = array('status' => 'Failure', 'message' => $orderHistories['message']);
@@ -126,8 +127,10 @@ class IndexController extends AbstractActionController {
                 case 'getorder':
                     $transaction_id = $_POST['transaction_id'];
                     $Order = $MemreasStripe->getOrder($transaction_id);
-                    if (!empty($Order))
-                        $result = array('status' => 'Success', 'order' => $Order);
+                    if (!empty($Order)){
+                        $userDetail = $MemreasStripe->getAccountDetailByAccountId($Order->account_id);
+                        $result = array('status' => 'Success', 'order' => $Order, 'user' => $userDetail);
+                    }
                     else $result = array('status' => 'Failure', 'message' => 'Record is not exist');
 
                     break;

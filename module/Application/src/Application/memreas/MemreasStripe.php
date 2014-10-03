@@ -162,6 +162,18 @@ use Zend\Validator\CreditCard as ZendCreditCard;
      public function getOrder($transaction_id){
         return $this->memreasStripeTables->getTransactionTable()->getTransaction($transaction_id);
      }
+
+     public function getAccountDetailByAccountId($account_id){
+         $account = $this->memreasStripeTables->getAccountTable()->getAccount($account_id);
+         $userDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account->account_id);
+         return $userDetail;
+     }
+
+     public function getUserById($user_id){
+         $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user_id);
+         $userDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account->account_id);
+         return $userDetail;
+     }
 		
 	/*
 	 * Override customer's function
