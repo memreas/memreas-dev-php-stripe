@@ -48,6 +48,8 @@ use Application\Model\PaymentMethod;
 use Application\Model\PaymentMethodTable;
 use Application\Model\User;
 use Application\Model\UserTable;
+use Application\Model\Refunds;
+use Application\Model\RefundsTable;
 use Application\Model;
 
 //PayPal Modules
@@ -253,6 +255,17 @@ class Module
 									$resultSetPrototype = new ResultSet ();
 									$resultSetPrototype->setArrayObjectPrototype ( new PaymentMethod());
 									return new TableGateway ( 'payment_method', $dbAdapter, null, $resultSetPrototype );
+							},
+                            'Application\Model\RefundsTable' => function ($sm) {
+									$tableGateway = $sm->get ( 'RefundsTableGateway' );
+									$table = new RefundsTable( $tableGateway );
+									return $table;
+							},
+							'RefundsTableGateway' => function ($sm) {
+									$dbAdapter = $sm->get ( MemreasConstants::MEMREASPAYMENTSDB );
+									$resultSetPrototype = new ResultSet ();
+									$resultSetPrototype->setArrayObjectPrototype ( new Refunds());
+									return new TableGateway ( 'refunds', $dbAdapter, null, $resultSetPrototype );
 							},
 						) 
 					);

@@ -140,6 +140,15 @@ class IndexController extends AbstractActionController {
                     $result = $MemreasStripe->getCustomer(array('userid' => $user_id));
                     break;
 
+                case 'refund':
+                    $data = array(
+                        'user_id' => $_POST['user_id'],
+                        'amount' => $_POST['amount'],
+                        'reason' => $_POST['reason']
+                    );
+                    $result = $MemreasStripe->refundAmount($data);
+                    break;
+
                 default:
             }
 

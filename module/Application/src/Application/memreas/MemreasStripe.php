@@ -19,6 +19,7 @@ use Application\Model\Account;
 use Application\Model\AccountBalances;
 use Application\Model\AccountDetail;
 use Application\Model\PaymentMethod;
+use Application\Model\Refunds;
 use Application\Model\Subscription;
 use Application\Model\Transaction as Memreas_Transaction;
 use Application\Model\TransactionReceiver;
@@ -114,6 +115,67 @@ use Zend\Validator\CreditCard as ZendCreditCard;
                 'account' => $account,
                 'accountDetail' => $accountDetail
          );
+     }
+
+     public function refundAmount($data){
+         $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($data['user_id']);
+
+         //Check if exist account
+         if (empty($account))
+             return array('status' => 'Failure', 'message' => 'No account related to this user.');
+
+         $now = date('Y-m-d H:i:s');
+         $transactionDetail = array(
+             'account_id' => $account->account_id,
+             'transaction_type' => 'refund_amount',
+             'amount' => (int)$data['amount'],
+             'currency' => 'USD',
+             'transaction_request' => json_encode($account),
+             'transaction_response' => json_encode($account),
+             'transaction_sent' => $now,
+             'transaction_receive' => $now
+         );
+         $memreasTransaction = new Memreas_Transaction();
+         $memreasTransaction->exchangeArray($transactionDetail);
+         $transactionId = $this->memreasStripeTables->getTransactionTable()->saveTransaction($memreasTransaction);
+
+         //Update Account Balance
+         $currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($account->account_id);
+         $startingAccountBalance = (isset($currentAccountBalance)) ? $currentAccountBalance->ending_balance : '0.00';
+         $endingAccountBalance = $startingAccountBalance + (int)$data['amount'];
+
+         $accountBalance = new AccountBalances ();
+         $accountBalance->exchangeArray ( array (
+             'account_id' => $account->account_id,
+             'transaction_id' => $transactionId,
+             'transaction_type' => "refund_amount",
+             'starting_balance' => $startingAccountBalance,
+             'amount' => (int)$data['amount'],
+             'ending_balance' => $endingAccountBalance,
+             'create_time' => $now
+         ));
+         $balanceId = $this->memreasStripeTables->getAccountBalancesTable()->saveAccountBalances($accountBalance);
+
+         //Save refund record
+         $Refund = new \Application\Model\Refunds();
+         $Refund->exchangeArray(array(
+             'transaction_id' => $transactionId,
+             'amount' => (int)$data['amount'],
+             'reason' => $data['reason'],
+             'created' => $now
+         ));
+
+         $this->memreasStripeTables->getRefundsTable()->saveRefund($Refund);
+
+         //Update account table
+         $account = $this->memreasStripeTables->getAccountTable()->getAccount($account->account_id);
+         $account->exchangeArray(array(
+             'balance' => $endingAccountBalance,
+             'update_time' => $now
+         ));
+         $accountId = $this->memreasStripeTables->getAccountTable()->saveAccount($account);
+
+         return array('status' => 'Success', 'message' => 'Refund completed');
      }
 
      public function getCustomerPlans($user_id){
