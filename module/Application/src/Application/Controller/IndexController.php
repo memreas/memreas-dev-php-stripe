@@ -115,7 +115,9 @@ class IndexController extends AbstractActionController {
                     $orderHistories = $MemreasStripe->getOrderHistories($data['user_id'], (int)$data['page'], (int)$data['limit']);
 
                     if ($orderHistories['status'] == "Success"){
-                        $userDetail = $MemreasStripe->getUserById($data['user_id']);
+                        if ($data['user_id']) $userDetail = $MemreasStripe->getUserById($data['user_id']);
+                        else $userDetail = null;
+
                         $orders = $orderHistories['transactions'];
                         if (!empty($orders))
                             $result = array('status' => 'Success', 'orders' => $orders, 'user' => $userDetail);
