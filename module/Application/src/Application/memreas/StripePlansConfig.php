@@ -44,6 +44,11 @@ class StripePlansConfig{
 		}
 	}
 
+    public function getPlanConfig($planId){
+        $plans = $this->preConfigPlans();
+        return $plans[$planId];
+    }
+
     public function getPlanLevel($planId){
         $plans = $this->preConfigPlans();
         return $plans[$planId]['level'];

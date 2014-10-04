@@ -23,9 +23,10 @@ class User {
             $facebook_username,
             $twitter_username,
             $disable_account,
+            $metadata,
             $create_date,
             $update_time;
-      protected $inputFilter;   
+      protected $inputFilter;
 
     
 
@@ -42,6 +43,7 @@ class User {
         $this->disable_account = (isset($data['disable_account'])) ? $data['disable_account'] : null;
         $this->create_date = (isset($data['create_date'])) ? $data['create_date'] : null;
         $this->update_time = (isset($data['update_time'])) ? $data['update_time'] : null;
+        $this->metadata = (isset($data['metadata'])) ? $data['metadata'] : null;
     }
  // Add content to these methods:
     public function setInputFilter(InputFilterInterface $inputFilter)

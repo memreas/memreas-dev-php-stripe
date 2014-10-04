@@ -52,6 +52,7 @@ class UserTable
         (isset($user->disable_account)) ? $data['disable_account']= $user->disable_account : null;
         (isset($user->create_date)) ? $data['create_date']= $user->create_date : null;
         (isset($user->update_time)) ? $data['update_time']= strtotime(date('Y-m-d')) : strtotime(date('Y-m-d'));
+        (isset($user->metadata)) ? $data['metadata']= $user->metadata : null;
 
         $id = $user->user_id;
         if (empty($id)) {

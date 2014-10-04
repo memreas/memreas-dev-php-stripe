@@ -740,7 +740,8 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 		return $result;
 	 }
 
-	public function setSubscription($data){		
+	public function setSubscription($data){
+
 		if (isset($data['userid']))
             $userid = $data['userid'];
         else $userid = $this->session->offsetGet('user_id');
@@ -885,6 +886,20 @@ use Zend\Validator\CreditCard as ZendCreditCard;
                 'update_time' => $now
             ));
             $this->memreasStripeTables->getSubscriptionTable()->saveSubscription($memreasSubscription);
+
+            //Update user plan table
+            $user = $this->memreasStripeTables->getUserTable()->getUser($userid);
+            $metadata = json_decode($user->metadata, true);
+            $planDetail = $this->stripePlan->getPlanConfig($data['plan']);
+            $metadata['subscription'] = array(
+                'plan' => $data['plan'],
+                'name' => $planDetail['plan_name'],
+                'storage' => $planDetail['storage'],
+                'date_active' => $now,
+                'billing_frequency' => MemreasConstants::PLAN_BILLINGFREQUENCY,
+            );
+            $user->metadata = json_encode($metadata);
+            $this->memreasStripeTables->getUserTable()->saveUser($user);
 
             return array('status' => 'Success');
         }
