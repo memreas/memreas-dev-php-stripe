@@ -25,6 +25,7 @@ use Application\Model\Transaction as Memreas_Transaction;
 use Application\Model\TransactionReceiver;
 use Application\memreas\StripePlansConfig;
 use Aws\Ses\Exception\SesException;
+use Guzzle\Http\Client;
 
 /*
  * Include core Module - Libraries
@@ -773,6 +774,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
         //Check if user has actived subscription or not
         $stripeCustomerInfo = $this->stripeCustomer->getCustomer($stripeCustomerId);
 
+        $upgrade = true;
         if ($stripeCustomerInfo['info']['subscriptions']['total_count'] > 0){
             $subscriptions = $stripeCustomerInfo['info']['subscriptions']['data'];
             foreach ($subscriptions as $subscription){
@@ -790,30 +792,70 @@ use Zend\Validator\CreditCard as ZendCreditCard;
             if ($planLevel > $customerPlanLevel){
                 $result = $this->stripeCustomer->cancelSubscription($subscriptions[0]['id'], $stripeCustomerId);
             }
-            else return array('status' => 'Failure', 'message' => 'You can not upgrade to lower plan.');
+            else {
+
+                //Downgrade plan
+                $planDetail = $this->stripePlan->getPlanConfig($data['plan']);
+
+                //Get user used detail
+                $guzzle = new Client();
+                $xml = "<xml><getdiskusage><user_id>{$userid}</user_id></getdiskusage></xml>";
+                $request = $guzzle->post(
+                    MemreasConstants::MEMREAS_WS,
+                    null,
+                    array(
+                        'action' => 'getdiskusage',
+                        //'cache_me' => true,
+                        'xml' => $xml,
+                        'sid' => '',
+                        'user_id' => ''
+                    )
+                );
+
+                $response = $request->send();
+                $data = $response->getBody(true);
+                $data = str_replace(array("\r", "\n"), "", $data);
+                $data = json_encode(simplexml_load_string($data));
+                $plan = json_decode($data);
+                $plan = $plan->getdiskusageresponse;
+                $dataUsage = str_replace(" GB", "", $plan->total_used);
+                if ($dataUsage > $planDetail['storage']){
+                    return array('status' => 'Failure', 'message' => 'In order to downgrade your plan you must be within the required usage limits. Please remove media as needed before downgrading your plan');
+                }
+                else{
+                    //Cancel current plan
+                    $result = $this->stripeCustomer->cancelSubscription($subscriptions[0]['id'], $stripeCustomerId);
+                    $upgrade = false;
+                }
+
+            }
         }
 
-        //Begin going to charge on Stripe
-        $cardId = $paymentMethod->stripe_card_reference_id;
-        $customerId = $accountDetail->stripe_customer_id;
-        $transactionAmount = ((int)$data['amount']) * 100; //Stripe use minimum amount conver for transaction. Eg: input $5
-        //convert request to stripe value is 500
-        $stripeChargeParams = array(
-            'amount' => $transactionAmount,
-            'currency' => 'USD',
-            'customer' => $customerId,
-            'card' => $cardId, //If this card param is null, Stripe will get primary customer card to charge
-            'description' => 'Charge for subscription : ' . $data['plan'], //Set description more details later
-        );
+        //Charge only if user upgrade or register as a new
+        if ($upgrade){
+            //Begin going to charge on Stripe
+            $cardId = $paymentMethod->stripe_card_reference_id;
+            $customerId = $accountDetail->stripe_customer_id;
+            $transactionAmount = ((int)$data['amount']) * 100; //Stripe use minimum amount conver for transaction. Eg: input $5
+            //convert request to stripe value is 500
+            $stripeChargeParams = array(
+                'amount' => $transactionAmount,
+                'currency' => 'USD',
+                'customer' => $customerId,
+                'card' => $cardId, //If this card param is null, Stripe will get primary customer card to charge
+                'description' => 'Charge for subscription : ' . $data['plan'], //Set description more details later
+            );
 
-        if ($transactionAmount > 0)
-            $chargeResult = $this->stripeCard->createCharge($stripeChargeParams);
-        else $chargeResult = false;
+            if ($transactionAmount > 0)
+                $chargeResult = $this->stripeCard->createCharge($stripeChargeParams);
+            else $chargeResult = false;
+        }
+        else $chargeResult = true;
 
         if ($chargeResult){
             //Check if Charge is successful or not
-            if (!$chargeResult['paid'])
-                return array('status' => 'Failure', 'Transaction declined! Please check your Stripe account and cards');
+            if (!$chargeResult['paid'] && $upgrade)
+                return array('status' => 'Failure', 'message' => 'Transaction declined! Please check your Stripe account and cards');
         }
 		
 		//Set stripe subscription
