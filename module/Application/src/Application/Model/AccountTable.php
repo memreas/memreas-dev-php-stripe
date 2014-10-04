@@ -1,11 +1,15 @@
 <?php
 namespace Application\Model;
 
+use Zend\Db\Sql\Select;
 use Zend\Db\TableGateway\TableGateway;
 use Application\memreas\MUUID;
 
 class AccountTable {
 	protected $tableGateway;
+
+    private $offset;
+    private $limit;
 	
 	public function __construct(TableGateway $tableGateway) {
 		$this->tableGateway = $tableGateway;
@@ -16,9 +20,14 @@ class AccountTable {
 		return $resultSet;
 	}
 	
-	public function listMassPayee() {
-	
-		$rowset = $this->tableGateway->select ( array ("account_type = 'seller'", "balance > 0" ) );
+	public function listMassPayee($page = 1, $limit = 10) {
+	    $this->limit = $limit;
+        $this->offset = ($page - 1) * $limit;
+		$rowset = $this->tableGateway->select (function(Select $select){
+            $select->where("account_type = 'seller' AND balance > 0")
+                    ->limit($this->limit)
+                    ->offset($this->offset);
+        });
 		if (! $rowset) {
 			return null;
 		}

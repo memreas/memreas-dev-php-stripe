@@ -952,8 +952,8 @@ use Zend\Validator\CreditCard as ZendCreditCard;
          $this->stripeCustomer->cancelSubscription($subscriptionId, $customerId);
      }
 
-	public function listMassPayee(){
-		$MassPees = $this->memreasStripeTables->getAccountTable()->listMassPayee();
+	public function listMassPayee($page, $limit){
+		$MassPees = $this->memreasStripeTables->getAccountTable()->listMassPayee($page, $limit);
 		
 		$countRow = count($MassPees);
 		

@@ -151,6 +151,12 @@ class IndexController extends AbstractActionController {
                     $result = $MemreasStripe->refundAmount($data);
                     break;
 
+                case 'listpayees':
+                    $page = (int)$_POST['page'];
+                    $limit = (int)$_POST['limit'];
+                    $result = $MemreasStripe->listMassPayee($page, $limit);
+                    break;
+
                 default:
             }
 
