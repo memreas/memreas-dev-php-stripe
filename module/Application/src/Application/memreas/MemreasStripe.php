@@ -125,6 +125,7 @@ use Zend\Validator\CreditCard as ZendCreditCard;
              return array('status' => 'Failure', 'message' => 'No account related to this user.');
 
          $now = date('Y-m-d H:i:s');
+         $account->reason = $data['reason'];
          $transactionDetail = array(
              'account_id' => $account->account_id,
              'transaction_type' => 'refund_amount',
@@ -155,17 +156,6 @@ use Zend\Validator\CreditCard as ZendCreditCard;
              'create_time' => $now
          ));
          $balanceId = $this->memreasStripeTables->getAccountBalancesTable()->saveAccountBalances($accountBalance);
-
-         //Save refund record
-         $Refund = new \Application\Model\Refunds();
-         $Refund->exchangeArray(array(
-             'transaction_id' => $transactionId,
-             'amount' => (int)$data['amount'],
-             'reason' => $data['reason'],
-             'created' => $now
-         ));
-
-         $this->memreasStripeTables->getRefundsTable()->saveRefund($Refund);
 
          //Update account table
          $account = $this->memreasStripeTables->getAccountTable()->getAccount($account->account_id);
