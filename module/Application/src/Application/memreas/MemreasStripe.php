@@ -976,6 +976,54 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 					);
 	}
 
+     public function MakePayout($data){
+         $account = $this->memreasStripeTables->getAccountTable()->getAccount($data['account_id']);
+
+         if (empty ($account))
+             return array('status' => 'Failure', 'message' => 'Account is not exist');
+
+         $accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account->id);
+
+         //Check if stripe customer / recipient is set
+         if (empty($accountDetail->stripe_customer_id))
+             return array('status' => 'Failure', 'message' => 'No stripe ID related to this account');
+
+         $transferParams = array(
+             'amount' => $data['amount'],
+             'currency' => 'USD',
+             'recipient' => $accountDetail->stripe_customer,
+             'description' => $data['description']
+         );
+         $transferResponse = $this->stripeRecipient->makePayout($transferParams);
+
+         //Update Account Balance
+         $now = date('Y-m-d H:i:s');
+         $currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($account->account_id);
+         $startingAccountBalance = (isset($currentAccountBalance)) ? $currentAccountBalance->ending_balance : '0.00';
+         $endingAccountBalance = $startingAccountBalance - (int)$data['amount'];
+         $accountBalance = new AccountBalances ();
+         $accountBalance->exchangeArray ( array (
+             'account_id' => $account->account_id,
+             'transaction_id' => '',
+             'transaction_type' => "seller_payout",
+             'starting_balance' => $startingAccountBalance,
+             'amount' => (int)$data['amount'],
+             'ending_balance' => $endingAccountBalance,
+             'create_time' => $now
+         ));
+         $balanceId = $this->memreasStripeTables->getAccountBalancesTable()->saveAccountBalances($accountBalance);
+
+         //Update account table
+         $account = $this->memreasStripeTables->getAccountTable()->getAccount($account->account_id);
+         $account->exchangeArray(array(
+             'balance' => $endingAccountBalance,
+             'update_time' => $now
+         ));
+         $accountId = $this->memreasStripeTables->getAccountTable()->saveAccount($account);
+
+         return array('status' => 'Success', 'message' => 'Amount has been transferred');
+     }
+
 	/*
 	 * List card by user_id
 	 * */
@@ -1365,6 +1413,14 @@ use Zend\Validator\CreditCard as ZendCreditCard;
 			return $recipientObject;
 		}
 	  }
+
+      /*
+       * Make payout amount to Recipient
+       * params : $transferParams
+       * */
+      public function makePayout($transferParams){
+          return $this->stripeClient->createTransfer($transferParams);
+      }
   }
  
  /*

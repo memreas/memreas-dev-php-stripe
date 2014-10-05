@@ -64,6 +64,11 @@ class IndexController extends AbstractActionController {
             $action = $_POST['action'];
             $MemreasStripe = new MemreasStripe($this->getServiceLocator());
             switch ($action){
+
+                /*
+                 * Support WS : ListPlans
+                 * Description: List plans from Stripe by specify customer id
+                 * */
                 case 'listplans':
                     $user_id = $_POST['user_id'];
                     $plans = $MemreasStripe->getCustomerPlans($user_id);
@@ -84,6 +89,12 @@ class IndexController extends AbstractActionController {
                         $result = array('status' => 'Success', 'plans' => $plans);
                     else $result = array('status' => 'Failure', 'message' => $message);
                     break;
+
+                /*
+                 * Support WS : ListPlansStatic
+                 * Description: List all plans available from Stripe and total of number users
+                 * are activated on each
+                 * */
                 case 'listplansstatic':
                     $static = $_POST['static'];
                     if (!$static){
@@ -109,6 +120,10 @@ class IndexController extends AbstractActionController {
                     else $result = array('status' => 'Failure', 'message' => $message);
                     break;
 
+                /*
+                 * Support WS : GetOrderHistory
+                 * Description: Get all order histories or by user if it has been specified
+                 * */
                 case 'getorderhistory':
                     $data = json_decode($_POST['data'], true);
 
@@ -126,6 +141,10 @@ class IndexController extends AbstractActionController {
                     else $result = array('status' => 'Failure', 'message' => $orderHistories['message']);
                     break;
 
+                /*
+                 * Support WS : GetOrder
+                 * Description: Get order detail by transaction id
+                 * */
                 case 'getorder':
                     $transaction_id = $_POST['transaction_id'];
                     $Order = $MemreasStripe->getOrder($transaction_id);
@@ -137,11 +156,19 @@ class IndexController extends AbstractActionController {
 
                     break;
 
+                /*
+                 * Support WS : GetAccountDetail
+                 * Description: Get account detail by user id
+                 * */
                 case 'getaccountdetail':
                     $user_id = $_POST['user_id'];
                     $result = $MemreasStripe->getCustomer(array('userid' => $user_id));
                     break;
 
+                /*
+                 * Support WS : Refund
+                 * Description: Refund amount to user balance from admin
+                 * */
                 case 'refund':
                     $data = array(
                         'user_id' => $_POST['user_id'],
@@ -151,10 +178,28 @@ class IndexController extends AbstractActionController {
                     $result = $MemreasStripe->refundAmount($data);
                     break;
 
+                /*
+                 * Support WS : ListPayees
+                 * Description: List all payees with balance is available and larger than than zero
+                 * */
                 case 'listpayees':
                     $page = (int)$_POST['page'];
                     $limit = (int)$_POST['limit'];
                     $result = $MemreasStripe->listMassPayee($page, $limit);
+                    break;
+
+                /*
+                 * Support WS : MakePayout
+                 * Description: Send payment to seller stripe account directly based on payee's balance
+                 * or amount set by admin
+                 * */
+                case 'makepayout':
+                    $data = array(
+                        'account_id' => $_POST['account_id'],
+                        'amount' => $_POST['amount'],
+                        'description' => $_POST['description']
+                    );
+                    $result = $MemreasStripe->MakePayout($data);
                     break;
 
                 default:
@@ -164,15 +209,6 @@ class IndexController extends AbstractActionController {
             echo json_encode($result); die();
         }
 
-		/*$testing_data = array(
- 							'name' => 'John Meah',
- 							'email' => 'demo recipient',
- 							'description' => 1
-						);
-		$MemreasStripe = new MemreasStripe($this->getServiceLocator());
-		echo '<pre>'; print_r ($MemreasStripe->createRecipient($testing_data)); die();*/
-		
-		//$path = $this->security ( "application/index/paypal.phtml" );
 		//Edited for Stripe
 		echo "Setting path to application/stripe/index.phtml".PHP_EOL;
 		$path = $this->security ( "application/stripe/index.phtml" );
