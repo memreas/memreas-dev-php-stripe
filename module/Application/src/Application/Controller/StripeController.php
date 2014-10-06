@@ -198,7 +198,7 @@ class StripeController extends AbstractActionController {
 			$json = $_REQUEST['json'];
 			$jsonArr = json_decode($json, true);
 			$MemreasStripe = new MemreasStripe($this->getServiceLocator());
-			$accountHistory = $MemreasStripe->listMassPayee();
+			$accountHistory = $MemreasStripe->listMassPayee(1, 10);
 			echo $callback . "(" . json_encode($accountHistory) . ")";
 			die();
 		}
@@ -210,7 +210,7 @@ class StripeController extends AbstractActionController {
             $json = $_REQUEST['json'];
             $jsonArr = json_decode($json, true);
             $MemreasStripe = new MemreasStripe($this->getServiceLocator());
-            $customer = $MemreasStripe->getCustomer($jsonArr['json']);
+            $customer = $MemreasStripe->getCustomer($jsonArr['json'], true);
             echo $callback . "(" . json_encode($customer) . ")";
             die();
         }
@@ -218,8 +218,8 @@ class StripeController extends AbstractActionController {
 	
 	public function testAction(){
         $MemreasStripe = new MemreasStripe($this->getServiceLocator());
-        $totaluser = $MemreasStripe->getTotalPlanUser('PLAN_B_10GB_MONTHLY');
-		echo '<pre>'; print_r ($totaluser);
+        $result = $MemreasStripe->MakePayout(array('account_id' => '9d270012-0eca-4e8a-b01f-26a0277ac7c4', 'amount' => "5", "description" => "Description of payment"));
+		echo '<pre>'; print_r ($result);
 		die();
 	}
 	

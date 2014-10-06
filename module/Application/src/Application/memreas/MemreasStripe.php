@@ -39,6 +39,7 @@ use ZfrStripe\Exception\NotFoundException;
 use ZfrStripe\Exception\CardErrorException;
 use Guzzle\Service\Exception\ValidationException;
 use Zend\Validator\CreditCard as ZendCreditCard;
+use ZfrStripe\Exception\BadRequestException;
  
  class MemreasStripe extends StripeInstance{
 
@@ -982,22 +983,50 @@ use Zend\Validator\CreditCard as ZendCreditCard;
          if (empty ($account))
              return array('status' => 'Failure', 'message' => 'Account is not exist');
 
-         $accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account->id);
+         //Check if account has available balance
+         if ($account->balance < $data['amount'])
+             return array('status' => 'Failure', 'message' => 'Account balance is smaller than amount you requested');
+
+         $accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account->account_id);
 
          //Check if stripe customer / recipient is set
          if (empty($accountDetail->stripe_customer_id))
              return array('status' => 'Failure', 'message' => 'No stripe ID related to this account');
 
          $transferParams = array(
-             'amount' => $data['amount'],
+             'amount' => (int)$data['amount'],
              'currency' => 'USD',
-             'recipient' => $accountDetail->stripe_customer,
+             'recipient' => $accountDetail->stripe_customer_id,
              'description' => $data['description']
          );
-         $transferResponse = $this->stripeRecipient->makePayout($transferParams);
+
+         try{
+            $transferResponse = $this->stripeRecipient->makePayout($transferParams);
+         }catch(ZfrStripe\Exception\BadRequestException $e){
+             return array('status' => 'Failure', 'message' => $e->getMessage());
+         }
+
+         $now = date('Y-m-d H:i:s');
+         //Update transaction
+         $transaction = new Memreas_Transaction ();
+
+         $transaction->exchangeArray ( array (
+             'account_id' => $account->account_id,
+             'transaction_type' => 'make_payout_seller',
+             'transaction_request' => '',
+             'transaction_sent' => $now
+         ) );
+         $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+
+         $transaction->exchangeArray ( array (
+             'transaction_id' => $transaction_id,
+             'pass_fail' => 1,
+             'transaction_response' => json_encode($transferResponse),
+             'transaction_receive' => $now
+         ) );
+         $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 
          //Update Account Balance
-         $now = date('Y-m-d H:i:s');
          $currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($account->account_id);
          $startingAccountBalance = (isset($currentAccountBalance)) ? $currentAccountBalance->ending_balance : '0.00';
          $endingAccountBalance = $startingAccountBalance - (int)$data['amount'];
