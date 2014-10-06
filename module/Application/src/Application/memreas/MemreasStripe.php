@@ -247,14 +247,25 @@ use ZfrStripe\Exception\BadRequestException;
 		//Fetch the Account
 		$row = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user->user_id, 'seller');
 		if (!$row) {
+
+            $bankData = array(
+                'country' => 'US',
+                'routing_number' => $seller_data['bank_routing'],
+                'account_number' => $seller_data['account_number']
+            );
+
 			//Create Stripe Recipient data
 			$recipientParams = array(
 									'name' => $seller_data['first_name'] . ' ' . $seller_data['last_name'],
 									'email' => $stripe_email_address,
 									'description' => 1,
+                                    'bank_account' => $bankData
 								);
 			$this->stripeRecipient->setRecipientInfo($recipientParams);
 			$recipientResponse = $this->stripeRecipient->createRecipient();
+
+            if (array_key_exists('error', $recipientResponse))
+                return array('status' => 'Failure', 'message' => $recipientResponse['message']);
 			
 			//Create an account entry
 			$now = date('Y-m-d H:i:s');
@@ -275,7 +286,7 @@ use ZfrStripe\Exception\BadRequestException;
 			$result = array (
 				"status"=>"Failure",
 				"account_id"=> $account_id,
-				"Error"=>"Seller already exists",
+				"message"=>"Seller already exists",
 			);
 			return $result;
 		}
@@ -293,6 +304,7 @@ use ZfrStripe\Exception\BadRequestException;
 			'zip_code'=>$seller_data['zip_code'],
 			'postal_code'=>$seller_data['zip_code'],
 			'stripe_email_address'=>$seller_data['stripe_email_address'],
+            'metadata' => json_encode($bankData)
 			));
 		$account_detail_id = $this->memreasStripeTables->getAccountDetailTable()->saveAccountDetail($accountDetail);
 
@@ -1399,12 +1411,20 @@ use ZfrStripe\Exception\BadRequestException;
 	  * */
 	 public function createRecipient($data = null){	 	
 	 	if ($data){
-			return $customer = $this->stripeClient->createRecipient($data);
-			$this->id = $customer['id'];			
+            try{
+                return $customer = $this->stripeClient->createRecipient($data);
+                $this->id = $customer['id'];
+            }catch (ZfrStripe\Exception\BadRequestException $e){
+                return array('error' => true, 'message' => $e->getMessage());
+            }
 		}
 		else{
-			return $customer = $this->stripeClient->createRecipient($this->getRecipientValues());
-			$this->id = $customer['id'];
+            try{
+                return $customer = $this->stripeClient->createRecipient($this->getRecipientValues());
+                $this->id = $customer['id'];
+            }catch (ZfrStripe\Exception\BadRequestException $e){
+                return array('error' => true, 'message' => $e->getMessage());
+            }
 		}
 		return $this->updateCustomer(array('id' => $this->id, 'email' => $this->email, 'description' => $this->description));
 	 }
