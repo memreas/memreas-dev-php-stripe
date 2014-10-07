@@ -49,12 +49,6 @@ class TransactionTable {
         }
 		return $resultSet;
 	}
-	public function getTransactionByPayPalTxnId($paypal_txn_id) {
-		$resultSet = $this->tableGateway->select ( array (
-				'paypal_txn_id' => $paypal_txn_id 
-		) );
-		return $resultSet;
-	}
 	
 	public function getTransaction($transaction_id) {
 		$rowset = $this->tableGateway->select ( array (
@@ -78,25 +72,7 @@ class TransactionTable {
 				'transaction_response' => $transaction->transaction_response,
 				'transaction_sent' => $transaction->transaction_sent,
 				'transaction_receive' => $transaction->transaction_receive,
-				
-				'paypal_item_name' => $transaction->paypal_item_name,
-				'paypal_item_number' => $transaction->paypal_item_number,
-				'paypal_payer_id' => $transaction->paypal_payer_id,
-				'paypal_payer_email' => $transaction->paypal_payer_email,
-				'paypal_receiver_id' => $transaction->paypal_receiver_id,
-				'paypal_receiver_email' => $transaction->paypal_receiver_email,
-				
-				'paypal_payment_status' => $transaction->paypal_payment_status,
-				'paypal_payment_amount' => $transaction->paypal_payment_amount,
-				'paypal_payment_currency' => $transaction->paypal_payment_currency,
-				'paypal_payment_fee' => $transaction->paypal_payment_fee,
-				'paypal_tax' => $transaction->paypal_tax,
-				
-				'paypal_txn_type' => $transaction->paypal_txn_type,
-				'paypal_parent_payment_id' => $transaction->paypal_parent_payment_id,
-				'paypal_correlation_id' => $transaction->paypal_correlation_id,
-				'paypal_txn_id' => $transaction->paypal_txn_id,
-				'paypal_ipn_track_id' => $transaction->paypal_ipn_track_id 
+				'transaction_status' => $transaction->transaction_status
 		);
 		try {
 			if (isset ( $transaction->transaction_id )) {

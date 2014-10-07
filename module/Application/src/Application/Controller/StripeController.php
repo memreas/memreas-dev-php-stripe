@@ -215,10 +215,20 @@ class StripeController extends AbstractActionController {
             die();
         }
     }
+
+    public function activeCreditAction(){
+        $MemreasStripe = new MemreasStripe($this->getServiceLocator());
+        $token = $_GET['token'];
+        $activeBalance = $MemreasStripe->activePendingBalanceToAccount($token);
+        echo '<h3 style="text-align: center">' . $activeBalance['message'] . '</h3>';
+        if ($activeBalance['status'] == 'Success')
+            echo '<script type="text/javascript">document.location.href="http://fe.memreas.com";</script>';
+        die();
+    }
 	
 	public function testAction(){
         $MemreasStripe = new MemreasStripe($this->getServiceLocator());
-        $result = $MemreasStripe->MakePayout(array('account_id' => '9d270012-0eca-4e8a-b01f-26a0277ac7c4', 'amount' => "5", "description" => "Description of payment"));
+        $result = $MemreasStripe->addValueToAccount(array('userid' => '565a84a5-8af9-48d2-91ca-16190b3528ec', 'amount' => 15, 'stripe_card_reference_id' => 'card_14Cl5F481IPW0jkRcpt2R28s'));
 		echo '<pre>'; print_r ($result);
 		die();
 	}

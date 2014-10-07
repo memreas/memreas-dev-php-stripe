@@ -12,7 +12,6 @@ class MemreasStripeTables {
 	protected $subscriptionTable = NULL;
 	protected $transactionTable = NULL;
 	protected $transactionRecieverTable = NULL;
-	protected $RefundsTable = NULL;
 
    function __construct($sl) {
        $this->service_locator = $sl;
@@ -83,14 +82,5 @@ class MemreasStripeTables {
 		}
 		return $this->paymentMethodTable;
 	}
-
-    public function getRefundsTable()
-	{
-		if (!$this->RefundsTable) {
-			$this->RefundsTable = $this->service_locator->get('Application\Model\RefundsTable');
-		}
-		return $this->RefundsTable;
-	}
-	
 }
 ?>

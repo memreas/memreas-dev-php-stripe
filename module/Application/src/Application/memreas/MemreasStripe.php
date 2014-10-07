@@ -19,7 +19,6 @@ use Application\Model\Account;
 use Application\Model\AccountBalances;
 use Application\Model\AccountDetail;
 use Application\Model\PaymentMethod;
-use Application\Model\Refunds;
 use Application\Model\Subscription;
 use Application\Model\Transaction as Memreas_Transaction;
 use Application\Model\TransactionReceiver;
@@ -396,7 +395,7 @@ use ZfrStripe\Exception\BadRequestException;
 														'stripeCardToken' => $cardToken,
 														'stripeCardId' => $cardId,
 														);
-			$now = $now = date ( 'Y-m-d H:i:s' );		 
+			$now = date ( 'Y-m-d H:i:s' );
 			$transactionDetail = array(
 										'account_id' => $account->account_id,
 										'transaction_type' => 'add_value_to_account',
@@ -405,12 +404,31 @@ use ZfrStripe\Exception\BadRequestException;
 										'transaction_request' => json_encode($transactionRequest),
 										'transaction_response' => json_encode($chargeResult),
 										'transaction_sent' => $now,
-										'transaction_receive' => $now
+										'transaction_receive' => $now,
+                                        'transaction_status' => 'buy_credit_email'
 									);	
 			$memreasTransaction = new Memreas_Transaction();
 			$memreasTransaction->exchangeArray($transactionDetail);
-			$transactionId = $this->memreasStripeTables->getTransactionTable()->saveTransaction($memreasTransaction);
-			
+            $transactionId = $this->memreasStripeTables->getTransactionTable()->saveTransaction($memreasTransaction);
+
+            //Send activation email
+            $viewModel = new ViewModel (array(
+                'active_link' => 'https://memreasdev-pay.memreas.com/stripe/activeCredit?token=' . $transactionId,
+                //'active_link' => 'http://memreas-dev-stripe.localhost/stripe/activeCredit?token=' . $transactionId,
+                'amount' => ((int)$data['amount'])
+            ));
+            $viewModel->setTemplate ( 'email/buycredit' );
+            $viewRender = $this->serviceLocator->get ( 'ViewRenderer' );
+
+            $html = $viewRender->render ( $viewModel );
+            $subject = 'Your purchased credit is now ready';
+
+            if (!isset($aws_manager) || empty ( $aws_manager ))
+                $aws_manager = new AWSManagerSender ( $this->serviceLocator );
+            try{
+                $aws_manager->sendSeSMail ( array($accountDetail->stripe_email_address), $subject, $html );
+            }catch (SesException $e){}
+
 			//Update Account Balance
 			$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($account->account_id);
 			$startingAccountBalance = (isset($currentAccountBalance)) ? $currentAccountBalance->ending_balance : '0.00';
@@ -428,18 +446,40 @@ use ZfrStripe\Exception\BadRequestException;
 			));
 			$balanceId = $this->memreasStripeTables->getAccountBalancesTable()->saveAccountBalances($accountBalance);
 			
-			//Update account table
-			$account = $this->memreasStripeTables->getAccountTable()->getAccount($account->account_id);
-			$account->exchangeArray(array(
-										'balance' => $endingAccountBalance,
-										'update_time' => $now
-									));
-			$accountId = $this->memreasStripeTables->getAccountTable()->saveAccount($account);
-			
 			return array('status' => 'Success', 'message' => 'Successfully added $' . $data['amount'] . ' to your account.');
 		}
 		else return array('status' => 'Failure', 'message' => 'Unable to process payment'); 		
 	 }
+
+     public function activePendingBalanceToAccount($transaction_id){
+         $Transaction = $this->memreasStripeTables->getTransactionTable()->getTransaction($transaction_id);
+
+         if (empty($Transaction))
+             return array('status' => 'Failure', 'message' => 'No record found');
+
+         if (strpos($Transaction->transaction_status, 'activated'))
+             return array('status' => 'Failure', 'message' => 'Expired transaction');
+
+         $now = date ( 'Y-m-d H:i:s' );
+
+         //Update Account Balance
+         $currentAccountBalance = $this->memreasStripeTables->getAccountTable ()->getAccount($Transaction->account_id);
+         $startingAccountBalance = (isset($currentAccountBalance)) ? $currentAccountBalance->balance : '0.00';
+
+         $endingAccountBalance = $startingAccountBalance + (int)$Transaction->amount;
+
+         $account = $this->memreasStripeTables->getAccountTable()->getAccount($Transaction->account_id);
+         $account->exchangeArray(array(
+             'balance' => $endingAccountBalance,
+             'update_time' => $now
+         ));
+         $accountId = $this->memreasStripeTables->getAccountTable()->saveAccount($account);
+
+         $Transaction->transaction_status = 'buy_credit_email, buy_credit_verified, buy_credit_activated';
+         $this->memreasStripeTables->getTransactionTable()->saveTransaction($Transaction);
+
+         return array('status' => 'Success', 'message' => 'Amount has been activated');
+     }
 
 	public function decrementAmount($data){
 		
