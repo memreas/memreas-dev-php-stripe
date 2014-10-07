@@ -476,6 +476,12 @@ use ZfrStripe\Exception\BadRequestException;
          $accountId = $this->memreasStripeTables->getAccountTable()->saveAccount($account);
 
          $Transaction->transaction_status = 'buy_credit_email, buy_credit_verified, buy_credit_activated';
+         $metadata = array(
+             'IP' => $_SERVER['REMOTE_ADDR'],
+             'date' => $now,
+             'url' => $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']
+         );
+         $Transaction->metadata = json_encode($metadata);
          $this->memreasStripeTables->getTransactionTable()->saveTransaction($Transaction);
 
          return array('status' => 'Success', 'message' => 'Amount has been activated');
