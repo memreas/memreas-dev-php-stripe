@@ -413,8 +413,8 @@ use ZfrStripe\Exception\BadRequestException;
 
             //Send activation email
             $viewModel = new ViewModel (array(
+                'username' => $accountDetail->first_name . ' ' . $accountDetail->last_name,
                 'active_link' => 'https://memreasdev-pay.memreas.com/stripe/activeCredit?token=' . $transactionId,
-                //'active_link' => 'http://memreas-dev-stripe.localhost/stripe/activeCredit?token=' . $transactionId,
                 'amount' => ((int)$data['amount'])
             ));
             $viewModel->setTemplate ( 'email/buycredit' );
@@ -945,7 +945,9 @@ use ZfrStripe\Exception\BadRequestException;
                 $aws_manager = new AWSManagerSender ( $this->serviceLocator );
             try{
                 $aws_manager->sendSeSMail ( array($accountDetail->stripe_email_address), $subject, $html );
-            }catch (SesException $e){}
+            }catch (SesException $e){
+                return array('status' => 'Failure', 'message' =>$e);
+            }
 
             $now = date('Y-m-d H:i:s');
 
