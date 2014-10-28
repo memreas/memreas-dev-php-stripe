@@ -969,7 +969,7 @@ use ZfrStripe\Exception\BadRequestException;
             try{
                 $aws_manager->sendSeSMail ( array($accountDetail->stripe_email_address), $subject, $html );
             }catch (SesException $e){
-                return array('status' => 'Failure', 'message' =>$e);
+                return array('status' => 'Failure', 'message' =>$e->getMessage());
             }
 
             $now = date('Y-m-d H:i:s');
