@@ -227,7 +227,30 @@ use ZfrStripe\Exception\BadRequestException;
          $userDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account->account_id);
          return $userDetail;
      }
-		
+
+     /*
+      * Check user type based on user id
+      * */
+     public function checkUserType($username){
+		$user = $this->memreasStripeTables->getUserTable()->getUserByUsername($username);
+        if (!$user)
+            return array('status' => 'Failure', 'message' => 'No user related to this username');
+
+        //Fetch the account
+        $type = array();
+        $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user->user_id);
+        if (!empty ($account))
+            $type[] = 'buyer';
+
+        $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user->user_id, 'seller');
+         if (!empty ($account))
+             $type[] = 'seller';
+
+        if (!empty($type))
+            return array('status' => 'Success', 'types' => $type);
+        else return array('status' => 'Failure', 'message' => 'Account is not exist');
+     }
+
 	/*
 	 * Override customer's function
 	 * */

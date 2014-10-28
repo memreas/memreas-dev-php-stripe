@@ -201,6 +201,14 @@ class IndexController extends AbstractActionController {
                     $result = $MemreasStripe->MakePayout($data);
                     break;
 
+                /*
+                 * Support WS: checkUserType
+                 * Description: Checking for user type is buyer/seller from username provide from frontend
+                 * */
+                case 'checkusertype':
+                    $result = $MemreasStripe->checkUserType($_POST['username']);
+                    break;
+
                 default:
             }
 
