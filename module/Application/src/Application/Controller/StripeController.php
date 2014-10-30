@@ -225,6 +225,30 @@ class StripeController extends AbstractActionController {
             echo '<script type="text/javascript">document.location.href="http://fe.memreas.com";</script>';
         die();
     }
+
+    public function getUserBalanceAction(){
+        if (isset($_REQUEST['callback'])){
+            $callback = $_REQUEST['callback'];
+            $json = $_REQUEST['json'];
+            $jsonArr = json_decode($json, true);
+            $MemreasStripe = new MemreasStripe($this->getServiceLocator());
+            $customer = $MemreasStripe->getAccountBalance($jsonArr['json'], true);
+            echo $callback . "(" . json_encode($customer) . ")";
+            die();
+        }
+    }
+
+    public function buyMediaAction(){
+        if (isset($_REQUEST['callback'])){
+            $callback = $_REQUEST['callback'];
+            $json = $_REQUEST['json'];
+            $jsonArr = json_decode($json, true);
+            $MemreasStripe = new MemreasStripe($this->getServiceLocator());
+            $result = $MemreasStripe->buyMedia($jsonArr['json'], true);
+            echo $callback . "(" . json_encode($result) . ")";
+            die();
+        }
+    }
 	
 	public function testAction(){
         $MemreasStripe = new MemreasStripe($this->getServiceLocator());

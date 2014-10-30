@@ -38,9 +38,9 @@
             $data = array (
                 'account_id' => $account_purchase->account_id,
                 'transaction_id' => $account_purchase->transaction_id,
+                'transaction_type' => $account_purchase->transaction_type,
                 'event_id' => $account_purchase->event_id,
                 'start_date' => $account_purchase->start_date,
-                'starting_balance' => $account_purchase->starting_balance,
                 'end_date' => $account_purchase->end_date,
                 'create_time' => $account_purchase->create_time
             );
