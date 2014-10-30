@@ -48,6 +48,8 @@ use Application\Model\PaymentMethod;
 use Application\Model\PaymentMethodTable;
 use Application\Model\User;
 use Application\Model\UserTable;
+use Application\Model\AccountPurchases;
+use Application\Model\AccountPurchasesTable;
 use Application\Model;
 
 //PayPal Modules
@@ -210,6 +212,17 @@ class Module
 									$resultSetPrototype->setArrayObjectPrototype ( new AccountBalances());
 									return new TableGateway ( 'account_balances', $dbAdapter, null, $resultSetPrototype );
 							},
+                            'Application\Model\AccountPurchasesTable' => function ($sm) {
+                                $tableGateway = $sm->get ( 'AccountPurchasesTableGateway' );
+                                $table = new AccountPurchasesTable( $tableGateway );
+                                return $table;
+                            },
+                            'AccountPurchasesTableGateway' => function ($sm) {
+                                $dbAdapter = $sm->get ( MemreasConstants::MEMREASPAYMENTSDB );
+                                $resultSetPrototype = new ResultSet ();
+                                $resultSetPrototype->setArrayObjectPrototype ( new AccountPurchases());
+                                return new TableGateway ( 'account_purchases', $dbAdapter, null, $resultSetPrototype );
+                            },
 							'Application\Model\AccountDetailTable' => function ($sm) {
 									$tableGateway = $sm->get ( 'AccountDetailTableGateway' );
 									$table = new AccountDetailTable( $tableGateway );
