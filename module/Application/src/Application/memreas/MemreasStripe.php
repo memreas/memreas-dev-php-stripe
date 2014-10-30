@@ -238,16 +238,21 @@ use ZfrStripe\Exception\BadRequestException;
 
         //Fetch the account
         $type = array();
+         $buyer_amount = 0;
         $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user->user_id);
-        if (!empty ($account))
+        if (!empty ($account)) {
             $type[] = 'buyer';
+            $buyer_amount = $account->balance;
+        }
 
+         $seller_amount = 0;
         $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user->user_id, 'seller');
          if (!empty ($account))
-             $type[] = 'seller';
+            $type[] = 'seller';
+            $seller_amount = $account->balance;
 
         if (!empty($type))
-            return array('status' => 'Success', 'types' => $type);
+            return array('status' => 'Success', 'types' => $type, 'buyer_balance' => $buyer_amount, 'seller_balance' => $seller_amount);
         else return array('status' => 'Failure', 'message' => 'Account is not exist');
      }
 
