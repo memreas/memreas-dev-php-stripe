@@ -578,6 +578,7 @@ use ZfrStripe\Exception\BadRequestException;
          $AccountPurchase->exchangeArray(array(
              'account_id' => $account_id,
              'event_id' => $event_id,
+             'transaction_id' => $transactionId,
              'transaction_type' => 'buy_media_complete',
              'create_time' => $now,
              'start_date' => $now,
