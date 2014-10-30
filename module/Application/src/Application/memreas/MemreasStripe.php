@@ -582,7 +582,7 @@ use ZfrStripe\Exception\BadRequestException;
              'transaction_type' => 'buy_media_complete',
              'create_time' => $now,
              'start_date' => $now,
-             'end_time' => $now //Implement the duration later here
+             'end_date' => $now //Implement the duration later here
          ));
          $this->memreasStripeTables->getAccountPurchasesTable()->saveAccountPurchase($AccountPurchase);
 
