@@ -228,7 +228,7 @@ class StripeController extends AbstractActionController {
 	
 	public function testAction(){
         $MemreasStripe = new MemreasStripe($this->getServiceLocator());
-        $result = $MemreasStripe->addValueToAccount(array('userid' => '565a84a5-8af9-48d2-91ca-16190b3528ec', 'amount' => 15, 'stripe_card_reference_id' => 'card_14Cl5F481IPW0jkRcpt2R28s'));
+        $result = $MemreasStripe->checkUserType('trantesting3');
 		echo '<pre>'; print_r ($result);
 		die();
 	}
