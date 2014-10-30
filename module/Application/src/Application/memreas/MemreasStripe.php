@@ -247,9 +247,10 @@ use ZfrStripe\Exception\BadRequestException;
 
          $seller_amount = 0;
         $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user->user_id, 'seller');
-         if (!empty ($account))
-            $type[] = 'seller';
-            $seller_amount = $account->balance;
+         if (!empty ($account)) {
+             $type[] = 'seller';
+             $seller_amount = $account->balance;
+         }
 
         if (!empty($type))
             return array('status' => 'Success', 'types' => $type, 'buyer_balance' => $buyer_amount, 'seller_balance' => $seller_amount);
@@ -454,7 +455,8 @@ use ZfrStripe\Exception\BadRequestException;
             if (!isset($aws_manager) || empty ( $aws_manager ))
                 $aws_manager = new AWSManagerSender ( $this->serviceLocator );
             try{
-                $aws_manager->sendSeSMail ( array($accountDetail->stripe_email_address), $subject, $html );
+                $user = $this->memreasStripeTables->getUserTable()->getUser($userid);
+                $aws_manager->sendSeSMail ( array($user->email_address), $subject, $html );
             }catch (SesException $e){}
 
 			//Update Account Balance
@@ -478,6 +480,26 @@ use ZfrStripe\Exception\BadRequestException;
 		}
 		else return array('status' => 'Failure', 'message' => 'Unable to process payment'); 		
 	 }
+
+     public function getAccountBalance($data){
+        $user_id = $data['user_id'];
+        $user = $this->memreasStripeTables->getUserTable()->getUser($user_id);
+        if (!$user)
+            return array('status' => 'Failure', 'message' => 'No user related to this username');
+
+         //Fetch the account
+         $buyer_amount = 0;
+        $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user->user_id);
+        if (!empty ($account))
+            $buyer_amount = $account->balance;
+
+        $seller_amount = 0;
+        $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user->user_id, 'seller');
+        if (!empty ($account))
+            $seller_amount = $account->balance;
+
+        return array('status' => 'Success', 'buyer_balance' => $buyer_amount, 'seller_balance' => $seller_amount);
+     }
 
      public function activePendingBalanceToAccount($transaction_id){
          $Transaction = $this->memreasStripeTables->getTransactionTable()->getTransaction($transaction_id);
@@ -972,10 +994,9 @@ use ZfrStripe\Exception\BadRequestException;
             if (!isset($aws_manager) || empty ( $aws_manager ))
                 $aws_manager = new AWSManagerSender ( $this->serviceLocator );
             try{
-                $aws_manager->sendSeSMail ( array($accountDetail->stripe_email_address), $subject, $html );
-            }catch (SesException $e){
-                //return array('status' => 'Failure', 'message' =>$e->getMessage()); Ignore mail issue
-            }
+                $user = $this->memreasStripeTables->getUserTable()->getUser($userid);
+                $aws_manager->sendSeSMail ( array($user->email_address), $subject, $html );
+            }catch (SesException $e){}
 
             $now = date('Y-m-d H:i:s');
 
