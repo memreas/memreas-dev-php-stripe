@@ -237,6 +237,18 @@ class StripeController extends AbstractActionController {
             die();
         }
     }
+
+    public function buyMediaAction(){
+        if (isset($_REQUEST['callback'])){
+            $callback = $_REQUEST['callback'];
+            $json = $_REQUEST['json'];
+            $jsonArr = json_decode($json, true);
+            $MemreasStripe = new MemreasStripe($this->getServiceLocator());
+            $result = $MemreasStripe->buyMedia($jsonArr['json'], true);
+            echo $callback . "(" . json_encode($result) . ")";
+            die();
+        }
+    }
 	
 	public function testAction(){
         $MemreasStripe = new MemreasStripe($this->getServiceLocator());

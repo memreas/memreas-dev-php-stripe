@@ -12,6 +12,7 @@ class MemreasStripeTables {
 	protected $subscriptionTable = NULL;
 	protected $transactionTable = NULL;
 	protected $transactionRecieverTable = NULL;
+	protected $accountPurchasesTable = NULL;
 
    function __construct($sl) {
        $this->service_locator = $sl;
@@ -81,6 +82,14 @@ class MemreasStripeTables {
 			$this->paymentMethodTable = $this->service_locator->get('Application\Model\PaymentMethodTable');
 		}
 		return $this->paymentMethodTable;
+	}
+
+    public function getAccountPurchasesTable()
+	{
+		if (!$this->accountPurchasesTable) {
+			$this->accountPurchasesTable = $this->service_locator->get('Application\Model\AccountPurchasesTable');
+		}
+		return $this->accountPurchasesTable;
 	}
 }
 ?>

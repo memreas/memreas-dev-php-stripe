@@ -11,6 +11,7 @@ namespace Application\memreas;
 /*
  * Pre-include App Model
  * * */
+use Application\Model\AccountPurchases;
 use Application\Model\MemreasConstants;
 use Zend\View\Model\ViewModel;
 use Application\memreas\AWSManagerSender;
@@ -499,6 +500,142 @@ use ZfrStripe\Exception\BadRequestException;
             $seller_amount = $account->balance;
 
         return array('status' => 'Success', 'buyer_balance' => $buyer_amount, 'seller_balance' => $seller_amount);
+     }
+
+     public function buyMedia($data){
+         $user = $this->memreasStripeTables->getUserTable()->getUser($data['user_id']);
+         $amount = $data['amount'];
+         $event_id = $data['event_id'];
+         $seller_id = $data['seller_id'];
+         if (!$user)
+             return array('status' => 'Failure', 'message' => 'No user related to this username');
+
+         /*
+          * Start decrease amount from buyer
+          * and buyer flow
+         */
+         $account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ($user->user_id);
+         if (!$account)
+             return array('status' => 'Failure', 'message' => 'Account does not exist');
+         $accountId = $account->account_id;
+
+         $currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($accountId);
+
+         if (! isset ( $currentAccountBalance ) || ($currentAccountBalance->ending_balance <= 0)) {
+             return array (
+                 "status" => "Failure",
+                 "Description" => "Account not found or does not have sufficient funds."
+             );
+         }
+         $now = date ( 'Y-m-d H:i:s' );
+         $MemreasTransaction = new Memreas_Transaction();
+         $MemreasTransaction->exchangeArray ( array (
+             'account_id' => $accountId,
+             'transaction_type' => 'buy_media_spending',
+             'pass_fail' => 1,
+             'amount' => "-$amount",
+             'currency' => 'USD',
+             'transaction_request' => "N/a",
+             'transaction_sent' => $now,
+             'transaction_response' => "N/a",
+             'transaction_receive' => $now
+         ) );
+         $transactionId = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ($MemreasTransaction);
+
+         //Starting decrement account balance
+         $startingBalance = $currentAccountBalance->ending_balance;
+         $endingBalance = $startingBalance - $amount;
+
+         // Insert the new account balance
+         $now = date ( 'Y-m-d H:i:s' );
+         $endingAccountBalance = new AccountBalances ();
+         $endingAccountBalance->exchangeArray (array(
+             'account_id' => $accountId,
+             'transaction_id' => $transactionId,
+             'transaction_type' => "decrement_value_from_account",
+             'starting_balance' => $startingBalance,
+             'amount' => - $amount,
+             'ending_balance' => $endingBalance,
+             'create_time' => $now
+         ));
+         $accountBalanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ($endingAccountBalance);
+
+         // Update the account table
+         $now = date ( 'Y-m-d H:i:s' );
+         $account = $this->memreasStripeTables->getAccountTable()->getAccount($accountId);
+         $account->exchangeArray (array(
+             'balance' => $endingBalance,
+             'update_time' => $now
+         ) );
+         $account_id = $this->memreasStripeTables->getAccountTable()->saveAccount ($account);
+
+         //Update purchase table
+         $AccountPurchase = new AccountPurchases();
+         $AccountPurchase->exchangeArray(array(
+             'account_id' => $account_id,
+             'event_id' => $event_id,
+             'transaction_type' => 'buy_media_complete',
+             'create_time' => $now,
+             'start_date' => $now,
+             'end_time' => $now //Implement the duration later here
+         ));
+         $this->memreasStripeTables->getAccountPurchasesTable()->saveAccountPurchase($AccountPurchase);
+
+         /*
+          * Starting process for seller flow
+          * */
+         $seller = $this->memreasStripeTables->getUserTable()->getUser($seller_id);
+         $account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ($seller->user_id);
+         if (!$account)
+             return array('status' => 'Failure', 'message' => 'Account does not exist');
+
+         $accountId = $account->account_id;
+
+         $currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($accountId);
+
+         $now = date ( 'Y-m-d H:i:s' );
+         $MemreasTransaction = new Memreas_Transaction();
+         $MemreasTransaction->exchangeArray ( array (
+             'account_id' => $accountId,
+             'transaction_type' => 'sell_media_received',
+             'pass_fail' => 1,
+             'amount' => "+$amount",
+             'currency' => 'USD',
+             'transaction_request' => "N/a",
+             'transaction_sent' => $now,
+             'transaction_response' => "N/a",
+             'transaction_receive' => $now
+         ) );
+         $transactionId = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ($MemreasTransaction);
+
+         //Starting decrement account balance
+         $startingBalance = $currentAccountBalance->ending_balance;
+         $endingBalance = $startingBalance + $amount;
+
+         // Insert the new account balance
+         $now = date ( 'Y-m-d H:i:s' );
+         $endingAccountBalance = new AccountBalances ();
+         $endingAccountBalance->exchangeArray (array(
+             'account_id' => $accountId,
+             'transaction_id' => $transactionId,
+             'transaction_type' => "increase_value_from_account",
+             'starting_balance' => $startingBalance,
+             'amount' => + $amount,
+             'ending_balance' => $endingBalance,
+             'create_time' => $now
+         ));
+         $accountBalanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ($endingAccountBalance);
+
+         // Update the account table
+         $now = date ( 'Y-m-d H:i:s' );
+         $account = $this->memreasStripeTables->getAccountTable()->getAccount($accountId);
+         $account->exchangeArray (array(
+             'balance' => $endingBalance,
+             'update_time' => $now
+         ) );
+         $account_id = $this->memreasStripeTables->getAccountTable()->saveAccount ($account);
+
+         return array('status' => 'Success', 'message' => 'Buying media completed');
      }
 
      public function activePendingBalanceToAccount($transaction_id){
