@@ -521,7 +521,11 @@ use ZfrStripe\Exception\BadRequestException;
 
          $currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($accountId);
 
-         if (! isset ( $currentAccountBalance ) || ($currentAccountBalance->ending_balance <= 0)) {
+         if (! isset ( $currentAccountBalance )
+             || ($currentAccountBalance->ending_balance <= 0)
+             || $account->balance <= 0
+             || ($currentAccountBalance->ending_balance <= $amount)
+             || $account->balance <= $amount) {
              return array (
                  "status" => "Failure",
                  "Description" => "Account not found or does not have sufficient funds."
@@ -554,7 +558,7 @@ use ZfrStripe\Exception\BadRequestException;
              'transaction_id' => $transactionId,
              'transaction_type' => "decrement_value_from_account",
              'starting_balance' => $startingBalance,
-             'amount' => - $amount,
+             'amount' => "-$amount",
              'ending_balance' => $endingBalance,
              'create_time' => $now
          ));
@@ -620,7 +624,7 @@ use ZfrStripe\Exception\BadRequestException;
              'transaction_id' => $transactionId,
              'transaction_type' => "increase_value_from_account",
              'starting_balance' => $startingBalance,
-             'amount' => + $amount,
+             'amount' => "+$amount",
              'ending_balance' => $endingBalance,
              'create_time' => $now
          ));
