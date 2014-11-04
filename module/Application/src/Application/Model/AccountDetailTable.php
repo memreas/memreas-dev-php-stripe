@@ -81,4 +81,8 @@ class AccountDetailTable {
 	public function deleteAccountDetailByPayPalCardReferenceId($stripe_card_reference_id) {
 		$this->tableGateway->delete ( array ('paypal_card_reference_id' => $stripe_card_reference_id ) );
 	}
+
+    public function deleteAll(){
+        $this->tableGateway->delete("1");
+    }
 }

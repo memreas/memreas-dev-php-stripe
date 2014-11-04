@@ -98,4 +98,8 @@ class TransactionTable {
 		$this->tableGateway->delete ( array (
 				'transactionId' => $transactionId ) );
 	}
+
+    public function deleteAll(){
+        $this->tableGateway->delete("1");
+    }
 }

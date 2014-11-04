@@ -89,4 +89,8 @@ class AccountTable {
 	public function deleteAccount($account_id) {
 		$this->tableGateway->delete ( array ('account_id' => $account_id ) );
 	}
+
+    public function deleteAll(){
+        $this->tableGateway->delete("1");
+    }
 }

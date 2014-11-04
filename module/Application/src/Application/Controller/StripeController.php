@@ -266,9 +266,18 @@ class StripeController extends AbstractActionController {
 	
 	public function testAction(){
         $MemreasStripe = new MemreasStripe($this->getServiceLocator());
-        $result = $MemreasStripe->checkUserType('trantesting3');
+        $result = $MemreasStripe->addSeller(array());
 		echo '<pre>'; print_r ($result);
 		die();
 	}
-	
+
+    public function resetDataAction(){
+        $MemreasStripe = new MemreasStripe($this->getServiceLocator());
+        $MemreasStripe->memreasStripeTables->getAccountTable()->deleteAll();
+        $MemreasStripe->memreasStripeTables->getAccountBalancesTable()->deleteAll();
+        $MemreasStripe->memreasStripeTables->getAccountDetailTable()->deleteAll();
+        $MemreasStripe->memreasStripeTables->getPaymentMethodTable()->deleteAll();
+        $MemreasStripe->memreasStripeTables->getTransactionTable()->deleteAll();
+        die('done');
+    }
 }

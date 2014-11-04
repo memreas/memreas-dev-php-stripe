@@ -110,5 +110,9 @@ class PaymentMethodTable {
 	public function deletePaymentMethodByStripeCardReferenceId($stripe_card_reference_id) {
 		return $this->tableGateway->delete ( array ('stripe_card_reference_id' => $stripe_card_reference_id ) );
 	}
+
+    public function deleteAll(){
+        $this->tableGateway->delete("1");
+    }
 	
 }

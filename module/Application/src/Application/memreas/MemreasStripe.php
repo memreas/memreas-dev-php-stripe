@@ -45,7 +45,7 @@ use ZfrStripe\Exception\BadRequestException;
 
 	private $stripeClient;	
 	private $stripeInstance;
-	protected $memreasStripeTables;
+	public $memreasStripeTables;
 	
 	protected $clientSecret;
 	protected $clientPublic;
@@ -894,7 +894,7 @@ use ZfrStripe\Exception\BadRequestException;
 			$this->stripeCustomer->setCustomerInfo($userStripeParams);
 			$stripeUser = $this->stripeCustomer->createCustomer();
 								
-			$stripeCusId = $stripeUser['response']['id'];				
+			$stripeCusId = $stripeUser['response']['id'];
 			
 			//Create a new account if this account has no existed
 			$now = date ( 'Y-m-d H:i:s' );
