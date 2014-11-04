@@ -332,8 +332,7 @@ use ZfrStripe\Exception\BadRequestException;
 			'state'=>$seller_data['state'],
 			'zip_code'=>$seller_data['zip_code'],
 			'postal_code'=>$seller_data['zip_code'],
-			'stripe_email_address'=>$seller_data['stripe_email_address'],
-            'metadata' => json_encode($bankData)
+			'stripe_email_address'=>$seller_data['stripe_email_address']
 			));
 		$account_detail_id = $this->memreasStripeTables->getAccountDetailTable()->saveAccountDetail($accountDetail);
 
