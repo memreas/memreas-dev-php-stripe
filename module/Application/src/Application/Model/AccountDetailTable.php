@@ -21,7 +21,7 @@ class AccountDetailTable {
 		$rowset = $this->tableGateway->select ( array ('account_id' => $account_id ) );
 		$row = $rowset->current ();
 		if (! $row) {
-			throw new \Exception ( "Could not find row $account_id" );
+			return null;
 		}
 		return $row;
 	}

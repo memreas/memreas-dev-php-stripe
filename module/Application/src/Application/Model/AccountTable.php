@@ -46,7 +46,7 @@ class AccountTable {
 	public function getAccountByUserId($user_id, $account_type = 'buyer') {
 		$rowset = $this->tableGateway->select ( array ('user_id' => $user_id, 'account_type' => $account_type ) );
 		$row = $rowset->current ();
-		if (! $row) {
+		if ( !$row ) {
 			return null;
 		}
 		return $row;
