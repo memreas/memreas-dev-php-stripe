@@ -249,6 +249,20 @@ class StripeController extends AbstractActionController {
             die();
         }
     }
+
+    public function checkOwnEventAction(){
+        if (isset($_REQUEST['callback'])){
+            $callback = $_REQUEST['callback'];
+            $json = $_REQUEST['json'];
+            $jsonArr = json_decode($json, true);
+            $MemreasStripe = new MemreasStripe($this->getServiceLocator());
+            $result = $MemreasStripe->checkOwnEvent($jsonArr['json'], true);
+            echo $callback . "(" . json_encode($result) . ")";
+            die();
+        }
+    }
+
+
 	
 	public function testAction(){
         $MemreasStripe = new MemreasStripe($this->getServiceLocator());

@@ -590,7 +590,7 @@ use ZfrStripe\Exception\BadRequestException;
           * Starting process for seller flow
           * */
          $seller = $this->memreasStripeTables->getUserTable()->getUser($seller_id);
-         $account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ($seller->user_id);
+         $account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ($seller->user_id, 'seller');
          if (!$account)
              return array('status' => 'Failure', 'message' => 'Account does not exist');
 
@@ -641,6 +641,10 @@ use ZfrStripe\Exception\BadRequestException;
          $account_id = $this->memreasStripeTables->getAccountTable()->saveAccount ($account);
 
          return array('status' => 'Success', 'message' => 'Buying media completed');
+     }
+
+     public function checkOwnEvent($data){
+
      }
 
      public function activePendingBalanceToAccount($transaction_id){
