@@ -577,6 +577,7 @@ use ZfrStripe\Exception\BadRequestException;
          $AccountPurchase->exchangeArray(array(
              'account_id' => $account_id,
              'event_id' => $event_id,
+             'amount' => $amount,
              'transaction_id' => $transactionId,
              'transaction_type' => 'buy_media_complete',
              'create_time' => $now,
@@ -650,9 +651,8 @@ use ZfrStripe\Exception\BadRequestException;
          if (!$account)
             return array('status' => 'Failure', 'event_id' => $event_id);
 
-         //$checkBuyMedia = $this->memreasStripeTables->getAccountPurchasesTable()->getAccountPurchase($account->account_id, $event_id);
-         $checkBuyMedia = $this->memreasStripeTables->getAccountPurchasesTable()->fetchAll();
-echo 'Debug => ' . print_r ($checkBuyMedia); die();
+         $checkBuyMedia = $this->memreasStripeTables->getAccountPurchasesTable()->getAccountPurchase($account->account_id, $event_id);
+
          if (empty($checkBuyMedia))
              return array('status' => 'Failure', 'event_id' => $event_id);
 
