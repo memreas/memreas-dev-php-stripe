@@ -16,6 +16,7 @@
         {
             $this->account_id     = (isset($data['account_id'])) ? $data['account_id'] : $this->account_id;
             $this->event_id = (isset($data['event_id'])) ? $data['event_id'] : $this->event_id;
+            $this->amount = (isset($data['event_id'])) ? $data['event_id'] : $this->amount;
             $this->transaction_id = (isset($data['transaction_id'])) ? $data['transaction_id'] : $this->transaction_id;
             $this->transaction_type  = (isset($data['transaction_type'])) ? $data['transaction_type'] : $this->transaction_type;
             $this->start_date  = (isset($data['start_date'])) ? $data['start_date'] : $this->start_date;

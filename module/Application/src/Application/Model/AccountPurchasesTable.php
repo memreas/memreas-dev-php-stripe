@@ -31,6 +31,7 @@
                 'transaction_id' => $account_purchase->transaction_id,
                 'transaction_type' => $account_purchase->transaction_type,
                 'event_id' => $account_purchase->event_id,
+                'amount' => $account_purchase->amount,
                 'start_date' => $account_purchase->start_date,
                 'end_date' => $account_purchase->end_date,
                 'create_time' => $account_purchase->create_time
