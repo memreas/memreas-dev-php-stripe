@@ -14,8 +14,7 @@ class AccountDetail{
 	public $city = NULL;
 	public $state = NULL;
 	public $zip_code = NULL;
-	public $postal_code = NULL;	
-	public $metadata = NULL;
+	public $postal_code = NULL;
 
 	public function exchangeArray($data)
 	{
@@ -29,7 +28,6 @@ class AccountDetail{
 		$this->address_line_2  = (isset($data['address_line_2'])) ? $data['address_line_2'] : $this->address_line_2;
 		$this->city  = (isset($data['city'])) ? $data['city'] : $this->city;
 		$this->state  = (isset($data['state'])) ? $data['state'] : $this->state;
-		$this->zip_code  = (isset($data['zip_code'])) ? $data['zip_code'] : $this->zip_code;		
-		$this->metadata  = (isset($data['metadata'])) ? $data['metadata'] : $this->metadata;
+		$this->zip_code  = (isset($data['zip_code'])) ? $data['zip_code'] : $this->zip_code;
 	}
 }

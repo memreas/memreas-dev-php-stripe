@@ -55,8 +55,7 @@ class AccountDetailTable {
 						'city' => $account->city, 
 						'state' => $account->state, 
 						'zip_code' => $account->zip_code, 
-						'postal_code' => $account->postal_code,
-						'metadata' => $account->metadata
+						'postal_code' => $account->postal_code
 						);
 		
 		if (isset($account->account_detail_id)) {
