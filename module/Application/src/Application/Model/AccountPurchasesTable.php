@@ -19,19 +19,17 @@
         }
 
         public function getAccountPurchase($account_id, $event_id) {
-            $this->account_id = $account_id;
-            $this->event_id = $event_id;
+            $adapter = $this->tableGateway->getAdapter();
+            //Setup the query
+            $sql = new Sql($adapter);
+            $select = $sql->select();
+            $select->from($this->tableGateway->table)->columns(array('*'))->where(array('account_id' => $account_id, 'event_id' => $event_id));
+            $sqlString = $sql->getSqlStringForSqlObject($select);
 
-            $rowset = $this->tableGateway->select(function (Select $select) {
-                $select->where->equalTo('account_id', $this->account_id);
-                $select->where->equalTo('event_id', $this->event_id);
-            });
+            $statement = $sql->prepareStatementForSqlObject($select);
+            $result = $statement->execute();
 
-            $row = $rowset->current();
-            if (!$row) {
-                return null;
-            }
-            return $row;
+            return $result;
         }
 
         public function saveAccountPurchase(AccountPurchases $account_purchase) {
