@@ -640,7 +640,7 @@ use ZfrStripe\Exception\BadRequestException;
          ) );
          $account_id = $this->memreasStripeTables->getAccountTable()->saveAccount ($account);
 
-         return array('status' => 'Success', 'message' => 'Buying media completed');
+         return array('status' => 'Success', 'message' => 'Buying media completed', 'event_id' => $event_id);
      }
 
      public function checkOwnEvent($data){
@@ -656,7 +656,7 @@ use ZfrStripe\Exception\BadRequestException;
          if (empty($checkBuyMedia))
              return array('status' => 'Failure', 'event_id' => $event_id);
 
-         return array('status' => 'Success');
+         return array('status' => 'Success', 'event_id' => $event_id);
      }
 
      public function activePendingBalanceToAccount($transaction_id){
