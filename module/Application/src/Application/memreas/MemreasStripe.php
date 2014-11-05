@@ -648,12 +648,12 @@ use ZfrStripe\Exception\BadRequestException;
 
          $account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ($user_id);
          if (!$account)
-            return array('status' => 'Failure');
+            return array('status' => 'Failure', 'event_id' => $event_id);
 
          $checkBuyMedia = $this->memreasStripeTables->getAccountPurchasesTable->getAccountPurchase($account->account_id, $event_id);
 
          if (empty($checkBuyMedia))
-             return array('status' => 'Failure');
+             return array('status' => 'Failure', 'event_id' => $event_id);
 
          return array('status' => 'Success');
      }
