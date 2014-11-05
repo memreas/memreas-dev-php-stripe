@@ -584,6 +584,7 @@ use ZfrStripe\Exception\BadRequestException;
              'start_date' => $now,
              'end_date' => $now //Implement the duration later here
          ));
+         echo '<pre>'; print_r ($AccountPurchase); die();
          $this->memreasStripeTables->getAccountPurchasesTable()->saveAccountPurchase($AccountPurchase);
 
          /*
