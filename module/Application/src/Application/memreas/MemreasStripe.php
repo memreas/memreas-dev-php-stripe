@@ -502,6 +502,7 @@ use ZfrStripe\Exception\BadRequestException;
      }
 
      public function buyMedia($data){
+         echo '<pre>'; print_r ($data); die();
          $user = $this->memreasStripeTables->getUserTable()->getUser($data['user_id']);
          $amount = $data['amount'];
          $event_id = $data['event_id'];
