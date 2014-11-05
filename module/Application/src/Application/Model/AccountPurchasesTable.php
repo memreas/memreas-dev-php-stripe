@@ -6,8 +6,6 @@
 
     class AccountPurchasesTable {
         protected $tableGateway;
-        protected $account_id;
-        protected $event_id;
 
         public function __construct(TableGateway $tableGateway) {
             $this->tableGateway = $tableGateway;
