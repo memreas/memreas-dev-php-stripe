@@ -8,6 +8,7 @@ use Application\memreas\MUUID;
 class AccountTable {
 	protected $tableGateway;
 
+    private $username;
     private $offset;
     private $limit;
 	
@@ -20,11 +21,16 @@ class AccountTable {
 		return $resultSet;
 	}
 	
-	public function listMassPayee($page = 1, $limit = 10) {
+	public function listMassPayee($username = '', $page = 1, $limit = 10) {
+        $this->username = $username;
 	    $this->limit = $limit;
         $this->offset = ($page - 1) * $limit;
 		$rowset = $this->tableGateway->select (function(Select $select){
-            $select->where("account_type = 'seller' AND balance > 0")
+            $conditions = "account_type = 'seller' AND balance > 0";
+            if ($this->username)
+                $conditions .= " AND username = '" . $this->username . "'";
+
+            $select->where($conditions)
                     ->limit($this->limit)
                     ->offset($this->offset);
         });

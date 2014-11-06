@@ -182,9 +182,10 @@ class IndexController extends AbstractActionController {
                  * Description: List all payees with balance is available and larger than than zero
                  * */
                 case 'listpayees':
+                    $username = $_POST['username'];
                     $page = (int)$_POST['page'];
                     $limit = (int)$_POST['limit'];
-                    $result = $MemreasStripe->listMassPayee($page, $limit);
+                    $result = $MemreasStripe->listMassPayee($username, $page, $limit);
                     break;
 
                 /*

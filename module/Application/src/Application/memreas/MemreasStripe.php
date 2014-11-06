@@ -1220,8 +1220,8 @@ use ZfrStripe\Exception\BadRequestException;
          $this->stripeCustomer->cancelSubscription($subscriptionId, $customerId);
      }
 
-	public function listMassPayee($page, $limit){
-		$MassPees = $this->memreasStripeTables->getAccountTable()->listMassPayee($page, $limit);
+	public function listMassPayee($username, $page, $limit){
+		$MassPees = $this->memreasStripeTables->getAccountTable()->listMassPayee($username, $page, $limit);
 		
 		$countRow = count($MassPees);
 		
