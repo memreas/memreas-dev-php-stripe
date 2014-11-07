@@ -506,6 +506,8 @@ use ZfrStripe\Exception\BadRequestException;
          $amount = $data['amount'];
          $event_id = $data['event_id'];
          $seller_id = $data['seller_id'];
+         $duration_from = $data['duration_from'];
+         $duration_to = $data['duration_to'];
          if (!$user)
              return array('status' => 'Failure', 'message' => 'No user related to this username');
 
@@ -581,8 +583,8 @@ use ZfrStripe\Exception\BadRequestException;
              'transaction_id' => $transactionId,
              'transaction_type' => 'buy_media_complete',
              'create_time' => $now,
-             'start_date' => $now,
-             'end_date' => $now //Implement the duration later here
+             'start_date' => $duration_from,
+             'end_date' => $duration_to
          ));
          $this->memreasStripeTables->getAccountPurchasesTable()->saveAccountPurchase($AccountPurchase);
 
