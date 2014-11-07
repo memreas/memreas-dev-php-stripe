@@ -255,7 +255,7 @@ use ZfrStripe\Exception\BadRequestException;
 
         if (!empty($type))
             return array('status' => 'Success', 'types' => $type, 'buyer_balance' => $buyer_amount, 'seller_balance' => $seller_amount);
-        else return array('status' => 'Failure', 'message' => 'Account is not exist');
+        else return array('status' => 'Failure', 'message' => 'You have no any payment method at this time. please try to add card first');
      }
 
 	/*
@@ -1250,7 +1250,7 @@ use ZfrStripe\Exception\BadRequestException;
          $account = $this->memreasStripeTables->getAccountTable()->getAccount($data['account_id']);
 
          if (empty ($account))
-             return array('status' => 'Failure', 'message' => 'Account is not exist');
+             return array('status' => 'Failure', 'message' => 'You have no any payment method at this time. please try to add card first');
 
          //Check if account has available balance
          if ($account->balance < $data['amount'])
