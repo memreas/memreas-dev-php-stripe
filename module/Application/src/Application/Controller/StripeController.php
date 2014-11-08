@@ -266,7 +266,7 @@ class StripeController extends AbstractActionController {
 	
 	public function testAction(){
         $MemreasStripe = new MemreasStripe($this->getServiceLocator());
-        $result = $MemreasStripe->addSeller(array());
+        $result = $MemreasStripe->getOrderHistories('5874eac4-d4a8-48e4-8a04-16bf33136a55', 1, 100);
 		echo '<pre>'; print_r ($result);
 		die();
 	}
