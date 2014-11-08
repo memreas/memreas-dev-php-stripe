@@ -19,8 +19,6 @@ class AccountBalancesTable {
 	
 	public function getAccountBalances($account_id) {
 		$this->account_id = $account_id;
-
-		//$rowset = $this->tableGateway->select ( array ('account_id' => $account_id ) );
 		$rowset = $this->tableGateway->select(function (Select $select) {
 			 $select->where->equalTo('account_id', $this->account_id);
 			 $select->order('create_time desc')->limit(1);
@@ -32,6 +30,15 @@ class AccountBalancesTable {
 		}
 		return $row;
 	}
+
+    public function getAccountBalanceByTransactionId($transaction_id){
+        $rowset = $this->tableGateway->select ( array ('transaction_id' => $transaction_id ) );
+        $row = $rowset->current ();
+        if (! $row) {
+            return null;
+        }
+        return $row;
+    }
 	
 	public function saveAccountBalances(AccountBalances $account_balances) {
 			$data = array (
