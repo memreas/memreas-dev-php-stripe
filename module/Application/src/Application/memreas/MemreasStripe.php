@@ -205,7 +205,8 @@ use ZfrStripe\Exception\BadRequestException;
          else $transactions = $this->memreasStripeTables->getTransactionTable()->getAllTransactions($page, $limit);
 
          $orders = array();
-         foreach ($transactions as $transaction) {
+         foreach ($transactions as $transaction){
+             echo '<pre>'; print_r ($transaction); die();
              $accountBalance = $this->memreasStripeTables->getAccountBalancesTable()->getAccountBalanceByTransactionId($transaction->transaction_id);
              $user = $this->memreasStripeTables()->getAccountTable()->getAccount($transaction->account_id);
              $orders[] = array(
