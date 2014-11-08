@@ -32,9 +32,9 @@ class AccountBalancesTable {
 	}
 
     public function getAccountBalanceByTransactionId($transaction_id){
+        echo 'run here'; die();
         $rowset = $this->tableGateway->select ( array ('transaction_id' => $transaction_id ) );
         $row = $rowset->current ();
-        echo '<pre>'; print_r ($row); die();
         if (! $row) {
             return null;
         }
