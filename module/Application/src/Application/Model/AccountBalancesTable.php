@@ -32,11 +32,10 @@ class AccountBalancesTable {
 	}
 
     public function getAccountBalanceByTransactionId($transaction_id){
-        echo 'run here'; die();
         $rowset = $this->tableGateway->select ( array ('transaction_id' => $transaction_id ) );
         $row = $rowset->current ();
         if (! $row) {
-            return null;
+            throw new \Exception ( "Could not find row $transaction_id" );
         }
         return $row;
     }
