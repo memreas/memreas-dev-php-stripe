@@ -36,7 +36,7 @@ class TransactionTable {
             $this->offset = ($page - 1) * $limit;
             $this->limit = $limit;
             $resultSet = $this->tableGateway->select(function (Select $select){
-                $select->where(array('account_id' => $this->account_id, 'amount >' => 0))
+                $select->where(array('account_id' => $this->account_id, 'amount IS NOT ' => 'NULL'))
                         ->order('transaction_sent DESC')
                         ->offset($this->offset)
                         ->limit($this->limit);
