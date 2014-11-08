@@ -210,7 +210,7 @@ use ZfrStripe\Exception\BadRequestException;
                  if ($transaction->amount)
                     $accountBalance = $this->memreasStripeTables->getAccountBalancesTable()->getAccountBalanceByTransactionId($transaction->transaction_id);
                  else $accountBalance = null;
-                 $user = $this->memreasStripeTables()->getAccountTable()->getAccount($transaction->account_id);
+                 $user = $this->memreasStripeTables->getAccountTable()->getAccount($transaction->account_id);
                  $orders[] = array(
                      'username'       => $user->username,
                      'transaction'    => $transaction,
