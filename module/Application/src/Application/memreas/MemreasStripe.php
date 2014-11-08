@@ -529,7 +529,7 @@ use ZfrStripe\Exception\BadRequestException;
          */
          $account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ($user->user_id);
          if (!$account)
-             return array('status' => 'Failure', 'message' => 'Account does not exist');
+             return array('status' => 'Failure', 'message' => 'You have no account at this time. Please add card first.');
          $accountId = $account->account_id;
 
          $currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($accountId);
@@ -606,7 +606,7 @@ use ZfrStripe\Exception\BadRequestException;
          $seller = $this->memreasStripeTables->getUserTable()->getUser($seller_id);
          $account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ($seller->user_id, 'seller');
          if (!$account)
-             return array('status' => 'Failure', 'message' => 'Account does not exist');
+             return array('status' => 'Failure', 'message' => 'You have no account at this time. Please add card first.');
 
          $accountId = $account->account_id;
 
@@ -717,7 +717,7 @@ use ZfrStripe\Exception\BadRequestException;
 		
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ($this->session->offsetGet('user_id'));
 		if (!$account)
-			return array('status' => 'Failure', 'message' => 'Account does not exist');
+			return array('status' => 'Failure', 'message' => 'You have no account at this time. Please add card first.');
 		$accountId = $account->account_id;
 		
 		$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($accountId);
