@@ -217,7 +217,6 @@ use ZfrStripe\Exception\BadRequestException;
                      'accountBalance' => $accountBalance
                  );
              }
-echo '<pre>'; print_r ($orders); die();
              return array(
                  'status'       => 'Success',
                  'transactions' => $orders
