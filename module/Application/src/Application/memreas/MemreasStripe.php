@@ -1178,6 +1178,7 @@ use ZfrStripe\Exception\BadRequestException;
             $transaction->exchangeArray ( array (
                 'account_id' => $account_id,
                 'transaction_type' => 'buy_subscription',
+                'amount' => $transactionAmount,
                 'transaction_request' => json_encode ( $paymentMethod ),
                 'transaction_sent' => $now
             ) );
