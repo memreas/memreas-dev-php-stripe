@@ -207,14 +207,10 @@ use ZfrStripe\Exception\BadRequestException;
          $orders = array();
          if (!empty($transactions)) {
              foreach ($transactions as $transaction) {
-                 if ($transaction->amount)
-                    $accountBalance = $this->memreasStripeTables->getAccountBalancesTable()->getAccountBalanceByTransactionId($transaction->transaction_id);
-                 else $accountBalance = null;
                  $user = $this->memreasStripeTables->getAccountTable()->getAccount($transaction->account_id);
                  $orders[] = array(
                      'username'       => $user->username,
-                     'transaction'    => $transaction,
-                     'accountBalance' => $accountBalance
+                     'transaction'    => $transaction
                  );
              }
              return array(
@@ -1178,7 +1174,7 @@ use ZfrStripe\Exception\BadRequestException;
             $transaction->exchangeArray ( array (
                 'account_id' => $account_id,
                 'transaction_type' => 'buy_subscription',
-                'amount' => $transactionAmount,
+                'amount' => ((int)$data['amount']),
                 'transaction_request' => json_encode ( $paymentMethod ),
                 'transaction_sent' => $now
             ) );
