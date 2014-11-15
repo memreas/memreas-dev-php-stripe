@@ -1048,7 +1048,7 @@ use ZfrStripe\Exception\BadRequestException;
         if (empty ($paymentMethod))
             return array('status' => 'Failure', 'message' => 'This card not relate to your account');
 
-        //Check if user has actived subscription or not
+        //Check if user has activated subscription or not
         $stripeCustomerInfo = $this->stripeCustomer->getCustomer($stripeCustomerId);
 
         $upgrade = true;
@@ -1058,7 +1058,7 @@ use ZfrStripe\Exception\BadRequestException;
 
                 //User has actived plan
                 if ($subscription['plan']['id'] == $data['plan']){
-                    return array('status' => 'Failure', 'message' => 'You have actived this plan before.');
+                    return array('status' => 'Failure', 'message' => 'You have activated this plan before.');
                 }
             }
 
@@ -1067,7 +1067,9 @@ use ZfrStripe\Exception\BadRequestException;
 
             //Checking for upgrade plan
             if ($planLevel > $customerPlanLevel){
-                $result = $this->stripeCustomer->cancelSubscription($subscriptions[0]['id'], $stripeCustomerId);
+                $result = $this->stripeCustomer->cancelSubscription($subscriptions['plan']['id'], $stripeCustomerId);
+                if ($result['status'] == 'Failure')
+                    return $result;
             }
             else {
 
@@ -1612,7 +1614,11 @@ use ZfrStripe\Exception\BadRequestException;
 	 }
 
      public function cancelSubscription($subscriptionId, $customerId){
-         return $this->stripeClient->cancelSubscription(array('customer' => $customerId, 'id' => $subscriptionId));
+         try {
+             return $this->stripeClient->cancelSubscription(array('customer' => $customerId, 'id' => $subscriptionId));
+         }catch(ZfrStripe\Exception\BadRequestException $e){
+             return array('status' => 'Failure', 'message' => $e->getMessage());
+         }
      }
 
      public function setCustomerCardDefault($customerId, $cardId){
