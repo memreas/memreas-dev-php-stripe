@@ -1092,10 +1092,10 @@ use ZfrStripe\Exception\BadRequestException;
                 );
 
                 $response = $request->send();
-                $data = $response->getBody(true);
-                $data = str_replace(array("\r", "\n"), "", $data);
-                $data = json_encode(simplexml_load_string($data));
-                $plan = json_decode($data);
+                $data_usage = $response->getBody(true);
+                $data_usage = str_replace(array("\r", "\n"), "", $data_usage);
+                $data_usage = json_encode(simplexml_load_string($data_usage));
+                $plan = json_decode($data_usage);
                 $plan = $plan->getdiskusageresponse;
                 $dataUsage = str_replace(" GB", "", $plan->total_used);
                 if ($dataUsage > $planDetail['storage']){
@@ -1148,7 +1148,6 @@ use ZfrStripe\Exception\BadRequestException;
         //Set customer card for charging
         if (!empty($card))
             $this->stripeCustomer->setCustomerCardDefault($stripeCustomerId, $card);
-echo '<pre>'; print_r ($subscriptionParams); die();
 		$createSubscribe = $this->stripeCustomer->setSubscription($subscriptionParams);
 
         if ($createSubscribe['status'] == 'Failure')
