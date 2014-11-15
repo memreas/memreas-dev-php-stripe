@@ -1054,7 +1054,6 @@ use ZfrStripe\Exception\BadRequestException;
         $upgrade = true;
         if ($stripeCustomerInfo['info']['subscriptions']['total_count'] > 0){
             $subscriptions = $stripeCustomerInfo['info']['subscriptions']['data'];
-            echo '<pre>'; print_r ($subscriptions); die();
             foreach ($subscriptions as $subscription){
 
                 //User has activated plan
@@ -1068,7 +1067,7 @@ use ZfrStripe\Exception\BadRequestException;
 
             //Checking for upgrade plan
             if ($planLevel > $customerPlanLevel){
-                $result = $this->stripeCustomer->cancelSubscription($subscriptions[0]['plan']['id'], $stripeCustomerId);
+                $result = $this->stripeCustomer->cancelSubscription($subscriptions[0]['id'], $stripeCustomerId);
                 if ($result['status'] == 'Failure')
                     return $result;
             }
@@ -1104,7 +1103,7 @@ use ZfrStripe\Exception\BadRequestException;
                 }
                 else{
                     //Cancel current plan
-                    $result = $this->stripeCustomer->cancelSubscription($subscriptions[0]['plan']['id'], $stripeCustomerId);
+                    $result = $this->stripeCustomer->cancelSubscription($subscriptions[0]['id'], $stripeCustomerId);
                     if ($result['status'] == 'Failure')
                         return $result;
                     $upgrade = false;
