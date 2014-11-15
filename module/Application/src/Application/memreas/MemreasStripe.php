@@ -1148,7 +1148,7 @@ use ZfrStripe\Exception\BadRequestException;
         //Set customer card for charging
         if (!empty($card))
             $this->stripeCustomer->setCustomerCardDefault($stripeCustomerId, $card);
-
+echo '<pre>'; print_r ($subscriptionParams); die();
 		$createSubscribe = $this->stripeCustomer->setSubscription($subscriptionParams);
 
         if ($createSubscribe['status'] == 'Failure')
