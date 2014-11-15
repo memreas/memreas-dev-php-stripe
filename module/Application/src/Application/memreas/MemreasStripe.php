@@ -1203,7 +1203,7 @@ use ZfrStripe\Exception\BadRequestException;
                 'account_id'=> $account->account_id,
                 'currency_code'=> 'USD',
                 'plan' => $data['plan'],
-                'plan_amount' => $transactionAmount,
+                'plan_amount' => ((int)$data['amount']),
                 'plan_description' => $plan['plan']['name'],
                 'gb_storage_amount' => '',
                 'billing_frequency' => MemreasConstants::PLAN_BILLINGFREQUENCY,
