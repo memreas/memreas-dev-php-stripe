@@ -1151,6 +1151,11 @@ use ZfrStripe\Exception\BadRequestException;
 
 		$createSubscribe = $this->stripeCustomer->setSubscription($subscriptionParams);
 
+        if ($createSubscribe['status'] == 'Failure')
+            return $createSubscribe;
+
+        $createSubscribe = $createSubscribe['result'];
+
         if (isset($createSubscribe['id'])){
             $plan = $this->stripePlan->getPlan($data['plan']);
             $viewModel = new ViewModel (array(
@@ -1612,7 +1617,12 @@ use ZfrStripe\Exception\BadRequestException;
 	 * @params: $data
 	 * */
 	 public function setSubscription($data){
-	 	return $this->stripeClient->createSubscription($data);
+	 	try{
+            $result = $this->stripeClient->createSubscription($data);
+            return array('status' => 'Success', 'result' => $result);
+        }catch (ZfrStripe\Exception\BadRequestException $e){
+            return array('status' => 'Failure', 'message' => $e->getMessage());
+        }
 	 }
 
      public function cancelSubscription($subscriptionId, $customerId){
