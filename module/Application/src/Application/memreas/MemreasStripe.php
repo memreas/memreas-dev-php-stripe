@@ -107,7 +107,7 @@ use ZfrStripe\Exception\BadRequestException;
 
          //Check if exist account
          if (empty($account))
-             return array('status' => 'Failure', 'message' => 'No account related to this user.');
+             return array('status' => 'Failure', 'message' => 'You have no any payment method at this time. please try to add card first');
 
          $accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account->account_id);
 
@@ -124,7 +124,7 @@ use ZfrStripe\Exception\BadRequestException;
 
          //Check if exist account
          if (empty($account))
-             return array('status' => 'Failure', 'message' => 'No account related to this user.');
+             return array('status' => 'Failure', 'message' => 'You have no any payment method at this time. please try to add card first');
 
          $now = date('Y-m-d H:i:s');
          $account->reason = $data['reason'];
@@ -175,7 +175,7 @@ use ZfrStripe\Exception\BadRequestException;
 
          //Check if exist account
          if (empty($account))
-             return array('status' => 'Failure', 'message' => 'No account related to this user.');
+             return array('status' => 'Failure', 'message' => 'You have no any payment method at this time. please try to add card first');
 
          $accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account->account_id);
          $customer = $this->stripeCustomer->getCustomer($accountDetail->stripe_customer_id);
@@ -198,7 +198,7 @@ use ZfrStripe\Exception\BadRequestException;
 
              //Check if exist account
              if (empty($account))
-                 return array('status' => 'Failure', 'message' => 'No account related to this user.');
+                 return array('status' => 'Failure', 'message' => 'You have no any payment method at this time. please try to add card first');
 
             $transactions = $this->memreasStripeTables->getTransactionTable()->getTransactionByAccountId($account->account_id, $page, $limit);
          }
@@ -1033,7 +1033,7 @@ use ZfrStripe\Exception\BadRequestException;
 		
 		
 		$account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($userid);
-		if (!$account) return array('status' => 'Failure', 'message' => 'No account related to this user.');
+		if (!$account) return array('status' => 'Failure', 'message' => 'You have no any payment method at this time. please try to add card first');
 				
 		$account_id = $account->account_id;
 		$accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account_id);
@@ -1341,7 +1341,7 @@ use ZfrStripe\Exception\BadRequestException;
 		
 		//Check if exist account
 		if (empty($account))
-			return array('status' => 'Failure', 'message' => 'No account related to this user.');
+			return array('status' => 'Failure', 'message' => 'You have no any payment method at this time. please try to add card first');
 			
 		$paymentMethods = $this->memreasStripeTables->getPaymentMethodTable()->getPaymentMethodsByAccountId($account->account_id);
 		
@@ -1405,7 +1405,7 @@ use ZfrStripe\Exception\BadRequestException;
 
          //Check if exist account
          if (empty($account))
-             return array('status' => 'Failure', 'message' => 'No account related to this user.');
+             return array('status' => 'Failure', 'message' => 'You have no any payment method at this time. please try to add card first');
 
          $paymentMethods = $this->memreasStripeTables->getPaymentMethodTable()->getPaymentMethodsByAccountId($account->account_id);
 
@@ -1434,7 +1434,7 @@ use ZfrStripe\Exception\BadRequestException;
 
          //Check if exist account
          if (empty($account))
-             return array('status' => 'Failure', 'message' => 'No account related to this user.');
+             return array('status' => 'Failure', 'message' => 'You have no any payment method at this time. please try to add card first');
 
          $accountDetail = $this->memreasStripeTables->getAccountDetailTable()->getAccountDetailByAccount($account->account_id);
          $card_data['customer'] = $accountDetail->stripe_customer_id;
