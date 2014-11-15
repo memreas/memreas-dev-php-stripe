@@ -1056,7 +1056,7 @@ use ZfrStripe\Exception\BadRequestException;
             $subscriptions = $stripeCustomerInfo['info']['subscriptions']['data'];
             foreach ($subscriptions as $subscription){
 
-                //User has actived plan
+                //User has activated plan
                 if ($subscription['plan']['id'] == $data['plan']){
                     return array('status' => 'Failure', 'message' => 'You have activated this plan before.');
                 }
@@ -1064,6 +1064,8 @@ use ZfrStripe\Exception\BadRequestException;
 
             $planLevel = $this->stripePlan->getPlanLevel($data['plan']);
             $customerPlanLevel = $this->stripePlan->getPlanLevel($subscription['plan']['id']);
+
+            echo '<pre>'; print_r ($customerPlanLevel); die();
 
             //Checking for upgrade plan
             if ($planLevel > $customerPlanLevel){
@@ -1115,7 +1117,7 @@ use ZfrStripe\Exception\BadRequestException;
             //Begin going to charge on Stripe
             $cardId = $paymentMethod->stripe_card_reference_id;
             $customerId = $accountDetail->stripe_customer_id;
-            $transactionAmount = ((int)$data['amount']) * 100; //Stripe use minimum amount conver for transaction. Eg: input $5
+            $transactionAmount = ((int)$data['amount']) * 100; //Stripe use minimum amount convert for transaction. Eg: input $5
             //convert request to stripe value is 500
             $stripeChargeParams = array(
                 'amount' => $transactionAmount,
@@ -1615,7 +1617,8 @@ use ZfrStripe\Exception\BadRequestException;
 
      public function cancelSubscription($subscriptionId, $customerId){
          try {
-             return $this->stripeClient->cancelSubscription(array('customer' => $customerId, 'id' => $subscriptionId));
+             $this->stripeClient->cancelSubscription(array('customer' => $customerId, 'id' => $subscriptionId));
+             return array('status' => 'Success');
          }catch(ZfrStripe\Exception\BadRequestException $e){
              return array('status' => 'Failure', 'message' => $e->getMessage());
          }
