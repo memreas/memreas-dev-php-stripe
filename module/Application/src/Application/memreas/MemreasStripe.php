@@ -1063,13 +1063,11 @@ use ZfrStripe\Exception\BadRequestException;
             }
 
             $planLevel = $this->stripePlan->getPlanLevel($data['plan']);
-            $customerPlanLevel = $this->stripePlan->getPlanLevel($subscription['plan']['id']);
-
-            echo '<pre>'; print_r ($customerPlanLevel); die();
+            $customerPlanLevel = $this->stripePlan->getPlanLevel($subscription[0]['plan']['id']);
 
             //Checking for upgrade plan
             if ($planLevel > $customerPlanLevel){
-                $result = $this->stripeCustomer->cancelSubscription($subscriptions['plan']['id'], $stripeCustomerId);
+                $result = $this->stripeCustomer->cancelSubscription($subscriptions[0]['plan']['id'], $stripeCustomerId);
                 if ($result['status'] == 'Failure')
                     return $result;
             }
