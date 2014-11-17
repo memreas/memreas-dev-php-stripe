@@ -484,7 +484,7 @@ use ZfrStripe\Exception\BadRequestException;
 			));
 			$balanceId = $this->memreasStripeTables->getAccountBalancesTable()->saveAccountBalances($accountBalance);
 			
-			return array('status' => 'Success', 'message' => 'Successfully added $' . $data['amount'] . ' to your account.');
+			return array('status' => 'Success', 'message' => 'Order completed! We have sent an activation email to you.');
 		}
 		else return array('status' => 'Failure', 'message' => 'Unable to process payment'); 		
 	 }
