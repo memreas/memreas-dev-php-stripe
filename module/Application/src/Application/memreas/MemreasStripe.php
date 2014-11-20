@@ -213,7 +213,7 @@ use ZfrStripe\Exception\BadRequestException;
                  if (!empty($AccountBalance)){
                      $Balance = '<starting_balance>' . $AccountBalance->starting_balance . '</starting_balance>';
                      $Balance .= '<amount>' . $AccountBalance->amount . '</amount>';
-                     $Balance .= '<ending_balance>' . $Account->ending_balance . '</ending_balance>';
+                     $Balance .= '<ending_balance>' . $AccountBalance->ending_balance . '</ending_balance>';
                  }
                  else{
                      $Balance = '<starting_balance></starting_balance>';
