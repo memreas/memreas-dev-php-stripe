@@ -35,7 +35,7 @@ class AccountBalancesTable {
         $rowset = $this->tableGateway->select ( array ('transaction_id' => $transaction_id ) );
         $row = $rowset->current ();
         if (! $row) {
-            throw new \Exception ( "Could not find row $transaction_id" );
+            return null;
         }
         return $row;
     }
