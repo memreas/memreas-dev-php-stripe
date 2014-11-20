@@ -209,7 +209,7 @@ use ZfrStripe\Exception\BadRequestException;
              foreach ($transactions as $transaction) {
                  $user = $this->memreasStripeTables->getAccountTable()->getAccount($transaction->account_id);
                  $AccountBalance = $this->memreasStripeTables->getAccountBalancesTable()
-                     ->getAccountBalanceByTransactionId($transaction->account_id);
+                     ->getAccountBalanceByTransactionId($transaction->transaction_id);
                  if (!empty($AccountBalance)){
                      $Balance = '<starting_balance>' . $AccountBalance->starting_balance . '</starting_balance>';
                      $Balance .= '<amount>' . $AccountBalance->amount . '</amount>';
