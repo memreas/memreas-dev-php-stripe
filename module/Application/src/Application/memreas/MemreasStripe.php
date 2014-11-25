@@ -1281,7 +1281,7 @@ use ZfrStripe\Exception\BadRequestException;
          $account = $this->memreasStripeTables->getAccountTable()->getAccount($data['account_id']);
 
          if (empty ($account))
-             return array('status' => 'Failure', 'message' => 'You have no any payment method at this time. please try to add card first');
+             return array('status' => 'Failure', 'message' => 'Account is not exist');
 
          //Check if account has available balance
          if ($account->balance < $data['amount'])
