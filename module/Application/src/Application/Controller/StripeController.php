@@ -267,7 +267,7 @@ class StripeController extends AbstractActionController {
 	public function testAction(){
         $MemreasStripe = new MemreasStripe($this->getServiceLocator());
         $result = $MemreasStripe->MakePayout(array(
-            'account_id' => '9adbe33f-814e-4df3-8454-46d7cb73a54c',
+            'account_id' => '1',
             'amount' => 5,
             'description' => 'nothing'
         ));
