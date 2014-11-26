@@ -1341,7 +1341,7 @@ use ZfrStripe\Exception\BadRequestException;
          $accountBalance = new AccountBalances ();
          $accountBalance->exchangeArray ( array (
              'account_id' => $account->account_id,
-             'transaction_id' => '',
+             'transaction_id' => $transaction_id,
              'transaction_type' => "seller_payout",
              'starting_balance' => $startingAccountBalance,
              'amount' => (int)$data['amount'],
