@@ -57,6 +57,11 @@ class AccountTable {
 		}
 		return $row;
 	}
+
+    public function searchAccountByName($username, $account_type = 'buyer') {
+        $resultSet = $this->tableGateway->select ( array ('username' => "LIKE '%{$username}%'", 'account_type' => $account_type ) );
+		return $resultSet;
+	}
 	
 	public function getAccount($account_id) {
 		$rowset = $this->tableGateway->select ( array ('account_id' => $account_id ) );

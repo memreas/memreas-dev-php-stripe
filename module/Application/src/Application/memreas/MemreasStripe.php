@@ -192,7 +192,7 @@ use ZfrStripe\Exception\BadRequestException;
          return $countUserPlan;
      }
 
-     public function getOrderHistories($user_id, $page, $limit){
+     public function getOrderHistories($user_id, $search_username, $page, $limit){
          if ($user_id){
              $account = $this->memreasStripeTables->getAccountTable()->getAccountByUserId($user_id);
 
@@ -202,7 +202,18 @@ use ZfrStripe\Exception\BadRequestException;
 
             $transactions = $this->memreasStripeTables->getTransactionTable()->getTransactionByAccountId($account->account_id, $page, $limit);
          }
-         else $transactions = $this->memreasStripeTables->getTransactionTable()->getAllTransactions($page, $limit);
+         else {
+             if ($search_username){
+                 $accounts = $this->memreasStripeTables->getAccountTable()->searchAccountByName($search_username);
+                 $account_range = array();
+                 foreach ($accounts as $value)
+                     $account_range[] = $value->account_id;
+                 if (!empty($account_range))
+                     $transactions = $this->memreasStripeTables->getTransactionTable()->getAllTransactions($account_range, $page, $limit);
+                 else $transactions = $this->memreasStripeTables->getTransactionTable()->getAllTransactions(null, $page, $limit);
+             }
+             else $transactions = $this->memreasStripeTables->getTransactionTable()->getAllTransactions(null, $page, $limit);
+         }
 
          $orders = array();
          if (!empty($transactions)) {

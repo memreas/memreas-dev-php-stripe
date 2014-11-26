@@ -126,7 +126,7 @@ class IndexController extends AbstractActionController {
                 case 'getorderhistory':
                     $data = json_decode($_POST['data'], true);
 
-                    $orderHistories = $MemreasStripe->getOrderHistories($data['user_id'], (int)$data['page'], (int)$data['limit']);
+                    $orderHistories = $MemreasStripe->getOrderHistories($data['user_id'], $data['search_username'], (int)$data['page'], (int)$data['limit']);
 
                     if ($orderHistories['status'] == "Success"){
                         if ($data['user_id']) $userDetail = $MemreasStripe->getUserById($data['user_id']);

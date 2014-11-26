@@ -10,6 +10,7 @@ class TransactionTable {
 	protected $tableGateway;
 
     public $account_id;
+    public $account_range;
     public $offset = 0;
     public $limit = 0;
 
@@ -20,11 +21,19 @@ class TransactionTable {
 		$resultSet = $this->tableGateway->select ();
 		return $resultSet;
 	}
-    public function getAllTransactions($page, $limit){
+    public function getAllTransactions($account_range, $page, $limit){
         $this->offset = ($page - 1) * $limit;
         $this->limit = $limit;
+        $this->account_range = $account_range;
         $resultSet = $this->tableGateway->select(function(Select $select){
-            $select->order('transaction_sent DESC')
+            if ($this->search_username) {
+                $account_range = implode("','", $this->account_range);
+                $select->where("account_id IN({$account_range})")
+                    ->order('transaction_sent DESC')
+                    ->offset($this->offset)
+                    ->limit($this->limit);
+            }
+            else $select->order('transaction_sent DESC')
                     ->offset($this->offset)
                     ->limit($this->limit);
         });
