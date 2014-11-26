@@ -1351,7 +1351,7 @@ use ZfrStripe\Exception\BadRequestException;
          $balanceId = $this->memreasStripeTables->getAccountBalancesTable()->saveAccountBalances($accountBalance);
 
          //Update account table
-         $account = $this->memreasStripeTables->getAccountTable()->getAccount($account->account_id);
+         $account = $this->memreasStripeTables->getAccountTable()->getAccount($account->account_id, 'seller');
          $account->exchangeArray(array(
              'balance' => $endingAccountBalance,
              'update_time' => $now
