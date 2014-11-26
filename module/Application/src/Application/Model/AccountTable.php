@@ -63,8 +63,8 @@ class AccountTable {
 		return $resultSet;
 	}
 	
-	public function getAccount($account_id) {
-		$rowset = $this->tableGateway->select ( array ('account_id' => $account_id ) );
+	public function getAccount($account_id, $account_type = 'buyer') {
+		$rowset = $this->tableGateway->select ( array ('account_id' => $account_id, 'account_type' => $account_type ) );
 		$row = $rowset->current ();
 		if (! $row) {
 			return null;
