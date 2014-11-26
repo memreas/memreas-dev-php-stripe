@@ -1293,7 +1293,7 @@ use ZfrStripe\Exception\BadRequestException;
 
          $account = $this->memreasStripeTables->getAccountTable()->getAccount($data['account_id'], 'seller');
 
-         if (empty ($account))
+         if (!$account)
              return array('status' => 'Failure', 'message' => 'Account is not exist');
 
          //Check if account has available balance
