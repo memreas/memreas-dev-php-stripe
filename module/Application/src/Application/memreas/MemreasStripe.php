@@ -1292,7 +1292,7 @@ use ZfrStripe\Exception\BadRequestException;
      public function MakePayout($data){
 
          $account = $this->memreasStripeTables->getAccountTable()->getAccount($data['account_id'], 'seller');
-         echo '<pre>'; print_r ($account); die();
+
          if (empty ($account))
              return array('status' => 'Failure', 'message' => 'Account is not exist');
 
