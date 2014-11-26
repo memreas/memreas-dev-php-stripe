@@ -1327,17 +1327,12 @@ use ZfrStripe\Exception\BadRequestException;
              'account_id' => $account->account_id,
              'transaction_type' => 'make_payout_seller',
              'transaction_request' => '',
-             'transaction_sent' => $now
-         ) );
-         $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-
-         $transaction->exchangeArray ( array (
-             'transaction_id' => $transaction_id,
+             'transaction_sent' => $now,
              'pass_fail' => 1,
              'transaction_response' => json_encode($transferResponse),
              'transaction_receive' => $now
          ) );
-         $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+         $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 
          //Update Account Balance
          $currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($account->account_id);
