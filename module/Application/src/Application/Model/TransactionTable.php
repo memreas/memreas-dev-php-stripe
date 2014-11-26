@@ -26,8 +26,7 @@ class TransactionTable {
         $this->limit = $limit;
         $this->account_range = $account_range;
         $resultSet = $this->tableGateway->select(function(Select $select){
-            if ($this->search_username) {
-                echo 'run 1';
+            if ($this->account_range) {
                 $account_range = implode("','", $this->account_range);
                 $select->where("account_id IN({$account_range})")
                     ->order('transaction_sent DESC')
@@ -38,9 +37,7 @@ class TransactionTable {
                 $select->order('transaction_sent DESC')
                     ->offset($this->offset)
                     ->limit($this->limit);
-                echo 'run 2';
             }
-            die();
         });
         return $resultSet;
     }

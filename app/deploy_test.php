@@ -1,5 +1,5 @@
 <?php
 
-echo "Deploy for pay v1.2.33 - ready for review";
+echo "Deploy for pay v1.2.34 - ready for review";
 
 ?>
