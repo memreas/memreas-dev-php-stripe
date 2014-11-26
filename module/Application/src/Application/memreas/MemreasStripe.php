@@ -209,8 +209,6 @@ use ZfrStripe\Exception\BadRequestException;
                  foreach ($accounts as $value)
                      $account_range[] = $value->account_id;
 
-                 echo '<pre>'; print_r ($account_range); die();
-
                  if (!empty($account_range))
                      $transactions = $this->memreasStripeTables->getTransactionTable()->getAllTransactions($account_range, $page, $limit);
                  else $transactions = $this->memreasStripeTables->getTransactionTable()->getAllTransactions(null, $page, $limit);
