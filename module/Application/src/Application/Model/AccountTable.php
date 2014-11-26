@@ -83,11 +83,7 @@ class AccountTable {
 			'update_time' => $account->update_time );
 		
 		if (isset($account->account_id)) {
-			if ($this->getAccount ( $account->account_id )) {
-				$this->tableGateway->update ( $data, array ('account_id' =>  $account->account_id ) );
-			} else {
-				throw new \Exception ( 'Form account_id does not exist' );
-			}
+            $this->tableGateway->update ( $data, array ('account_id' =>  $account->account_id ) );
 		} else {
 			$account_id = MUUID::fetchUUID();
 			//$account->account_id = $account_id;	
