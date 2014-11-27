@@ -669,7 +669,7 @@ use ZfrStripe\Exception\BadRequestException;
 
          // Update the account table
          $now = date ( 'Y-m-d H:i:s' );
-         $account = $this->memreasStripeTables->getAccountTable()->getAccount($accountId);
+         $account = $this->memreasStripeTables->getAccountTable()->getAccount($accountId, 'seller');
          $account->exchangeArray (array(
              'balance' => $endingBalance,
              'update_time' => $now
