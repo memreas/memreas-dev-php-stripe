@@ -2032,7 +2032,7 @@ use ZfrStripe\Exception\BadRequestException;
 		$this->address_line2	= !empty($card_data->address_line2) ? $card_data->address_line2 : $this->address_line2;
 		$this->address_city		= !empty($card_data->address_city) ? $card_data->address_city : $this->address_city;
 		$this->address_state	= !empty($card_data->address_state) ? $card_data->address_state : $this->address_state;
-		$this->address_zip		= !empty($card_data->address_zip) ? $card_data->address_zip : $this->address_city;
+		$this->address_zip		= !empty($card_data->address_zip) ? $card_data->address_zip : $this->address_zip;
 		$this->address_country	= !empty($card_data->address_country) ? $card_data->address_country : $this->address_country;
 	}
 
