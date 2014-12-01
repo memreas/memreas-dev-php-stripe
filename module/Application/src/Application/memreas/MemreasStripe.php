@@ -131,7 +131,7 @@ use ZfrStripe\Exception\BadRequestException;
          $transactionDetail = array(
              'account_id' => $account->account_id,
              'transaction_type' => 'refund_amount',
-             'amount' => (int)$data['amount'],
+             'amount' => $data['amount'],
              'currency' => 'USD',
              'transaction_request' => json_encode($account),
              'transaction_response' => json_encode($account),
@@ -145,7 +145,7 @@ use ZfrStripe\Exception\BadRequestException;
          //Update Account Balance
          $currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($account->account_id);
          $startingAccountBalance = (isset($currentAccountBalance)) ? $currentAccountBalance->ending_balance : '0.00';
-         $endingAccountBalance = $startingAccountBalance + (int)$data['amount'];
+         $endingAccountBalance = $startingAccountBalance + $data['amount'];
 
          $accountBalance = new AccountBalances ();
          $accountBalance->exchangeArray ( array (
@@ -153,7 +153,7 @@ use ZfrStripe\Exception\BadRequestException;
              'transaction_id' => $transactionId,
              'transaction_type' => "refund_amount",
              'starting_balance' => $startingAccountBalance,
-             'amount' => (int)$data['amount'],
+             'amount' => $data['amount'],
              'ending_balance' => $endingAccountBalance,
              'create_time' => $now
          ));
@@ -435,7 +435,7 @@ use ZfrStripe\Exception\BadRequestException;
 		$cardToken = $paymentMethod->stripe_card_token;
 		$cardId = $paymentMethod->stripe_card_reference_id;
 		$customerId = $accountDetail->stripe_customer_id;
-		$transactionAmount = ((int)$data['amount']) * 100; //Stripe use minimum amount conver for transaction. Eg: input $5  
+		$transactionAmount = (int)($data['amount'] * 100); //Stripe use minimum amount conver for transaction. Eg: input $5
 															//convert request to stripe value is 500 
 		$stripeChargeParams = array(
 										'amount' => $transactionAmount,
@@ -462,7 +462,7 @@ use ZfrStripe\Exception\BadRequestException;
 			$transactionDetail = array(
 										'account_id' => $account->account_id,
 										'transaction_type' => 'add_value_to_account',
-										'amount' => (int)$data['amount'],
+										'amount' => $data['amount'],
 										'currency' => $currency,
 										'transaction_request' => json_encode($transactionRequest),
 										'transaction_response' => json_encode($chargeResult),
@@ -478,7 +478,7 @@ use ZfrStripe\Exception\BadRequestException;
             $viewModel = new ViewModel (array(
                 'username' => $accountDetail->first_name . ' ' . $accountDetail->last_name,
                 'active_link' => 'https://memreasdev-pay.memreas.com/stripe/activeCredit?token=' . $transactionId,
-                'amount' => ((int)$data['amount'])
+                'amount' => $data['amount']
             ));
             $viewModel->setTemplate ( 'email/buycredit' );
             $viewRender = $this->serviceLocator->get ( 'ViewRenderer' );
@@ -496,7 +496,7 @@ use ZfrStripe\Exception\BadRequestException;
 			//Update Account Balance
 			$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($account->account_id);
 			$startingAccountBalance = (isset($currentAccountBalance)) ? $currentAccountBalance->ending_balance : '0.00';
-			$endingAccountBalance = $startingAccountBalance + (int)$data['amount'];
+			$endingAccountBalance = $startingAccountBalance + $data['amount'];
 			
 			$accountBalance = new AccountBalances ();
 			$accountBalance->exchangeArray ( array (
@@ -504,7 +504,7 @@ use ZfrStripe\Exception\BadRequestException;
 					'transaction_id' => $transactionId,
 					'transaction_type' => "add_value_to_account",
 					'starting_balance' => $startingAccountBalance,
-					'amount' => (int)$data['amount'],
+					'amount' => $data['amount'],
 					'ending_balance' => $endingAccountBalance,
 					'create_time' => $now
 			));
@@ -710,7 +710,7 @@ use ZfrStripe\Exception\BadRequestException;
          $currentAccountBalance = $this->memreasStripeTables->getAccountTable ()->getAccount($Transaction->account_id);
          $startingAccountBalance = (isset($currentAccountBalance)) ? $currentAccountBalance->balance : '0.00';
 
-         $endingAccountBalance = $startingAccountBalance + (int)$Transaction->amount;
+         $endingAccountBalance = $startingAccountBalance + $Transaction->amount;
 
          $account = $this->memreasStripeTables->getAccountTable()->getAccount($Transaction->account_id);
          $account->exchangeArray(array(
@@ -1143,7 +1143,7 @@ use ZfrStripe\Exception\BadRequestException;
             //Begin going to charge on Stripe
             $cardId = $paymentMethod->stripe_card_reference_id;
             $customerId = $accountDetail->stripe_customer_id;
-            $transactionAmount = ((int)$data['amount']) * 100; //Stripe use minimum amount convert for transaction. Eg: input $5
+            $transactionAmount = (int)($data['amount'] * 100); //Stripe use minimum amount convert for transaction. Eg: input $5
             //convert request to stripe value is 500
             $stripeChargeParams = array(
                 'amount' => $transactionAmount,
@@ -1208,7 +1208,7 @@ use ZfrStripe\Exception\BadRequestException;
             $transaction->exchangeArray ( array (
                 'account_id' => $account_id,
                 'transaction_type' => 'buy_subscription',
-                'amount' => ((int)$data['amount']),
+                'amount' => $data['amount'],
                 'transaction_request' => json_encode ( $paymentMethod ),
                 'transaction_sent' => $now
             ) );
@@ -1229,7 +1229,7 @@ use ZfrStripe\Exception\BadRequestException;
                 'account_id'=> $account->account_id,
                 'currency_code'=> 'USD',
                 'plan' => $data['plan'],
-                'plan_amount' => ((int)$data['amount']),
+                'plan_amount' => $data['amount'],
                 'plan_description' => $plan['plan']['name'],
                 'gb_storage_amount' => '',
                 'billing_frequency' => MemreasConstants::PLAN_BILLINGFREQUENCY,
@@ -1307,7 +1307,7 @@ use ZfrStripe\Exception\BadRequestException;
              return array('status' => 'Failure', 'message' => 'No stripe ID related to this account');
 
          $transferParams = array(
-             'amount' => (int)$data['amount'],
+             'amount' => $data['amount'],
              'currency' => 'USD',
              'recipient' => $accountDetail->stripe_customer_id,
              'description' => $data['description']
@@ -1337,14 +1337,14 @@ use ZfrStripe\Exception\BadRequestException;
          //Update Account Balance
          $currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances($account->account_id);
          $startingAccountBalance = (isset($currentAccountBalance)) ? $currentAccountBalance->ending_balance : '0.00';
-         $endingAccountBalance = $startingAccountBalance - (int)$data['amount'];
+         $endingAccountBalance = $startingAccountBalance - $data['amount'];
          $accountBalance = new AccountBalances ();
          $accountBalance->exchangeArray ( array (
              'account_id' => $account->account_id,
              'transaction_id' => $transaction_id,
              'transaction_type' => "seller_payout",
              'starting_balance' => $startingAccountBalance,
-             'amount' => (int)$data['amount'],
+             'amount' => $data['amount'],
              'ending_balance' => $endingAccountBalance,
              'create_time' => $now
          ));
