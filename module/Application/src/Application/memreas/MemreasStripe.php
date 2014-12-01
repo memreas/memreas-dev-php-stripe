@@ -1191,7 +1191,7 @@ use ZfrStripe\Exception\BadRequestException;
             $viewRender = $this->serviceLocator->get ( 'ViewRenderer' );
 
             $html = $viewRender->render ( $viewModel );
-            $subject = 'Your subscription plan has been actived';
+            $subject = 'Your subscription plan has been activated';
 
             if (!isset($aws_manager) || empty ( $aws_manager ))
                 $aws_manager = new AWSManagerSender ( $this->serviceLocator );
