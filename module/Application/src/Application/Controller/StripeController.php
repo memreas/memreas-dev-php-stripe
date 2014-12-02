@@ -70,7 +70,7 @@ class StripeController extends AbstractActionController {
 				'name' 				=> $message_data['first_name'] . ' ' . $message_data['last_name'],
 				'country' 			=> 'US', 									//Change this to dynamic form value
 				'address_line1' 	=> $message_data['address_line_1'],
-				'address_line2'		=> '',
+				'address_line2'		=> $message_data['address_line_2'],
 				'address_city' 		=> $message_data['city'],
 				'address_state' 	=> $message_data['state'] ,
 				'address_zip' 		=> $message_data['zip_code'],
