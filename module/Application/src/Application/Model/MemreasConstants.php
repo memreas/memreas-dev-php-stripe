@@ -13,7 +13,7 @@ class MemreasConstants {
         const ORIGINAL_URL		= "https://memreasdev-pay.memreas.com/";
         const MEDIA_URL			= "http://memreasdev-wsu.elasticbeanstalk.com/app/?action=addmediaevent";
         const URL				= "/index";
-        const MEMREAS_WS = "https://memreasdev-wsg.memreas.com";
+        const MEMREAS_WS = "https://memreasdev-ws1.memreas.com";
 
         const ACCOUNT_MEMREAS_FLOAT = "memreasfloat";
         const ACCOUNT_MEMREAS_MASTER = "memreasmaster";
