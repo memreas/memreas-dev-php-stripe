@@ -11,9 +11,9 @@ class MemreasConstants {
         const S3BUCKET     		= "memreasdev";
         const TOPICARN			= "arn:aws:sns:us-east-1:004184890641:us-east-upload-transcode-worker-int";
         const ORIGINAL_URL		= "https://memreasdev-pay.memreas.com/";
-        const MEDIA_URL			= "http://memreasdev-wsu.elasticbeanstalk.com/app/?action=addmediaevent";
+        const MEDIA_URL			= "http://memreasdev-wsj.elasticbeanstalk.com/app/?action=addmediaevent";
         const URL				= "/index";
-        const MEMREAS_WS = "https://memreasdev-ws1.memreas.com";
+        const MEMREAS_WS = "https://memreasdev-wsj.memreas.com";
 
         const ACCOUNT_MEMREAS_FLOAT = "memreasfloat";
         const ACCOUNT_MEMREAS_MASTER = "memreasmaster";
