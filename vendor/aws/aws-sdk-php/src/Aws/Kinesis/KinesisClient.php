@@ -22,25 +22,29 @@ use Aws\Common\Enum\ClientOptions as Options;
 use Aws\Common\Exception\Parser\JsonQueryExceptionParser;
 use Guzzle\Common\Collection;
 use Guzzle\Service\Resource\Model;
+use Guzzle\Service\Resource\ResourceIteratorInterface;
 
 /**
  * Client to interact with Amazon Kinesis
  *
+ * @method Model addTagsToStream(array $args = array()) {@command Kinesis AddTagsToStream}
  * @method Model createStream(array $args = array()) {@command Kinesis CreateStream}
  * @method Model deleteStream(array $args = array()) {@command Kinesis DeleteStream}
  * @method Model describeStream(array $args = array()) {@command Kinesis DescribeStream}
  * @method Model getRecords(array $args = array()) {@command Kinesis GetRecords}
  * @method Model getShardIterator(array $args = array()) {@command Kinesis GetShardIterator}
  * @method Model listStreams(array $args = array()) {@command Kinesis ListStreams}
+ * @method Model listTagsForStream(array $args = array()) {@command Kinesis ListTagsForStream}
  * @method Model mergeShards(array $args = array()) {@command Kinesis MergeShards}
  * @method Model putRecord(array $args = array()) {@command Kinesis PutRecord}
+ * @method Model putRecords(array $args = array()) {@command Kinesis PutRecords}
+ * @method Model removeTagsFromStream(array $args = array()) {@command Kinesis RemoveTagsFromStream}
  * @method Model splitShard(array $args = array()) {@command Kinesis SplitShard}
  * @method ResourceIteratorInterface getDescribeStreamIterator(array $args = array()) The input array uses the parameters of the DescribeStream operation
- * @method ResourceIteratorInterface getGetRecordsIterator(array $args = array()) The input array uses the parameters of the GetRecords operation
  * @method ResourceIteratorInterface getListStreamsIterator(array $args = array()) The input array uses the parameters of the ListStreams operation
  *
- * @link http://docs.aws.amazon.com/aws-sdk-php/guide/latest/service-kinesis.html User guide
- * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Kinesis.KinesisClient.html API docs
+ * @link http://docs.aws.amazon.com/aws-sdk-php/v2/guide/service-kinesis.html User guide
+ * @link http://docs.aws.amazon.com/aws-sdk-php/v2/api/class-Aws.Kinesis.KinesisClient.html API docs
  */
 class KinesisClient extends AbstractClient
 {
@@ -52,7 +56,7 @@ class KinesisClient extends AbstractClient
      * @param array|Collection $config Client configuration data
      *
      * @return self
-     * @link http://docs.aws.amazon.com/aws-sdk-php/guide/latest/configuration.html#client-configuration-options
+     * @link http://docs.aws.amazon.com/aws-sdk-php/v2/guide/configuration.html#client-configuration-options
      */
     public static function factory($config = array())
     {

@@ -1,3 +1,43 @@
+# 1.12.0
+
+* [BC] Update latest API descriptor to 2014-08-20. This changes the response when getting disputes.
+
+# 1.11.0
+
+* [BC] Update latest API descriptor to 2014-08-04. This changes the response when getting transfers.
+
+# 1.10.0
+
+* [BC] Update latest API descriptor to 2014-07-26. This adds new endpoint for application fee refunds, and change
+the endpoint to refund an application fee.
+
+# 1.9.0
+
+* [BC] Update latest API descriptor to 2014-07-22.
+
+# 1.8.2
+
+* Add the `statement_description` to invoice.
+* Add the new `forgiven` property when updating an invoice for latest descriptor.
+
+# 1.8.1
+
+* Fix descriptor for refunds endpoint.
+
+# 1.8.0
+
+* [BC] The "Stripe-Version" header is now added to all requests. This allow to do API calls using another API version
+than the one define in your Stripe dashboard (see doc for more details).
+* [BC] Update latest API descriptor to 2014-06-17. It includes the following changes:
+* Refunds is now a first-class resource, so you can retrieve, update and list refunds through specific methods.
+* Allow dispute to have metadata (starting from 2014-06-17).
+* Allow charges to have metadata (starting from 2014-06-17).
+* Add the various "balance" methods that were missing. It has been backported to all descriptors.
+
+# 1.7.2
+
+* Add the new `receipt_email` property for charges.
+
 # 1.7.1
 
 * Add support for "day" interval for plans.

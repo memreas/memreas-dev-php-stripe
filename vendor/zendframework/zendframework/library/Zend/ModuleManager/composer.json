@@ -6,12 +6,12 @@
         "zf2",
         "modulemanager"
     ],
+    "homepage": "https://github.com/zendframework/zf2",
     "autoload": {
-        "psr-0": {
+        "psr-4": {
             "Zend\\ModuleManager\\": ""
         }
     },
-    "target-dir": "Zend/ModuleManager",
     "require": {
         "php": ">=5.3.23",
         "zendframework/zend-eventmanager": "self.version",
@@ -21,7 +21,6 @@
         "zendframework/zend-config": "self.version",
         "zendframework/zend-console": "self.version",
         "zendframework/zend-loader": "self.version",
-        "zendframework/zend-mvc": "self.version",
         "zendframework/zend-servicemanager": "self.version"
     },
     "suggest": {

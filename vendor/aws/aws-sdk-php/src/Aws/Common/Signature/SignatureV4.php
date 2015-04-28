@@ -19,12 +19,12 @@ namespace Aws\Common\Signature;
 use Aws\Common\Credentials\CredentialsInterface;
 use Aws\Common\Enum\DateFormat;
 use Aws\Common\HostNameUtils;
-use Guzzle\Http\Message\EntityEnclosingRequest;
 use Guzzle\Http\Message\EntityEnclosingRequestInterface;
 use Guzzle\Http\Message\RequestFactory;
 use Guzzle\Http\Message\RequestInterface;
 use Guzzle\Http\QueryString;
 use Guzzle\Http\Url;
+use Guzzle\Stream\Stream;
 
 /**
  * Signature Version 4
@@ -231,12 +231,11 @@ class SignatureV4 extends AbstractSignature implements EndpointSignatureInterfac
         }
 
         if ($request instanceof EntityEnclosingRequestInterface) {
-            return hash(
-                'sha256',
-                $request->getMethod() == 'POST' && count($request->getPostFields())
-                    ? (string) $request->getPostFields()
-                    : (string) $request->getBody()
-            );
+            if ($request->getMethod() == 'POST' && count($request->getPostFields())) {
+                return hash('sha256', (string) $request->getPostFields());
+            } elseif ($body = $request->getBody()) {
+                return Stream::getHash($request->getBody(), 'sha256');
+            }
         }
 
         return self::DEFAULT_PAYLOAD;
@@ -254,6 +253,13 @@ class SignatureV4 extends AbstractSignature implements EndpointSignatureInterfac
         return $this->getPayload($request);
     }
 
+    protected function createCanonicalizedPath(RequestInterface $request)
+    {
+        $doubleEncoded = rawurlencode(ltrim($request->getPath(), '/'));
+
+        return '/' . str_replace('%2F', '/', $doubleEncoded);
+    }
+
     private function createStringToSign($longDate, $credentialScope, $creq)
     {
         return "AWS4-HMAC-SHA256\n{$longDate}\n{$credentialScope}\n"
@@ -264,13 +270,20 @@ class SignatureV4 extends AbstractSignature implements EndpointSignatureInterfac
         RequestInterface $request,
         CredentialsInterface $credentials
     ) {
-        $sr = RequestFactory::getInstance()->cloneRequestWithMethod($request, 'GET');
-
-        // Move POST fields to the query if they are present
-        if ($request instanceof EntityEnclosingRequestInterface) {
+        // POST requests can be sent as GET requests instead by moving the
+        // POST fields into the query string.
+        if ($request instanceof EntityEnclosingRequestInterface
+            && $request->getMethod() === 'POST'
+            && strpos($request->getHeader('Content-Type'), 'application/x-www-form-urlencoded') === 0
+        ) {
+            $sr = RequestFactory::getInstance()
+                ->cloneRequestWithMethod($request, 'GET');
+            // Move POST fields to the query if they are present
             foreach ($request->getPostFields() as $name => $value) {
                 $sr->getQuery()->set($name, $value);
             }
+        } else {
+            $sr = clone $request;
         }
 
         // Make sure to handle temporary credentials
@@ -297,43 +310,42 @@ class SignatureV4 extends AbstractSignature implements EndpointSignatureInterfac
      */
     private function createSigningContext(RequestInterface $request, $payload)
     {
+        $signable = array(
+            'host'        => true,
+            'date'        => true,
+            'content-md5' => true
+        );
+
         // Normalize the path as required by SigV4 and ensure it's absolute
         $canon = $request->getMethod() . "\n"
-            . '/' . ltrim($request->getPath(), '/') . "\n"
+            . $this->createCanonicalizedPath($request) . "\n"
             . $this->getCanonicalizedQueryString($request) . "\n";
 
-        // Create the canonical headers
-        $headers = array();
+        $canonHeaders = array();
+
         foreach ($request->getHeaders()->getAll() as $key => $values) {
             $key = strtolower($key);
-            if ($key != 'user-agent') {
-                $headers[$key] = array();
-                foreach ($values as $value) {
-                    $headers[$key][] = preg_replace('/\s+/', ' ', trim($value));
+            if (isset($signable[$key]) || substr($key, 0, 6) === 'x-amz-') {
+                $values = $values->toArray();
+                if (count($values) == 1) {
+                    $values = $values[0];
+                } else {
+                    sort($values);
+                    $values = implode(',', $values);
                 }
-                // Sort the value if there is more than one
-                if (count($values) > 1) {
-                    sort($headers[$key]);
-                }
+                $canonHeaders[$key] = $key . ':' . preg_replace('/\s+/', ' ', $values);
             }
         }
 
-        // The headers must be sorted
-        ksort($headers);
-
-        // Continue to build the canonical request by adding headers
-        foreach ($headers as $key => $values) {
-            // Combine multi-value headers into a comma separated list
-            $canon .= $key . ':' . implode(',', $values) . "\n";
-        }
-
-        // Create the signed headers
-        $signedHeaders = implode(';', array_keys($headers));
-        $canon .= "\n{$signedHeaders}\n{$payload}";
+        ksort($canonHeaders);
+        $signedHeadersString = implode(';', array_keys($canonHeaders));
+        $canon .= implode("\n", $canonHeaders) . "\n\n"
+            . $signedHeadersString . "\n"
+            . $payload;
 
         return array(
             'canonical_request' => $canon,
-            'signed_headers'    => $signedHeaders
+            'signed_headers'    => $signedHeadersString
         );
     }
 
@@ -387,6 +399,8 @@ class SignatureV4 extends AbstractSignature implements EndpointSignatureInterfac
         foreach ($queryParams as $key => $values) {
             if (is_array($values)) {
                 sort($values);
+            } elseif ($values === 0) {
+                $values = array('0');
             } elseif (!$values) {
                 $values = array('');
             }

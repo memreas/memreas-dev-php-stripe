@@ -15,7 +15,7 @@
         "zendframework/zendframework": "2.*",
         "ext-curl": "*",
         "ext-json": "*",
-		"rhumsaa/uuid": "2.5.0",
+		"ramsey/uuid": "2.8.0",
         "paypal/sdk-core-php": "2.4.*",
         "paypal/merchant-sdk-php":"*",
         "paypal/rest-api-sdk-php" : "0.7.*",

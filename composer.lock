@@ -4,33 +4,32 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "e2a7908d9747caae15cfe880b10319e2",
+    "hash": "6df2cc2c6faece01e0ce7cc8142acdfa",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "2.6.6",
+            "version": "2.8.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "37d5572e2408c5ea7104c361b64a187b1a0a53bd"
+                "reference": "4237e97388d2906d2aa88f727736968fc2df9cb6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/37d5572e2408c5ea7104c361b64a187b1a0a53bd",
-                "reference": "37d5572e2408c5ea7104c361b64a187b1a0a53bd",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/4237e97388d2906d2aa88f727736968fc2df9cb6",
+                "reference": "4237e97388d2906d2aa88f727736968fc2df9cb6",
                 "shasum": ""
             },
             "require": {
-                "guzzle/guzzle": ">=3.7.0,<=3.9.9",
+                "guzzle/guzzle": "~3.7",
                 "php": ">=5.3.3"
             },
             "require-dev": {
                 "doctrine/cache": "~1.0",
                 "ext-openssl": "*",
-                "monolog/monolog": "1.4.*",
-                "phpunit/phpunit": "3.7.*",
-                "symfony/class-loader": "2.*",
-                "symfony/yaml": "2.*"
+                "monolog/monolog": "~1.4",
+                "phpunit/phpunit": "~4.0",
+                "symfony/yaml": "~2.1"
             },
             "suggest": {
                 "doctrine/cache": "Adds support for caching of credentials and responses",
@@ -42,7 +41,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.6.x-dev"
+                    "dev-master": "2.7-dev"
                 }
             },
             "autoload": {
@@ -72,7 +71,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2014-05-29 18:57:57"
+            "time": "2015-04-23 20:14:25"
         },
         {
             "name": "guzzle/guzzle",
@@ -308,17 +307,17 @@
             "time": "2013-09-11 14:27:58"
         },
         {
-            "name": "rhumsaa/uuid",
-            "version": "2.5.0",
+            "name": "ramsey/uuid",
+            "version": "2.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ramsey/uuid.git",
-                "reference": "4b0bd0f6cb740dec8c4aebf20957925981a21706"
+                "reference": "cca98c652cac412c9c2f109c69e5532f313435fc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ramsey/uuid/zipball/4b0bd0f6cb740dec8c4aebf20957925981a21706",
-                "reference": "4b0bd0f6cb740dec8c4aebf20957925981a21706",
+                "url": "https://api.github.com/repos/ramsey/uuid/zipball/cca98c652cac412c9c2f109c69e5532f313435fc",
+                "reference": "cca98c652cac412c9c2f109c69e5532f313435fc",
                 "shasum": ""
             },
             "require": {
@@ -326,22 +325,28 @@
             },
             "require-dev": {
                 "doctrine/dbal": ">=2.3",
-                "moontoast/math": "1.1.0",
-                "phpunit/phpunit": "~3.7"
+                "moontoast/math": "~1.1",
+                "phpunit/phpunit": "~4.1",
+                "satooshi/php-coveralls": "~0.6",
+                "symfony/console": "~2.3"
             },
             "suggest": {
                 "doctrine/dbal": "Allow the use of a UUID as doctrine field type.",
-                "moontoast/math": "Provides support for large integers."
+                "moontoast/math": "Support for converting UUID to 128-bit integer (in string form).",
+                "symfony/console": "Support for use of the bin/uuid command line tool."
             },
+            "bin": [
+                "bin/uuid"
+            ],
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.5.x-dev"
+                    "dev-master": "2.8.x-dev"
                 }
             },
             "autoload": {
-                "psr-0": {
-                    "Rhumsaa\\Uuid": "src/"
+                "psr-4": {
+                    "Rhumsaa\\Uuid\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -355,8 +360,7 @@
                 },
                 {
                     "name": "Ben Ramsey",
-                    "homepage": "http://benramsey.com",
-                    "role": "Developer"
+                    "homepage": "http://benramsey.com"
                 }
             ],
             "description": "A PHP 5.3+ library for generating RFC 4122 version 1, 3, 4, and 5 universally unique identifiers (UUID).",
@@ -366,21 +370,21 @@
                 "identifier",
                 "uuid"
             ],
-            "time": "2013-10-30 22:43:52"
+            "time": "2014-11-09 18:42:56"
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.5.0",
+            "version": "v2.6.6",
             "target-dir": "Symfony/Component/EventDispatcher",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/EventDispatcher.git",
-                "reference": "cb62ec8dd05893fc8e4f0e6e21e326e1fc731fe8"
+                "reference": "70f7c8478739ad21e3deef0d977b38c77f1fb284"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/cb62ec8dd05893fc8e4f0e6e21e326e1fc731fe8",
-                "reference": "cb62ec8dd05893fc8e4f0e6e21e326e1fc731fe8",
+                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/70f7c8478739ad21e3deef0d977b38c77f1fb284",
+                "reference": "70f7c8478739ad21e3deef0d977b38c77f1fb284",
                 "shasum": ""
             },
             "require": {
@@ -388,9 +392,11 @@
             },
             "require-dev": {
                 "psr/log": "~1.0",
-                "symfony/config": "~2.0",
-                "symfony/dependency-injection": "~2.0",
-                "symfony/stopwatch": "~2.2"
+                "symfony/config": "~2.0,>=2.0.5",
+                "symfony/dependency-injection": "~2.6",
+                "symfony/expression-language": "~2.6",
+                "symfony/phpunit-bridge": "~2.7",
+                "symfony/stopwatch": "~2.3"
             },
             "suggest": {
                 "symfony/dependency-injection": "",
@@ -399,7 +405,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.5-dev"
+                    "dev-master": "2.6-dev"
                 }
             },
             "autoload": {
@@ -413,32 +419,30 @@
             ],
             "authors": [
                 {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com",
-                    "homepage": "http://fabien.potencier.org",
-                    "role": "Lead Developer"
-                },
-                {
                     "name": "Symfony Community",
                     "homepage": "http://symfony.com/contributors"
+                },
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
                 }
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "http://symfony.com",
-            "time": "2014-04-29 10:13:57"
+            "time": "2015-03-13 17:37:22"
         },
         {
             "name": "zendframework/zendframework",
-            "version": "2.3.1",
+            "version": "2.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zendframework/zf2.git",
-                "reference": "055eac4314425c291f3ef0e104a6196a8fc24cd5"
+                "reference": "628b809fcadcd326f2074a9815e5b1fce57077ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zendframework/zf2/zipball/055eac4314425c291f3ef0e104a6196a8fc24cd5",
-                "reference": "055eac4314425c291f3ef0e104a6196a8fc24cd5",
+                "url": "https://api.github.com/repos/zendframework/zf2/zipball/628b809fcadcd326f2074a9815e5b1fce57077ef",
+                "reference": "628b809fcadcd326f2074a9815e5b1fce57077ef",
                 "shasum": ""
             },
             "require": {
@@ -499,14 +503,13 @@
                 "zendframework/zend-xmlrpc": "self.version"
             },
             "require-dev": {
-                "doctrine/annotations": ">=1.0",
-                "fabpot/php-cs-fixer": "*@dev",
-                "ircmaxell/random-lib": "dev-master",
-                "ircmaxell/security-lib": "dev-master",
-                "mikey179/vfsstream": "1.2.*",
-                "phpunit/phpunit": "3.7.*",
-                "satooshi/php-coveralls": "dev-master",
-                "sebastianbergmann/phpcov": "1.1.0"
+                "doctrine/annotations": "~1.0",
+                "fabpot/php-cs-fixer": "~1.0",
+                "ircmaxell/random-lib": "~1.1",
+                "mikey179/vfsstream": "~1.2",
+                "phpunit/phpcov": "~2.0",
+                "phpunit/phpunit": "~4.0",
+                "satooshi/php-coveralls": "dev-master"
             },
             "suggest": {
                 "doctrine/annotations": "Doctrine Annotations >=1.0 for annotation features",
@@ -529,8 +532,8 @@
                 }
             },
             "autoload": {
-                "psr-0": {
-                    "Zend\\": "library/"
+                "psr-4": {
+                    "Zend\\": "library/Zend/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -543,7 +546,7 @@
                 "framework",
                 "zf2"
             ],
-            "time": "2014-04-15 14:47:18"
+            "time": "2015-03-31 15:39:14"
         },
         {
             "name": "zendframework/zendxml",
@@ -592,16 +595,16 @@
         },
         {
             "name": "zfr/zfr-stripe",
-            "version": "v1.7.1",
+            "version": "v1.12.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zf-fr/zfr-stripe.git",
-                "reference": "7d5107ebf84baf6b5c3e1076b942f4abd37859c8"
+                "reference": "f88a9aa5c66d97fe9fbab136a356d4517214abc5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zf-fr/zfr-stripe/zipball/7d5107ebf84baf6b5c3e1076b942f4abd37859c8",
-                "reference": "7d5107ebf84baf6b5c3e1076b942f4abd37859c8",
+                "url": "https://api.github.com/repos/zf-fr/zfr-stripe/zipball/f88a9aa5c66d97fe9fbab136a356d4517214abc5",
+                "reference": "f88a9aa5c66d97fe9fbab136a356d4517214abc5",
                 "shasum": ""
             },
             "require": {
@@ -637,7 +640,7 @@
                 "payment",
                 "stripe"
             ],
-            "time": "2014-05-28 09:25:36"
+            "time": "2014-09-07 10:30:11"
         },
         {
             "name": "zfr/zfr-stripe-module",
@@ -692,22 +695,16 @@
             "time": "2014-02-10 13:25:01"
         }
     ],
-    "packages-dev": [
-
-    ],
-    "aliases": [
-
-    ],
+    "packages-dev": [],
+    "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [
-
-    ],
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": {
         "php": ">=5.3.3",
         "ext-curl": "*",
         "ext-json": "*"
     },
-    "platform-dev": [
-
-    ]
+    "platform-dev": []
 }

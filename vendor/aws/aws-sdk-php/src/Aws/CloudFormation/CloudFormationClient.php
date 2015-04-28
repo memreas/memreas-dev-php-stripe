@@ -36,9 +36,11 @@ use Guzzle\Service\Resource\ResourceIteratorInterface;
  * @method Model estimateTemplateCost(array $args = array()) {@command CloudFormation EstimateTemplateCost}
  * @method Model getStackPolicy(array $args = array()) {@command CloudFormation GetStackPolicy}
  * @method Model getTemplate(array $args = array()) {@command CloudFormation GetTemplate}
+ * @method Model getTemplateSummary(array $args = array()) {@command CloudFormation GetTemplateSummary}
  * @method Model listStackResources(array $args = array()) {@command CloudFormation ListStackResources}
  * @method Model listStacks(array $args = array()) {@command CloudFormation ListStacks}
  * @method Model setStackPolicy(array $args = array()) {@command CloudFormation SetStackPolicy}
+ * @method Model signalResource(array $args = array()) {@command CloudFormation SignalResource}
  * @method Model updateStack(array $args = array()) {@command CloudFormation UpdateStack}
  * @method Model validateTemplate(array $args = array()) {@command CloudFormation ValidateTemplate}
  * @method ResourceIteratorInterface getDescribeStackEventsIterator(array $args = array()) The input array uses the parameters of the DescribeStackEvents operation
@@ -47,8 +49,8 @@ use Guzzle\Service\Resource\ResourceIteratorInterface;
  * @method ResourceIteratorInterface getListStackResourcesIterator(array $args = array()) The input array uses the parameters of the ListStackResources operation
  * @method ResourceIteratorInterface getListStacksIterator(array $args = array()) The input array uses the parameters of the ListStacks operation
  *
- * @link http://docs.aws.amazon.com/aws-sdk-php/guide/latest/service-cloudformation.html User guide
- * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.CloudFormation.CloudFormationClient.html API docs
+ * @link http://docs.aws.amazon.com/aws-sdk-php/v2/guide/service-cloudformation.html User guide
+ * @link http://docs.aws.amazon.com/aws-sdk-php/v2/api/class-Aws.CloudFormation.CloudFormationClient.html API docs
  */
 class CloudFormationClient extends AbstractClient
 {
@@ -60,7 +62,7 @@ class CloudFormationClient extends AbstractClient
      * @param array|Collection $config Client configuration data
      *
      * @return self
-     * @link http://docs.aws.amazon.com/aws-sdk-php/guide/latest/configuration.html#client-configuration-options
+     * @link http://docs.aws.amazon.com/aws-sdk-php/v2/guide/configuration.html#client-configuration-options
      */
     public static function factory($config = array())
     {

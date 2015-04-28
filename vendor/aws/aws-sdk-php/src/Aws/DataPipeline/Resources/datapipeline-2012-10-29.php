@@ -79,6 +79,36 @@ return array (
                     'minLength' => 1,
                     'maxLength' => 1024,
                 ),
+                'parameterValues' => array(
+                    'type' => 'array',
+                    'location' => 'json',
+                    'items' => array(
+                        'name' => 'ParameterValue',
+                        'type' => 'object',
+                        'properties' => array(
+                            'id' => array(
+                                'required' => true,
+                                'type' => 'string',
+                                'minLength' => 1,
+                                'maxLength' => 256,
+                            ),
+                            'stringValue' => array(
+                                'required' => true,
+                                'type' => 'string',
+                                'maxLength' => 10240,
+                            ),
+                        ),
+                    ),
+                ),
+                'startTimestamp' => array(
+                    'type' => array(
+                        'object',
+                        'string',
+                        'integer',
+                    ),
+                    'format' => 'date-time',
+                    'location' => 'json',
+                ),
             ),
             'errorResponses' => array(
                 array(
@@ -96,6 +126,77 @@ return array (
                 array(
                     'reason' => 'The request was not valid. Verify that your request was properly formatted, that the signature was generated with the correct credentials, and that you haven\'t exceeded any of the service limits for your account.',
                     'class' => 'InvalidRequestException',
+                ),
+            ),
+        ),
+        'AddTags' => array(
+            'httpMethod' => 'POST',
+            'uri' => '/',
+            'class' => 'Aws\\Common\\Command\\JsonCommand',
+            'responseClass' => 'EmptyOutput',
+            'responseType' => 'model',
+            'parameters' => array(
+                'Content-Type' => array(
+                    'static' => true,
+                    'location' => 'header',
+                    'default' => 'application/x-amz-json-1.1',
+                ),
+                'command.expects' => array(
+                    'static' => true,
+                    'default' => 'application/json',
+                ),
+                'X-Amz-Target' => array(
+                    'static' => true,
+                    'location' => 'header',
+                    'default' => 'DataPipeline.AddTags',
+                ),
+                'pipelineId' => array(
+                    'required' => true,
+                    'type' => 'string',
+                    'location' => 'json',
+                    'minLength' => 1,
+                    'maxLength' => 1024,
+                ),
+                'tags' => array(
+                    'required' => true,
+                    'type' => 'array',
+                    'location' => 'json',
+                    'maxItems' => 10,
+                    'items' => array(
+                        'name' => 'Tag',
+                        'type' => 'object',
+                        'properties' => array(
+                            'key' => array(
+                                'required' => true,
+                                'type' => 'string',
+                                'minLength' => 1,
+                                'maxLength' => 128,
+                            ),
+                            'value' => array(
+                                'required' => true,
+                                'type' => 'string',
+                                'maxLength' => 256,
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+            'errorResponses' => array(
+                array(
+                    'reason' => 'An internal service error occurred.',
+                    'class' => 'InternalServiceErrorException',
+                ),
+                array(
+                    'reason' => 'The request was not valid. Verify that your request was properly formatted, that the signature was generated with the correct credentials, and that you haven\'t exceeded any of the service limits for your account.',
+                    'class' => 'InvalidRequestException',
+                ),
+                array(
+                    'reason' => 'The specified pipeline was not found. Verify that you used the correct user and account identifiers.',
+                    'class' => 'PipelineNotFoundException',
+                ),
+                array(
+                    'reason' => 'The specified pipeline has been deleted.',
+                    'class' => 'PipelineDeletedException',
                 ),
             ),
         ),
@@ -139,8 +240,83 @@ return array (
                     'location' => 'json',
                     'maxLength' => 1024,
                 ),
+                'tags' => array(
+                    'type' => 'array',
+                    'location' => 'json',
+                    'maxItems' => 10,
+                    'items' => array(
+                        'name' => 'Tag',
+                        'type' => 'object',
+                        'properties' => array(
+                            'key' => array(
+                                'required' => true,
+                                'type' => 'string',
+                                'minLength' => 1,
+                                'maxLength' => 128,
+                            ),
+                            'value' => array(
+                                'required' => true,
+                                'type' => 'string',
+                                'maxLength' => 256,
+                            ),
+                        ),
+                    ),
+                ),
             ),
             'errorResponses' => array(
+                array(
+                    'reason' => 'An internal service error occurred.',
+                    'class' => 'InternalServiceErrorException',
+                ),
+                array(
+                    'reason' => 'The request was not valid. Verify that your request was properly formatted, that the signature was generated with the correct credentials, and that you haven\'t exceeded any of the service limits for your account.',
+                    'class' => 'InvalidRequestException',
+                ),
+            ),
+        ),
+        'DeactivatePipeline' => array(
+            'httpMethod' => 'POST',
+            'uri' => '/',
+            'class' => 'Aws\\Common\\Command\\JsonCommand',
+            'responseClass' => 'EmptyOutput',
+            'responseType' => 'model',
+            'parameters' => array(
+                'Content-Type' => array(
+                    'static' => true,
+                    'location' => 'header',
+                    'default' => 'application/x-amz-json-1.1',
+                ),
+                'command.expects' => array(
+                    'static' => true,
+                    'default' => 'application/json',
+                ),
+                'X-Amz-Target' => array(
+                    'static' => true,
+                    'location' => 'header',
+                    'default' => 'DataPipeline.DeactivatePipeline',
+                ),
+                'pipelineId' => array(
+                    'required' => true,
+                    'type' => 'string',
+                    'location' => 'json',
+                    'minLength' => 1,
+                    'maxLength' => 1024,
+                ),
+                'cancelActive' => array(
+                    'type' => 'boolean',
+                    'format' => 'boolean-string',
+                    'location' => 'json',
+                ),
+            ),
+            'errorResponses' => array(
+                array(
+                    'reason' => 'The specified pipeline was not found. Verify that you used the correct user and account identifiers.',
+                    'class' => 'PipelineNotFoundException',
+                ),
+                array(
+                    'reason' => 'The specified pipeline has been deleted.',
+                    'class' => 'PipelineDeletedException',
+                ),
                 array(
                     'reason' => 'An internal service error occurred.',
                     'class' => 'InternalServiceErrorException',
@@ -611,6 +787,64 @@ return array (
                         ),
                     ),
                 ),
+                'parameterObjects' => array(
+                    'type' => 'array',
+                    'location' => 'json',
+                    'items' => array(
+                        'name' => 'ParameterObject',
+                        'type' => 'object',
+                        'properties' => array(
+                            'id' => array(
+                                'required' => true,
+                                'type' => 'string',
+                                'minLength' => 1,
+                                'maxLength' => 256,
+                            ),
+                            'attributes' => array(
+                                'required' => true,
+                                'type' => 'array',
+                                'items' => array(
+                                    'name' => 'ParameterAttribute',
+                                    'type' => 'object',
+                                    'properties' => array(
+                                        'key' => array(
+                                            'required' => true,
+                                            'type' => 'string',
+                                            'minLength' => 1,
+                                            'maxLength' => 256,
+                                        ),
+                                        'stringValue' => array(
+                                            'required' => true,
+                                            'type' => 'string',
+                                            'maxLength' => 10240,
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                'parameterValues' => array(
+                    'type' => 'array',
+                    'location' => 'json',
+                    'items' => array(
+                        'name' => 'ParameterValue',
+                        'type' => 'object',
+                        'properties' => array(
+                            'id' => array(
+                                'required' => true,
+                                'type' => 'string',
+                                'minLength' => 1,
+                                'maxLength' => 256,
+                            ),
+                            'stringValue' => array(
+                                'required' => true,
+                                'type' => 'string',
+                                'maxLength' => 10240,
+                            ),
+                        ),
+                    ),
+                ),
             ),
             'errorResponses' => array(
                 array(
@@ -720,6 +954,64 @@ return array (
                 ),
             ),
         ),
+        'RemoveTags' => array(
+            'httpMethod' => 'POST',
+            'uri' => '/',
+            'class' => 'Aws\\Common\\Command\\JsonCommand',
+            'responseClass' => 'EmptyOutput',
+            'responseType' => 'model',
+            'parameters' => array(
+                'Content-Type' => array(
+                    'static' => true,
+                    'location' => 'header',
+                    'default' => 'application/x-amz-json-1.1',
+                ),
+                'command.expects' => array(
+                    'static' => true,
+                    'default' => 'application/json',
+                ),
+                'X-Amz-Target' => array(
+                    'static' => true,
+                    'location' => 'header',
+                    'default' => 'DataPipeline.RemoveTags',
+                ),
+                'pipelineId' => array(
+                    'required' => true,
+                    'type' => 'string',
+                    'location' => 'json',
+                    'minLength' => 1,
+                    'maxLength' => 1024,
+                ),
+                'tagKeys' => array(
+                    'required' => true,
+                    'type' => 'array',
+                    'location' => 'json',
+                    'items' => array(
+                        'name' => 'string',
+                        'type' => 'string',
+                        'maxLength' => 1024,
+                    ),
+                ),
+            ),
+            'errorResponses' => array(
+                array(
+                    'reason' => 'An internal service error occurred.',
+                    'class' => 'InternalServiceErrorException',
+                ),
+                array(
+                    'reason' => 'The request was not valid. Verify that your request was properly formatted, that the signature was generated with the correct credentials, and that you haven\'t exceeded any of the service limits for your account.',
+                    'class' => 'InvalidRequestException',
+                ),
+                array(
+                    'reason' => 'The specified pipeline was not found. Verify that you used the correct user and account identifiers.',
+                    'class' => 'PipelineNotFoundException',
+                ),
+                array(
+                    'reason' => 'The specified pipeline has been deleted.',
+                    'class' => 'PipelineDeletedException',
+                ),
+            ),
+        ),
         'ReportTaskProgress' => array(
             'httpMethod' => 'POST',
             'uri' => '/',
@@ -747,6 +1039,31 @@ return array (
                     'location' => 'json',
                     'minLength' => 1,
                     'maxLength' => 2048,
+                ),
+                'fields' => array(
+                    'type' => 'array',
+                    'location' => 'json',
+                    'items' => array(
+                        'name' => 'Field',
+                        'type' => 'object',
+                        'properties' => array(
+                            'key' => array(
+                                'required' => true,
+                                'type' => 'string',
+                                'minLength' => 1,
+                                'maxLength' => 256,
+                            ),
+                            'stringValue' => array(
+                                'type' => 'string',
+                                'maxLength' => 10240,
+                            ),
+                            'refValue' => array(
+                                'type' => 'string',
+                                'minLength' => 1,
+                                'maxLength' => 256,
+                            ),
+                        ),
+                    ),
                 ),
             ),
             'errorResponses' => array(
@@ -1035,6 +1352,64 @@ return array (
                         ),
                     ),
                 ),
+                'parameterObjects' => array(
+                    'type' => 'array',
+                    'location' => 'json',
+                    'items' => array(
+                        'name' => 'ParameterObject',
+                        'type' => 'object',
+                        'properties' => array(
+                            'id' => array(
+                                'required' => true,
+                                'type' => 'string',
+                                'minLength' => 1,
+                                'maxLength' => 256,
+                            ),
+                            'attributes' => array(
+                                'required' => true,
+                                'type' => 'array',
+                                'items' => array(
+                                    'name' => 'ParameterAttribute',
+                                    'type' => 'object',
+                                    'properties' => array(
+                                        'key' => array(
+                                            'required' => true,
+                                            'type' => 'string',
+                                            'minLength' => 1,
+                                            'maxLength' => 256,
+                                        ),
+                                        'stringValue' => array(
+                                            'required' => true,
+                                            'type' => 'string',
+                                            'maxLength' => 10240,
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                'parameterValues' => array(
+                    'type' => 'array',
+                    'location' => 'json',
+                    'items' => array(
+                        'name' => 'ParameterValue',
+                        'type' => 'object',
+                        'properties' => array(
+                            'id' => array(
+                                'required' => true,
+                                'type' => 'string',
+                                'minLength' => 1,
+                                'maxLength' => 256,
+                            ),
+                            'stringValue' => array(
+                                'required' => true,
+                                'type' => 'string',
+                                'maxLength' => 10240,
+                            ),
+                        ),
+                    ),
+                ),
             ),
             'errorResponses' => array(
                 array(
@@ -1157,6 +1532,21 @@ return array (
                             'description' => array(
                                 'type' => 'string',
                             ),
+                            'tags' => array(
+                                'type' => 'array',
+                                'items' => array(
+                                    'name' => 'Tag',
+                                    'type' => 'object',
+                                    'properties' => array(
+                                        'key' => array(
+                                            'type' => 'string',
+                                        ),
+                                        'value' => array(
+                                            'type' => 'string',
+                                        ),
+                                    ),
+                                ),
+                            ),
                         ),
                     ),
                 ),
@@ -1206,6 +1596,50 @@ return array (
                                         ),
                                     ),
                                 ),
+                            ),
+                        ),
+                    ),
+                ),
+                'parameterObjects' => array(
+                    'type' => 'array',
+                    'location' => 'json',
+                    'items' => array(
+                        'name' => 'ParameterObject',
+                        'type' => 'object',
+                        'properties' => array(
+                            'id' => array(
+                                'type' => 'string',
+                            ),
+                            'attributes' => array(
+                                'type' => 'array',
+                                'items' => array(
+                                    'name' => 'ParameterAttribute',
+                                    'type' => 'object',
+                                    'properties' => array(
+                                        'key' => array(
+                                            'type' => 'string',
+                                        ),
+                                        'stringValue' => array(
+                                            'type' => 'string',
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                'parameterValues' => array(
+                    'type' => 'array',
+                    'location' => 'json',
+                    'items' => array(
+                        'name' => 'ParameterValue',
+                        'type' => 'object',
+                        'properties' => array(
+                            'id' => array(
+                                'type' => 'string',
+                            ),
+                            'stringValue' => array(
+                                'type' => 'string',
                             ),
                         ),
                     ),

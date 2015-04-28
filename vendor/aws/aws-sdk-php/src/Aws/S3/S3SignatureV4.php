@@ -31,13 +31,10 @@ class S3SignatureV4 extends SignatureV4 implements S3SignatureInterface
      */
     public function signRequest(RequestInterface $request, CredentialsInterface $credentials)
     {
-        if ($request instanceof EntityEnclosingRequestInterface &&
-            $request->getBody() &&
-            !$request->hasHeader('x-amz-content-sha256')
-        ) {
+        if (!$request->hasHeader('x-amz-content-sha256')) {
             $request->setHeader(
-                'X-Amz-Content-Sha256',
-                $this->getPresignedPayload($request)
+                'x-amz-content-sha256',
+                $this->getPayload($request)
             );
         }
 
@@ -50,13 +47,14 @@ class S3SignatureV4 extends SignatureV4 implements S3SignatureInterface
      */
     protected function getPresignedPayload(RequestInterface $request)
     {
-        $result = parent::getPresignedPayload($request);
+        return 'UNSIGNED-PAYLOAD';
+    }
 
-        // If the body is empty, then sign with 'UNSIGNED-PAYLOAD'
-        if ($result === self::DEFAULT_PAYLOAD) {
-            $result = 'UNSIGNED-PAYLOAD';
-        }
-
-        return $result;
+    /**
+     * Amazon S3 does not double-encode the path component in the canonical req
+     */
+    protected function createCanonicalizedPath(RequestInterface $request)
+    {
+        return '/' . ltrim($request->getPath(), '/');
     }
 }

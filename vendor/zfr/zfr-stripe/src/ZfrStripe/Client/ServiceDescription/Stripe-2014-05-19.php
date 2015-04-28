@@ -53,7 +53,7 @@ $errors = array(
 
 return array(
     'name'        => 'Stripe',
-    'apiVersion'  => '2014-03-28',
+    'apiVersion'  => '2014-05-19',
     'baseUrl'     => 'https://api.stripe.com',
     'description' => 'Stripe is a payment system',
     'operations'  => array(
@@ -80,6 +80,12 @@ return array(
                     'description' => 'Amount (in cents) to capture',
                     'location'    => 'query',
                     'type'        => 'integer',
+                    'required'    => false
+                ),
+                'receipt_email' => array(
+                    'description' => 'The email address to send this charge\'s receipt to',
+                    'location'    => 'query',
+                    'type'        => 'string',
                     'required'    => false
                 ),
                 'application_fee' => array(
@@ -148,6 +154,12 @@ return array(
                 ),
                 'statement_description' => array(
                     'description' => 'An arbitrary string to be displayed alongside your company name on your customer\'s credit card statement',
+                    'location'    => 'query',
+                    'type'        => 'string',
+                    'required'    => false
+                ),
+                'receipt_email' => array(
+                    'description' => 'The email address to send this charge\'s receipt to',
                     'location'    => 'query',
                     'type'        => 'string',
                     'required'    => false
@@ -832,6 +844,12 @@ return array(
                     'type'        => 'string',
                     'required'    => false
                 ),
+                'metadata' => array(
+                    'description' => 'Optional metadata',
+                    'location'    => 'query',
+                    'type'        => 'array',
+                    'required'    => false
+                ),
                 'expand' => array(
                     'description' => 'Allow to expand some properties',
                     'location'    => 'query',
@@ -976,6 +994,12 @@ return array(
                     'type'        => 'string',
                     'required'    => false
                 ),
+                'metadata' => array(
+                    'description' => 'Optional metadata',
+                    'location'    => 'query',
+                    'type'        => 'array',
+                    'required'    => false
+                ),
                 'expand' => array(
                     'description' => 'Allow to expand some properties',
                     'location'    => 'query',
@@ -1027,7 +1051,7 @@ return array(
                     'location'    => 'query',
                     'type'        => 'string',
                     'required'    => true,
-                    'enum'        => array('week', 'month', 'year')
+                    'enum'        => array('day', 'week', 'month', 'year')
                 ),
                 'interval_count' => array(
                     'description' => 'Number of interval between each subscription billing',
@@ -2381,6 +2405,131 @@ return array(
                 ),
                 'expand' => array(
                     'description' => 'Allow to expand some properties',
+                    'location'    => 'query',
+                    'type'        => 'array',
+                    'required'    => false
+                )
+            )
+        ),
+
+        /**
+         * --------------------------------------------------------------------------------
+         * BALANCE RELATED METHODS
+         *
+         * DOC: https://stripe.com/docs/api#balance
+         * --------------------------------------------------------------------------------
+         */
+
+        'GetAccountBalance' => array(
+            'httpMethod'       => 'GET',
+            'uri'              => '/v1/balance',
+            'summary'          => 'Get the current account balance',
+            'errorResponses'   => $errors,
+            'parameters'       => array(
+                'expand' => array(
+                    'description' => 'Allow to expand some properties',
+                    'location'    => 'query',
+                    'type'        => 'array',
+                    'required'    => false
+                )
+            )
+        ),
+
+        'GetBalanceTransaction' => array(
+            'httpMethod'       => 'GET',
+            'uri'              => '/v1/balance/history/{id}',
+            'summary'          => 'Get an existing balance transactionb y its id',
+            'errorResponses'   => $errors,
+            'parameters'       => array(
+                'id' => array(
+                    'description' => 'Unique identifier of the balance transaction to get',
+                    'location'    => 'uri',
+                    'type'        => 'string',
+                    'required'    => true
+                ),
+                'expand' => array(
+                    'description' => 'Allow to expand some properties',
+                    'location'    => 'query',
+                    'type'        => 'array',
+                    'required'    => false
+                )
+            )
+        ),
+
+        'GetBalanceTransactions' => array(
+            'httpMethod'       => 'GET',
+            'uri'              => '/v1/balance/history',
+            'summary'          => 'Get all the balance transactions',
+            'errorResponses'   => $errors,
+            'parameters'       => array(
+                'limit' => array(
+                    'description' => 'Limit on how many application fees are retrieved',
+                    'location'    => 'query',
+                    'type'        => 'integer',
+                    'min'         => 1,
+                    'max'         => 100,
+                    'required'    => false
+                ),
+                'starting_after' => array(
+                    'description' => 'A cursor for use in the pagination',
+                    'location'    => 'query',
+                    'type'        => 'string',
+                    'required'    => false
+                ),
+                'ending_before' => array(
+                    'description' => 'A cursor for use in the pagination',
+                    'location'    => 'query',
+                    'type'        => 'string',
+                    'required'    => false
+                ),
+                'available_on' => array(
+                    'description' => 'A filter based on the "available_on" field. Can be an exact UTC timestamp, or a hash',
+                    'location'    => 'query',
+                    'type'        => array('string', 'array'),
+                    'required'    => false
+                ),
+                'created' => array(
+                    'description' => 'A filter based on the "created" field. Can be an exact UTC timestamp, or a hash',
+                    'location'    => 'query',
+                    'type'        => array('string', 'array'),
+                    'required'    => false
+                ),
+                'currency' => array(
+                    'description' => 'Filter for currency',
+                    'location'    => 'query',
+                    'type'        => 'string',
+                    'required'    => false
+                ),
+                'source' => array(
+                    'description' => 'Filter balance transactions using a specific source id (for example a charge id)',
+                    'location'    => 'query',
+                    'type'        => 'string',
+                    'required'    => false
+                ),
+                'transfer' => array(
+                    'description' => 'For automatic Stripe transfers only, only returns transactions that were transferred out on the specified transfer ID',
+                    'location'    => 'query',
+                    'type'        => 'string',
+                    'required'    => false
+                ),
+                'type' => array(
+                    'description' => 'Only returns transactions of the given type',
+                    'location'    => 'query',
+                    'type'        => 'string',
+                    'required'    => false,
+                    'enum'        => array(
+                        'adjustment', 'application_fee', 'application_fee_refund', 'charge',
+                        'refund', 'transfer', 'transfer_failure'
+                    )
+                ),
+                'expand' => array(
+                    'description' => 'Allow to expand some properties',
+                    'location'    => 'query',
+                    'type'        => 'array',
+                    'required'    => false
+                ),
+                'include' => array(
+                    'description' => 'Allow to include some additional properties',
                     'location'    => 'query',
                     'type'        => 'array',
                     'required'    => false

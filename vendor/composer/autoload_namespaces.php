@@ -8,10 +8,8 @@ $baseDir = dirname($vendorDir);
 return array(
     'ZfrStripe\\' => array($vendorDir . '/zfr/zfr-stripe/src'),
     'ZfrStripeModule\\' => array($vendorDir . '/zfr/zfr-stripe-module/src'),
-    'Zend\\' => array($vendorDir . '/zendframework/zendframework/library'),
     'ZendXml' => array($vendorDir . '/zendframework/zendxml/library'),
     'Symfony\\Component\\EventDispatcher\\' => array($vendorDir . '/symfony/event-dispatcher'),
-    'Rhumsaa\\Uuid' => array($vendorDir . '/rhumsaa/uuid/src'),
     'PayPal\\Service' => array($vendorDir . '/paypal/merchant-sdk-php/lib'),
     'PayPal\\PayPalAPI' => array($vendorDir . '/paypal/merchant-sdk-php/lib'),
     'PayPal\\EnhancedDataTypes' => array($vendorDir . '/paypal/merchant-sdk-php/lib'),

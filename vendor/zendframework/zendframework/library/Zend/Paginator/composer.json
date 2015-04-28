@@ -6,12 +6,12 @@
         "zf2",
         "paginator"
     ],
+    "homepage": "https://github.com/zendframework/zf2",
     "autoload": {
-        "psr-0": {
+        "psr-4": {
             "Zend\\Paginator\\": ""
         }
     },
-    "target-dir": "Zend/Paginator",
     "require": {
         "php": ">=5.3.23",
         "zendframework/zend-stdlib": "self.version"

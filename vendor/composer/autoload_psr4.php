@@ -6,4 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Zend\\' => array($vendorDir . '/zendframework/zendframework/library/Zend'),
+    'Rhumsaa\\Uuid\\' => array($vendorDir . '/ramsey/uuid/src'),
 );

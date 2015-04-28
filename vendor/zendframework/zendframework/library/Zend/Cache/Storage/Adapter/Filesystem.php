@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -38,7 +38,6 @@ class Filesystem extends AbstractAdapter implements
     TaggableInterface,
     TotalSpaceCapableInterface
 {
-
     /**
      * Buffered total space in bytes
      *
@@ -434,7 +433,7 @@ class Filesystem extends AbstractAdapter implements
      * Get available space in bytes
      *
      * @throws Exception\RuntimeException
-     * @return int|float
+     * @return float
      */
     public function getAvailableSpace()
     {
@@ -509,14 +508,15 @@ class Filesystem extends AbstractAdapter implements
      * @param  string  $normalizedKey
      * @param  bool $success
      * @param  mixed   $casToken
-     * @return mixed Data on success, null on failure
+     * @return null|mixed Data on success, null on failure
      * @throws Exception\ExceptionInterface
+     * @throws BaseException
      */
     protected function internalGetItem(& $normalizedKey, & $success = null, & $casToken = null)
     {
         if (!$this->internalHasItem($normalizedKey)) {
             $success = false;
-            return null;
+            return;
         }
 
         try {
@@ -529,7 +529,6 @@ class Filesystem extends AbstractAdapter implements
             }
             $success  = true;
             return $data;
-
         } catch (BaseException $e) {
             $success = false;
             throw $e;
@@ -548,7 +547,6 @@ class Filesystem extends AbstractAdapter implements
         $keys    = $normalizedKeys; // Don't change argument passed by reference
         $result  = array();
         while ($keys) {
-
             // LOCK_NB if more than one items have to read
             $nonBlocking = count($keys) > 1;
             $wouldblock  = null;
@@ -640,9 +638,7 @@ class Filesystem extends AbstractAdapter implements
             $mtime = filemtime($file);
             $error = ErrorHandler::stop();
             if (!$mtime) {
-                throw new Exception\RuntimeException(
-                    "Error getting mtime of file '{$file}'", 0, $error
-                );
+                throw new Exception\RuntimeException("Error getting mtime of file '{$file}'", 0, $error);
             }
 
             if (time() >= ($mtime + $ttl)) {
@@ -920,8 +916,6 @@ class Filesystem extends AbstractAdapter implements
      */
     protected function internalSetItems(array & $normalizedKeyValuePairs)
     {
-        $oldUmask    = null;
-
         // create an associated array of files and contents to write
         $contents = array();
         foreach ($normalizedKeyValuePairs as $key => & $value) {
@@ -1064,9 +1058,7 @@ class Filesystem extends AbstractAdapter implements
         $touch = touch($filespec . '.dat');
         $error = ErrorHandler::stop();
         if (!$touch) {
-            throw new Exception\RuntimeException(
-                "Error touching file '{$filespec}.dat'", 0, $error
-            );
+            throw new Exception\RuntimeException("Error touching file '{$filespec}.dat'", 0, $error);
         }
 
         return true;
@@ -1306,9 +1298,7 @@ class Filesystem extends AbstractAdapter implements
         $ifo = unserialize($content);
         $err = ErrorHandler::stop();
         if (!is_array($ifo)) {
-            throw new Exception\RuntimeException(
-                "Corrupted info file '{$file}'", 0, $err
-            );
+            throw new Exception\RuntimeException("Corrupted info file '{$file}'", 0, $err);
         }
 
         return $ifo;
@@ -1335,9 +1325,7 @@ class Filesystem extends AbstractAdapter implements
             $fp = fopen($file, 'rb');
             if ($fp === false) {
                 $err = ErrorHandler::stop();
-                throw new Exception\RuntimeException(
-                    "Error opening file '{$file}'", 0, $err
-                );
+                throw new Exception\RuntimeException("Error opening file '{$file}'", 0, $err);
             }
 
             if ($nonBlocking) {
@@ -1354,9 +1342,7 @@ class Filesystem extends AbstractAdapter implements
             if (!$lock) {
                 fclose($fp);
                 $err = ErrorHandler::stop();
-                throw new Exception\RuntimeException(
-                    "Error locking file '{$file}'", 0, $err
-                );
+                throw new Exception\RuntimeException("Error locking file '{$file}'", 0, $err);
             }
 
             $res = stream_get_contents($fp);
@@ -1364,9 +1350,7 @@ class Filesystem extends AbstractAdapter implements
                 flock($fp, LOCK_UN);
                 fclose($fp);
                 $err = ErrorHandler::stop();
-                throw new Exception\RuntimeException(
-                    'Error getting stream contents', 0, $err
-                );
+                throw new Exception\RuntimeException('Error getting stream contents', 0, $err);
             }
 
             flock($fp, LOCK_UN);
@@ -1377,9 +1361,7 @@ class Filesystem extends AbstractAdapter implements
             $res = file_get_contents($file, false);
             if ($res === false) {
                 $err = ErrorHandler::stop();
-                throw new Exception\RuntimeException(
-                    "Error getting file contents for file '{$file}'", 0, $err
-                );
+                throw new Exception\RuntimeException("Error getting file contents for file '{$file}'", 0, $err);
             }
         }
 
@@ -1430,21 +1412,24 @@ class Filesystem extends AbstractAdapter implements
             }
 
             if (!$res) {
-                $oct = ($perm === false) ? '777' : decoct($perm);
                 $err = ErrorHandler::stop();
-                throw new Exception\RuntimeException(
-                    "mkdir('{$pathname}', 0{$oct}, true) failed", 0, $err
-                );
+
+                // Issue 6435:
+                // mkdir could fail because of a race condition it was already created by another process
+                // after the first file_exists above
+                if (file_exists($pathname)) {
+                    return;
+                }
+
+                $oct = ($perm === false) ? '777' : decoct($perm);
+                throw new Exception\RuntimeException("mkdir('{$pathname}', 0{$oct}, true) failed", 0, $err);
             }
 
             if ($perm !== false && !chmod($pathname, $perm)) {
                 $oct = decoct($perm);
                 $err = ErrorHandler::stop();
-                throw new Exception\RuntimeException(
-                    "chmod('{$pathname}', 0{$oct}) failed", 0, $err
-                );
+                throw new Exception\RuntimeException("chmod('{$pathname}', 0{$oct}) failed", 0, $err);
             }
-
         } else {
             // build-in mkdir function sets permission together with current umask
             // which doesn't work well on multo threaded webservers
@@ -1474,6 +1459,13 @@ class Filesystem extends AbstractAdapter implements
                 }
 
                 if (!$res) {
+                    // Issue 6435:
+                    // mkdir could fail because of a race condition it was already created by another process
+                    // after the first file_exists above ... go to the next path part.
+                    if (file_exists($path)) {
+                        continue;
+                    }
+
                     $oct = ($perm === false) ? '777' : decoct($perm);
                     ErrorHandler::stop();
                     throw new Exception\RuntimeException(
@@ -1506,6 +1498,11 @@ class Filesystem extends AbstractAdapter implements
      */
     protected function putFileContent($file, $data, $nonBlocking = false, & $wouldblock = null)
     {
+        if (! is_string($data)) {
+            // Ensure we have a string
+            $data = (string) $data;
+        }
+
         $options     = $this->getOptions();
         $locking     = $options->getFileLocking();
         $nonBlocking = $locking && $nonBlocking;
@@ -1521,7 +1518,6 @@ class Filesystem extends AbstractAdapter implements
 
         // if locking and non blocking is enabled -> file_put_contents can't used
         if ($locking && $nonBlocking) {
-
             $umask = ($umask !== false) ? umask($umask) : false;
 
             $fp = fopen($file, 'cb');
@@ -1532,9 +1528,7 @@ class Filesystem extends AbstractAdapter implements
 
             if (!$fp) {
                 $err = ErrorHandler::stop();
-                throw new Exception\RuntimeException(
-                    "Error opening file '{$file}'", 0, $err
-                );
+                throw new Exception\RuntimeException("Error opening file '{$file}'", 0, $err);
             }
 
             if ($perm !== false && !chmod($file, $perm)) {
@@ -1588,9 +1582,7 @@ class Filesystem extends AbstractAdapter implements
 
             if ($rs === false) {
                 $err = ErrorHandler::stop();
-                throw new Exception\RuntimeException(
-                    "Error writing file '{$file}'", 0, $err
-                );
+                throw new Exception\RuntimeException("Error writing file '{$file}'", 0, $err);
             }
 
             if ($perm !== false && !chmod($file, $perm)) {
@@ -1619,7 +1611,9 @@ class Filesystem extends AbstractAdapter implements
         // only throw exception if file still exists after deleting
         if (!$res && file_exists($file)) {
             throw new Exception\RuntimeException(
-                "Error unlinking file '{$file}'; file still exists", 0, $err
+                "Error unlinking file '{$file}'; file still exists",
+                0,
+                $err
             );
         }
     }

@@ -57,8 +57,8 @@ use Guzzle\Service\Resource\ResourceIteratorInterface;
  * @method ResourceIteratorInterface getQueryIterator(array $args = array()) The input array uses the parameters of the Query operation
  * @method ResourceIteratorInterface getScanIterator(array $args = array()) The input array uses the parameters of the Scan operation
  *
- * @link http://docs.aws.amazon.com/aws-sdk-php/guide/latest/service-dynamodb.html User guide
- * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.DynamoDb.DynamoDbClient.html API docs
+ * @link http://docs.aws.amazon.com/aws-sdk-php/v2/guide/service-dynamodb.html User guide
+ * @link http://docs.aws.amazon.com/aws-sdk-php/v2/api/class-Aws.DynamoDb.DynamoDbClient.html API docs
  */
 class DynamoDbClient extends AbstractClient
 {
@@ -70,7 +70,7 @@ class DynamoDbClient extends AbstractClient
      * @param array|Collection $config Client configuration data
      *
      * @return self
-     * @link http://docs.aws.amazon.com/aws-sdk-php/guide/latest/configuration.html#client-configuration-options
+     * @link http://docs.aws.amazon.com/aws-sdk-php/v2/guide/configuration.html#client-configuration-options
      */
     public static function factory($config = array())
     {
@@ -134,6 +134,8 @@ class DynamoDbClient extends AbstractClient
      * @param string $format The type of format (e.g. put, update).
      *
      * @return array The formatted value.
+     * @deprecated The new DynamoDB document model, including the new types
+     *             (L, M, BOOL, NULL), is not supported by this method.
      */
     public function formatValue($value, $format = Attribute::FORMAT_PUT)
     {
@@ -147,6 +149,8 @@ class DynamoDbClient extends AbstractClient
      * @param string $format The type of format (e.g. put, update).
      *
      * @return array The formatted values.
+     * @deprecated The new DynamoDB document model, including the new types
+     *             (L, M, BOOL, NULL), is not supported by this method.
      */
     public function formatAttributes(array $values, $format = Attribute::FORMAT_PUT)
     {
