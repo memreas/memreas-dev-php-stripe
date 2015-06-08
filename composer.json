@@ -19,8 +19,8 @@
         "paypal/sdk-core-php": "2.4.*",
         "paypal/merchant-sdk-php":"*",
         "paypal/rest-api-sdk-php" : "0.7.*",
-        "aws/aws-sdk-php": "2.*",
-        "zfr/zfr-stripe-module": "~2.0"
+        "aws/aws-sdk-php": "2.8.9",
+        "zfr/zfr-stripe-module": "3.*"
     },    
     "config": {
 		"github-oauth": {

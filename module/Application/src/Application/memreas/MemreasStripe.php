@@ -54,17 +54,11 @@ class MemreasStripe extends StripeInstance {
 			/**
 			 * TODO: Fix Stripe ... client is not being created...
 			 */
-			Mlog::addone ( __CLASS__ . __METHOD__, '...' );
 			$this->serviceLocator = $serviceLocator;
-			Mlog::addone ( __CLASS__ . __METHOD__, 'passed $this->serviceLocator' );
 			$this->retreiveStripeKey ();
-			Mlog::addone ( __CLASS__ . __METHOD__, 'passed $this->retreiveStripeKey()' );
 			$this->stripeClient = new StripeClient ( $this->clientSecret, '2014-06-17');
-			Mlog::addone ( __CLASS__ . __METHOD__, 'passed $this->stripeClient()' );
 			$this->memreasStripeTables = new MemreasStripeTables ( $serviceLocator );
-			Mlog::addone ( __CLASS__ . __METHOD__, 'passed $this->memreasStripeTables()' );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
-			Mlog::addone ( __CLASS__ . __METHOD__, 'passed $this->stripeInstance()' );
 			
 			$session = new Container ( 'user' );
 			$this->user_id = $session->offsetGet ( 'user_id' );
@@ -1019,6 +1013,7 @@ class StripeInstance {
 	 * Override card's function
 	 */
 	public function storeCard($card_data = null) {
+Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
 		if (isset ( $card_data ['user_id'] ))
 			$user_id = $card_data ['user_id'];
 		else
@@ -1088,6 +1083,7 @@ class StripeInstance {
 					'message' => $stripeCard ['message'] 
 			);
 		$stripeCard = $stripeCard ['response'];
+Mlog::addone ( __CLASS__ . __METHOD__ . '::$stripeCard', $stripeCard );
 		
 		$now = date ( 'Y-m-d H:i:s' );
 		$transaction = new Memreas_Transaction ();
@@ -1118,7 +1114,7 @@ class StripeInstance {
 				'account_id' => $account_id,
 				'stripe_card_reference_id' => $stripeCard ['id'],
 				'stripe_card_token' => $this->stripeCard->getCardAttribute ( 'card_token' ),
-				'card_type' => $stripeCard ['type'],
+				'card_type' => $stripeCard ['brand'],
 				'obfuscated_card_number' => $obfuscated_card ['number'],
 				'exp_month' => $stripeCard ['exp_month'],
 				'exp_year' => $stripeCard ['exp_year'],
@@ -1750,6 +1746,8 @@ class StripeCustomer {
 	 * @return: result in JSON
 	 */
 	public function getCustomer($customer_id) {
+Mlog::addone ( __CLASS__ . __METHOD__ . 'customer_id', $customer_id  );
+		
 		try {
 			$customer ['exist'] = true;
 			$customer ['info'] = $this->stripeClient->getCustomer ( array (
@@ -2107,6 +2105,7 @@ class StripeCard {
 	 * @return: JSON Object result
 	 */
 	public function storeCard($card_data = null) {
+Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
 		if ($card_data) {
 			$this->setCarddata ( $card_data );
 			try {

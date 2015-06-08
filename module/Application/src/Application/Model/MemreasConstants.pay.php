@@ -10,11 +10,11 @@ class MemreasConstants {
         const MEMREASPAYMENTSDB	= 'memreaspaymentstripe';
         const S3BUCKET     		= "memreasdev";
         const TOPICARN			= "arn:aws:sns:us-east-1:004184890641:us-east-upload-transcode-worker-int";
-        const ORIGINAL_URL		= "http://memreas-dev-php-stripe.localhost";
-        const MEDIA_URL = "http://memreas-dev-php-ws.localhost/?action=addmediaevent";
-        const MEMREAS_WS = "http://memreas-dev-php-ws.localhost";
+        const ORIGINAL_URL		= "https://memreasdev-pay.memreas.com/";
+        const MEDIA_URL			= "https://memreasdev-wsj.memreas.com/?action=addmediaevent";
         const URL				= "/index";
-        
+        const MEMREAS_WS = "https://memreasdev-wsj.memreas.com";
+
         const ACCOUNT_MEMREAS_FLOAT = "memreasfloat";
         const ACCOUNT_MEMREAS_MASTER = "memreasmaster";
 		const PAYPAL_MEMREAS_MASTER_EMAIL = 'johnmeah-facilitator@paypal.com';

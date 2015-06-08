@@ -1,3 +1,183 @@
+# 2.16.1
+
+* Add the `destination` parameter when creating a charge (in all descriptors).
+
+# 2.16.0
+
+* [BC] Set default Stripe API to "2015-04-07" version.
+
+# 2.15.0
+
+* [BC] Set default Stripe API to "2015-03-24" version. This adds the property `discountable` for `createInvoiceItem`
+and `updateInvoiceItem` for all descriptors.
+
+# 2.14.1
+
+* Fix missing import
+
+# 2.14.0
+
+* [BC] Set default Stripe API to "2015-02-18" version (note: this version brings several important breaking changes
+in how you use Stripe API).
+* Fix a bug when changing the API version at runtime did not properly updated the descriptor.
+
+# 2.13.0
+
+* [BC] Set default Stripe API to "2015-02-16" version
+
+# 2.12.1
+
+* Set a simpler dependency for Guzzle (hopefully solving some dependencies problems)
+
+# 2.12.0
+
+* [BC] Set default Stripe API to "2015-02-10" version
+
+# 2.11.1
+
+* Validation for `tax_percent` is less restrictive and now accepts both a string or float
+
+# 2.11.0
+
+* [BC] Set default Stripe API to "2015-01-26" version
+
+# 2.10.2
+
+* ZfrStripe adds support for the new Idempotency feature ([see here](https://stripe.com/docs/api#errors)). It is added
+to every POST request, and work by using the new `idempotency_key` param.
+
+# 2.10.1
+
+* Fix a bug where the parameter `plan` was required for `updateSubscription` (it is actually optional).
+
+# 2.10.0
+
+* [BC] Set default Stripe API to "2015-01-11" version
+
+# 2.9.0
+
+* Fixed a long-lasting bug for `updateDispute` method. Also, a new descriptor has been added, as a previous BC
+was not taken into account in ZfrStripe. Therefore, current descriptor is Stripe-v1.2.
+
+# 2.8.1
+
+* Add the new `tax_percent` property to subscriptions.
+
+# 2.8.0
+
+* [BC] Set default Stripe API to "2014-12-22" version
+
+# 2.7.0
+
+* [BC] Set default Stripe API to "2014-12-17" version. This version replaced the `statement_description` to
+`statement_descriptor` for charges, plans, invoices and tranfers. Therefore, a new descriptor has been released for
+versions starting at "2014-12-17".
+
+# 2.6.0
+
+* [BC] Set default Stripe API to "2014-12-08" version
+
+# 2.5.0
+
+* [BC] Set default Stripe API to "2014-11-20" version
+
+# 2.4.0
+
+* [BC] Set default Stripe API to "2014-11-05" version
+
+# 2.3.6
+
+* Add support for the new `reason` property when creating a refund.
+
+# 2.3.5
+
+* Fix IDE auto-completion hint for `getUpcomingInvoiceLineItems` method
+
+# 2.3.4
+
+* Add missing `getUpcomingInvoiceLineItems` endpoint. This can be used to retrieve all the invoice line items from
+a given upcoming invoice.
+
+# 2.3.3
+
+* `forgiven` boolean was not properly encoded when updating an invoice.
+
+# 2.3.2
+
+* Add support for filtering deleted customers or not through the `deleted` parameter. Please note
+that this feature **IS NOT** documented and officially supported by Stripe, and may be removed without caution.
+
+# 2.3.1
+
+* Add support for the new `shipping` array when creating charges.
+* Add support for filtering charges if they are paid or not through the `paid` parameter. Please note
+that this feature **IS NOT** documented and officially supported by Stripe, and may be removed without caution.
+
+# 2.3.0
+
+* [BC] Set default Stripe API to "2014-10-07" version
+* ZfrStripe now uses PSR-4 for autoloading. This has flattened the structure of the libray, it should not break any of your code :).
+
+# 2.2.4
+
+* You can now use the shortcut `now` when setting or updating `trial_end` property.
+* Add support for the new `billing_cycle_anchor` property when creating and updating a subscription.
+
+# 2.2.3
+
+* Fix a bug when filtering invoice items by date.
+
+# 2.2.2
+
+* Add support for filtering invoice items if they are proration or not through the `proration` parameter. Please note
+that this feature **IS NOT** documented and officially supported by Stripe, and may be removed without caution.
+
+# 2.2.1
+
+* Add support for `object_id` when retrieving events. This allows to filter events by customer. Please note that
+this feature **IS NOT** documented and officially supported by Stripe, but as it powers Stripe dashboard, it should
+not be removed.
+
+# 2.2.0
+
+* The `getInvoiceLineItems` was not working correctly when pagination.
+* [BC] For consistency with other resources, the `id` parameter for retrieving invoice line items has been rename
+`invoice`.
+
+# 2.1.0
+
+* [BC] Set default Stripe API to "2014-09-08" version.
+
+# 2.0.4
+
+* Fix docblock to allow auto-completion on `getInvoiceLineItemsIterator`
+
+# 2.0.3
+
+* Balance transactions history for fee refund can be retrieved using the "fee_refund" type (Stripe documentation was
+wrong)
+
+# 2.0.2
+
+* Fix `updateApplicationFeeRefund` method
+
+# 2.0.1
+
+* Fix error with exception name
+
+# 2.0.0
+
+* [BC] PHP minimum dependency has been raised to PHP 5.4
+* [BC] Any descriptor before 2014-03-28 has been removed. If you need a previous version, please use 1.x branch.
+* Add new method to update coupons.
+* Add missing recipient card endpoints.
+* API version can now be changed by using the same client.
+* After some talk with Stripe developers, I realized I could simplify how versioning is done inside ZfrStripe. Starting
+from v2, I will reuse the same descriptor until an endpoint actually changes (for instance, in January 2014 the endpoint
+to get customer's subscriptions changed from "/customers/cus_abc/subscription" to "/customers/cus_abc_subscriptions"). However,
+if a new endpoint is introduced, it can actually be accessed even for older versions so that we do not need to duplicate
+the whole descriptor.
+
 # 1.12.0
 
 * [BC] Update latest API descriptor to 2014-08-20. This changes the response when getting disputes.

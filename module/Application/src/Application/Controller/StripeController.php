@@ -11,6 +11,8 @@ use Application\Form;
 use Guzzle\Http\Client;
 use Application\Model\MemreasConstants;
 use Application\memreas\MemreasStripe;
+use Application\memreas\Mlog;
+
 
 use Application\memreas\StripePlansConfig;
 
@@ -37,6 +39,7 @@ class StripeController extends AbstractActionController {
      * List stripe plan
      * */
     public function listPlanAction(){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
         if (isset($_REQUEST['callback'])){
             $callback = $_REQUEST['callback'];
             $json = $_REQUEST['json'];
@@ -52,18 +55,21 @@ class StripeController extends AbstractActionController {
 	 * Ajax functions
 	 * */
 	public function storeCardAction(){
-		if (isset($_REQUEST['callback'])){
-			$callback = $_REQUEST['callback'];
+		header('Access-Control-Allow-Origin: *');		
+Mlog::addone ( __CLASS__ . __METHOD__ . '::request', $_REQUEST );
+		//if (isset($_REQUEST['callback'])){
+		//	$callback = $_REQUEST['callback'];
             $json = $_REQUEST['json'];
-			$json = $_REQUEST['json'];
 			$jsonArr = json_decode($json, true);						
 			$message_data = $jsonArr['json'];
 			$MemreasStripe = new MemreasStripe($this->getServiceLocator());
-			
+Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data', $message_data );
+				
 			//Prepare card data
 			$card_data = array(
                 'user_id'           => $message_data['user_id'],
 				'number' 			=> $message_data['credit_card_number'],
+				'type'	 			=> $message_data['credit_card_type'],
 				'exp_month' 		=> $message_data['expiration_month'],
 				'exp_year' 			=> $message_data['expiration_year'],
 				'cvc'				=> $message_data['cvc'],
@@ -76,13 +82,18 @@ class StripeController extends AbstractActionController {
 				'address_zip' 		=> $message_data['zip_code'],
 				'address_country' 	=> 'US',									//Change this to dynamic form value				
 			);			
-			echo $callback . "(" . json_encode($MemreasStripe->storeCard($card_data)) . ")";
+Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
+			//echo $callback . "(" . json_encode($MemreasStripe->storeCard($card_data)) . ")";
+			//header('application/json');
+			$result = json_encode($MemreasStripe->storeCard($card_data)); 
+Mlog::addone ( __CLASS__ . __METHOD__ . '::$result', $result );
+			echo $result;
 			die();
-			
-		}	
+		//}	
 	}
 
 	public function listCardsAction(){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
 		if (isset($_REQUEST['callback'])){
 			$callback = $_REQUEST['callback'];
 			$json = $_REQUEST['json'];
@@ -98,6 +109,7 @@ class StripeController extends AbstractActionController {
 	}
 
     public function viewCardAction(){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
         if (isset($_REQUEST['callback'])){
             $callback = $_REQUEST['callback'];
             $json = $_REQUEST['json'];
@@ -110,6 +122,7 @@ class StripeController extends AbstractActionController {
     }
 
     public  function updateCardAction(){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
         if (isset($_REQUEST['callback'])){
             $callback = $_REQUEST['callback'];
             $json = $_REQUEST['json'];
@@ -133,6 +146,7 @@ class StripeController extends AbstractActionController {
 	}
 	
 	public function addSellerAction(){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
 		if (isset($_REQUEST['callback'])){
 			$callback = $_REQUEST['callback'];
 			$json = $_REQUEST['json'];
@@ -145,6 +159,7 @@ class StripeController extends AbstractActionController {
 	}
 	
 	public function addValueAction(){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
 		if (isset($_REQUEST['callback'])){
 			$callback = $_REQUEST['callback'];
 			$json = $_REQUEST['json'];
@@ -157,6 +172,7 @@ class StripeController extends AbstractActionController {
 	}
 	
 	public function decrementAction(){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
 		if (isset($_REQUEST['callback'])){
 			$callback = $_REQUEST['callback'];
 			$json = $_REQUEST['json'];
@@ -169,6 +185,7 @@ class StripeController extends AbstractActionController {
 	}
 	
 	public function accounthistoryAction(){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
 		if (isset($_REQUEST['callback'])){
 			$callback = $_REQUEST['callback'];
 			$json = $_REQUEST['json'];
@@ -181,6 +198,7 @@ class StripeController extends AbstractActionController {
 	}
 	
 	public function subscribeAction(){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
 		if (isset($_REQUEST['callback'])){
 			$callback = $_REQUEST['callback'];
 			$json = $_REQUEST['json'];
@@ -193,6 +211,7 @@ class StripeController extends AbstractActionController {
 	}	
 	
 	public function listMassPayeeAction(){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
 		if (isset($_REQUEST['callback'])){
 			$callback = $_REQUEST['callback'];
 			$json = $_REQUEST['json'];
@@ -205,18 +224,21 @@ class StripeController extends AbstractActionController {
 	}
 
     public function getCustomerInfoAction(){
-        if (isset($_REQUEST['callback'])){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
+	if (isset($_REQUEST['callback'])){
             $callback = $_REQUEST['callback'];
             $json = $_REQUEST['json'];
             $jsonArr = json_decode($json, true);
             $MemreasStripe = new MemreasStripe($this->getServiceLocator());
             $customer = $MemreasStripe->getCustomer($jsonArr['json'], true);
+Mlog::addone ( __CLASS__ . __METHOD__ . '$customer', $customer );
             echo $callback . "(" . json_encode($customer) . ")";
             die();
         }
     }
 
     public function activeCreditAction(){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
         $MemreasStripe = new MemreasStripe($this->getServiceLocator());
         $token = $_GET['token'];
         $activeBalance = $MemreasStripe->activePendingBalanceToAccount($token);
@@ -227,6 +249,7 @@ class StripeController extends AbstractActionController {
     }
 
     public function getUserBalanceAction(){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
         if (isset($_REQUEST['callback'])){
             $callback = $_REQUEST['callback'];
             $json = $_REQUEST['json'];
@@ -239,6 +262,7 @@ class StripeController extends AbstractActionController {
     }
 
     public function buyMediaAction(){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
         if (isset($_REQUEST['callback'])){
             $callback = $_REQUEST['callback'];
             $json = $_REQUEST['json'];
@@ -251,7 +275,8 @@ class StripeController extends AbstractActionController {
     }
 
     public function checkOwnEventAction(){
-        if (isset($_REQUEST['callback'])){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
+    	if (isset($_REQUEST['callback'])){
             $callback = $_REQUEST['callback'];
             $json = $_REQUEST['json'];
             $jsonArr = json_decode($json, true);
@@ -265,6 +290,7 @@ class StripeController extends AbstractActionController {
 
 	
 	public function testAction(){
+Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
         $MemreasStripe = new MemreasStripe($this->getServiceLocator());
         $result = $MemreasStripe->MakePayout(array(
             'account_id' => 'fda56136-c589-43f5-bad3-28ff45d4631a',
