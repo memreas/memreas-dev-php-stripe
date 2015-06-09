@@ -10,7 +10,7 @@ class MemreasConstants {
         const MEMREASPAYMENTSDB	= 'memreaspaymentstripe';
         const S3BUCKET     		= "memreasdev";
         const TOPICARN			= "arn:aws:sns:us-east-1:004184890641:us-east-upload-transcode-worker-int";
-        const ORIGINAL_URL		= "http://memreas-dev-php-stripe.localhost";
+        const ORIGINAL_URL		= "http://memreas-dev-php-stripe.localhost/";
         const MEDIA_URL = "http://memreas-dev-php-ws.localhost/?action=addmediaevent";
         const MEMREAS_WS = "http://memreas-dev-php-ws.localhost";
         const URL				= "/index";
