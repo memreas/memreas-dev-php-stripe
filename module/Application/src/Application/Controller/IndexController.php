@@ -69,6 +69,11 @@ class IndexController extends AbstractActionController {
 				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 				switch ($action) {
 					
+					case 'clearlog' :
+						unlink ( getcwd () . '/php_errors.log' );
+						error_log ( "Log has been cleared!" );
+						exit ();
+						break;
 					/*
 					 * Support WS : ListPlans
 					 * Description: List plans from Stripe by specify customer id
@@ -266,7 +271,7 @@ class IndexController extends AbstractActionController {
 			} catch ( Exception $e ) {
 				$result = array (
 						'status' => 'Failure',
-						'message' => $e->getMessage()
+						'message' => $e->getMessage () 
 				);
 			}
 			
