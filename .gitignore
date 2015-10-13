@@ -11,3 +11,8 @@ nbproject
 composer.lock
 data
 vendor
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
