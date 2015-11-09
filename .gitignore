@@ -8,10 +8,9 @@ nbproject
 .settings
 .log
 composer.lock
+composer.phar
 data
-
+vendor
 
 # Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
+.elasticbeanstalk

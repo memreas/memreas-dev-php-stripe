@@ -16,9 +16,6 @@
         "ext-curl": "*",
         "ext-json": "*",
 		"ramsey/uuid": "2.8.0",
-        "paypal/sdk-core-php": "2.4.*",
-        "paypal/merchant-sdk-php":"*",
-        "paypal/rest-api-sdk-php" : "0.7.*",
         "aws/aws-sdk-php": "2.8.9",
         "zfr/zfr-stripe-module": "3.*"
     },    
