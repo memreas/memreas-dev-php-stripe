@@ -10,7 +10,6 @@ nbproject
 composer.lock
 composer.phar
 data
-vendor
 
 # Elastic Beanstalk Files
 .elasticbeanstalk

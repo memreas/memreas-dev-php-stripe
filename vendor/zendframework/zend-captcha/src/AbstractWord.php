@@ -22,10 +22,10 @@ abstract class AbstractWord extends AbstractAdapter
     /**#@+
      * @var array Character sets
      */
-    public static $V  = array("a", "e", "i", "o", "u", "y");
-    public static $VN = array("a", "e", "i", "o", "u", "y","2","3","4","5","6","7","8","9");
-    public static $C  = array("b","c","d","f","g","h","j","k","m","n","p","q","r","s","t","u","v","w","x","z");
-    public static $CN = array("b","c","d","f","g","h","j","k","m","n","p","q","r","s","t","u","v","w","x","z","2","3","4","5","6","7","8","9");
+    public static $V  = ["a", "e", "i", "o", "u", "y"];
+    public static $VN = ["a", "e", "i", "o", "u", "y","2","3","4","5","6","7","8","9"];
+    public static $C  = ["b","c","d","f","g","h","j","k","m","n","p","q","r","s","t","u","v","w","x","z"];
+    public static $CN = ["b","c","d","f","g","h","j","k","m","n","p","q","r","s","t","u","v","w","x","z","2","3","4","5","6","7","8","9"];
     /**#@-*/
 
     /**
@@ -96,11 +96,11 @@ abstract class AbstractWord extends AbstractAdapter
      * Error messages
      * @var array
      */
-    protected $messageTemplates = array(
+    protected $messageTemplates = [
         self::MISSING_VALUE => 'Empty captcha value',
         self::MISSING_ID    => 'Captcha ID field is missing',
         self::BAD_CAPTCHA   => 'Captcha value is wrong',
-    );
+    ];
 
     /**
      * Length of the word to generate
@@ -309,10 +309,12 @@ abstract class AbstractWord extends AbstractAdapter
         $vowels     = $this->useNumbers ? static::$VN : static::$V;
         $consonants = $this->useNumbers ? static::$CN : static::$C;
 
+        $totIndexCon = count($consonants) - 1;
+        $totIndexVow = count($vowels) - 1;
         for ($i=0; $i < $wordLen; $i = $i + 2) {
             // generate word with mix of vowels and consonants
-            $consonant = $consonants[array_rand($consonants)];
-            $vowel     = $vowels[array_rand($vowels)];
+            $consonant = $consonants[Rand::getInteger(0, $totIndexCon, true)];
+            $vowel     = $vowels[Rand::getInteger(0, $totIndexVow, true)];
             $word     .= $consonant . $vowel;
         }
 
