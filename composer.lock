@@ -570,6 +570,7 @@
         },
         {
             "name": "phpunit/phpunit",
+<<<<<<< HEAD
             "version": "4.8.21",
             "source": {
                 "type": "git",
@@ -580,6 +581,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/ea76b17bced0500a28098626b84eda12dbcf119c",
                 "reference": "ea76b17bced0500a28098626b84eda12dbcf119c",
+=======
+            "version": "4.8.19",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sebastianbergmann/phpunit.git",
+                "reference": "b2caaf8947aba5e002d42126723e9d69795f32b4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/b2caaf8947aba5e002d42126723e9d69795f32b4",
+                "reference": "b2caaf8947aba5e002d42126723e9d69795f32b4",
+>>>>>>> ab3fa4f54f4fb6b33c3cc38aed4978ba8c2ce83f
                 "shasum": ""
             },
             "require": {
@@ -638,7 +651,11 @@
                 "testing",
                 "xunit"
             ],
+<<<<<<< HEAD
             "time": "2015-12-12 07:45:58"
+=======
+            "time": "2015-11-30 08:18:59"
+>>>>>>> ab3fa4f54f4fb6b33c3cc38aed4978ba8c2ce83f
         },
         {
             "name": "phpunit/phpunit-mock-objects",

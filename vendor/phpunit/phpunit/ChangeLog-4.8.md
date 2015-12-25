@@ -2,6 +2,7 @@
 
 All notable changes of the PHPUnit 4.8 release series are documented in this file using the [Keep a CHANGELOG](http://keepachangelog.com/) principles.
 
+<<<<<<< HEAD
 ## [4.8.21] - 2015-12-12
 
 ### Changed
@@ -15,6 +16,8 @@ All notable changes of the PHPUnit 4.8 release series are documented in this fil
 * Changed PHP version constraint in `composer.json` to prevent installing PHPUnit 4.8 on PHP 7
 * `phpunit.phar` will now refuse to work on PHP 7
 
+=======
+>>>>>>> ab3fa4f54f4fb6b33c3cc38aed4978ba8c2ce83f
 ## [4.8.19] - 2015-11-30
 
 ### Fixed
@@ -156,8 +159,11 @@ New PHAR release due to updated dependencies
 * Made the argument check of `assertContains()` and `assertNotContains()` more strict to prevent undefined behavior such as [#1808](https://github.com/sebastianbergmann/phpunit/issues/1808)
 * Changed the name of the default group from `__nogroup__` to `default`
 
+<<<<<<< HEAD
 [4.8.21]: https://github.com/sebastianbergmann/phpunit/compare/4.8.20...4.8.21
 [4.8.20]: https://github.com/sebastianbergmann/phpunit/compare/4.8.19...4.8.20
+=======
+>>>>>>> ab3fa4f54f4fb6b33c3cc38aed4978ba8c2ce83f
 [4.8.19]: https://github.com/sebastianbergmann/phpunit/compare/4.8.18...4.8.19
 [4.8.18]: https://github.com/sebastianbergmann/phpunit/compare/4.8.17...4.8.18
 [4.8.17]: https://github.com/sebastianbergmann/phpunit/compare/4.8.16...4.8.17
