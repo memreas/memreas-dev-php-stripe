@@ -85,6 +85,7 @@ class IndexController extends AbstractActionController {
 					 	 * show log as web page - testing only
 						 */
 						ob_start ();
+						http_response_code ( 200 );
 						echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
 						ob_end_flush ();
 						exit ();
