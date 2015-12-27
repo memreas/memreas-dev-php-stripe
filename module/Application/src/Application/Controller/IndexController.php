@@ -57,24 +57,27 @@ class IndexController extends AbstractActionController {
 		Mlog::addone ( __CLASS__ . __METHOD__ . '$_POST', $_POST );
 		Mlog::addone ( __CLASS__ . __METHOD__ . '$_REQUEST', $_REQUEST );
 		
-		if (! empty ( $_REQUEST ['action'] )) {
-			switch ($action) {
-				case 'showlog' :
+		if ($_REQUEST) {
+			$jsonRequest = json_decode ( $_REQUEST, true );
+			if (! empty ( $jsonRequest ['action'] )) {
+				switch ($action) {
+					case 'showlog' :
 						/*
-					 	 * show log as web page - testing only
+						 * show log as web page - testing only
 						 */
-						ob_start ();
-					http_response_code ( 200 );
-					echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
-					ob_end_flush ();
-					exit ();
-					break;
-				case 'clearlog' :
-					unlink ( getcwd () . '/php_errors.log' );
-					error_log ( "Log has been cleared!" );
-					exit ();
-					break;
-				default :
+						//ob_start ();
+						//http_response_code ( 200 );
+						echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
+						// ob_end_flush ();
+						exit ();
+						break;
+					case 'clearlog' :
+						unlink ( getcwd () . '/php_errors.log' );
+						error_log ( "Log has been cleared!" );
+						exit ();
+						break;
+					default :
+				}
 			}
 		}
 		if (! empty ( $_POST ['action'] )) {
