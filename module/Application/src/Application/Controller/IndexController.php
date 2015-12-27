@@ -29,7 +29,7 @@ use Application\memreas\MemreasStripe;
 
 class IndexController extends AbstractActionController {
 	// protected $url = MemreasConstants::ORIGINAL_URL;
-	protected $url = 'http://memreas-dev-ws.localhost/';
+	protected $url = 'http://memreasdev-wsj.memreas.com/';
 	protected $user_id;
 	protected $storage;
 	protected $authservice;
@@ -38,6 +38,15 @@ class IndexController extends AbstractActionController {
 	protected $mediaTable;
 	protected $eventmediaTable;
 	protected $friendmediaTable;
+        public function LogAction() {
+            echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
+				exit ();
+        }
+         public function clearLogAction() {
+           unlink ( getcwd () . '/php_errors.log' );
+				error_log ( "Log has been cleared!" );
+				echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
+        }
 	public function fetchXML($action, $xml) {
 		$guzzle = new Client ();
 		
