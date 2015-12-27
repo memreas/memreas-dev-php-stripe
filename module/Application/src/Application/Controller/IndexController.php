@@ -46,6 +46,7 @@ class IndexController extends AbstractActionController {
          public function clearLogAction() {
            unlink ( getcwd () . '/php_errors.log' );
 				error_log ( "Log has been cleared!" );
+                                echo getcwd ();
 				echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
                                 return array();
         }
