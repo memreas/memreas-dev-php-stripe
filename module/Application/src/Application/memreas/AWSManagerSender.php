@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Copyright (C) 2015 memreas llc. - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ */
 namespace Application\memreas;
 
 use Guzzle\Http\Client;
@@ -12,7 +17,6 @@ use Aws\ElasticTranscoder\ElasticTranscoderClient;
 use PHPImageWorkshop\ImageWorkshop;
 use Application\Model\MemreasConstants;
 
-error_reporting ( E_ALL & ~ E_NOTICE );
 class AWSManagerSender {
 	private $aws = null;
 	private $s3 = null;
@@ -30,7 +34,7 @@ class AWSManagerSender {
 		error_log ( "Inside AWSManagerSender contructor...", 0 );
 		
 		$this->service_locator = $service_locator;
-		//$this->dbAdapter = $service_locator->get ( 'doctrine.entitymanager.orm_default' );
+		// $this->dbAdapter = $service_locator->get ( 'doctrine.entitymanager.orm_default' );
 		$this->aws = Aws::factory ( array (
 				'key' => 'AKIAJMXGGG4BNFS42LZA',
 				'secret' => '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',
@@ -66,23 +70,24 @@ class AWSManagerSender {
 	}
 	public function snsProcessMediaPublish($message_data) {
 		$var = 0;
-		$message_data['memreastranscoder'] = MemreasConstants::MEMREAS_TRANSCODER;
+		$message_data ['memreastranscoder'] = MemreasConstants::MEMREAS_TRANSCODER;
 		$json = json_encode ( $message_data );
 		error_log ( "INPUT JSON ----> " . $json );
 		
 		try {
-
+			
 			if (MemreasConstants::MEMREAS_TRANSCODER) {
 				/*
 				 * Publish to worker tier here
 				 */
-				$result = $this->sqs->sendMessage(array(
-						'QueueUrl'          => MemreasConstants::QUEUEURL,
-						'MessageBody'       => $json,
-						//'Subject'			=> 'Hello',
-						//'MessageBody'       => 'Hello World!',
-				));
-error_log('Just published to MemreasConstants::QUEUEURL'.MemreasConstants::QUEUEURL.PHP_EOL);
+				$result = $this->sqs->sendMessage ( array (
+						'QueueUrl' => MemreasConstants::QUEUEURL,
+						'MessageBody' => $json 
+				)
+				// 'Subject' => 'Hello',
+				// 'MessageBody' => 'Hello World!',
+				 );
+				error_log ( 'Just published to MemreasConstants::QUEUEURL' . MemreasConstants::QUEUEURL . PHP_EOL );
 			} else {
 				/* - publish to topic here */
 				$result = $this->sns->publish ( array (
@@ -108,15 +113,9 @@ error_log('Just published to MemreasConstants::QUEUEURL'.MemreasConstants::QUEUE
 		$s3_data ['s3file_name'] = $file_name;
 		$s3_data ['s3file'] = $s3_data ['s3path'] . $file_name;
 		$file = $dirPath . $file_name;
-error_log ( "file ---> $file" . PHP_EOL );
+		error_log ( "file ---> $file" . PHP_EOL );
 		$body = EntityBody::factory ( fopen ( $file, 'r+' ) );
-		$uploader = UploadBuilder::newInstance ()->setClient 
-							( $this->s3 )->setSource 
-							( $body )->setBucket 
-							( $this->bucket )->setMinPartSize 
-							( 10 * Size::MB )->setOption 
-							( 'ContentType', $content_type )->setKey 
-							( $s3_data ['s3file'] )->build ();
+		$uploader = UploadBuilder::newInstance ()->setClient ( $this->s3 )->setSource ( $body )->setBucket ( $this->bucket )->setMinPartSize ( 10 * Size::MB )->setOption ( 'ContentType', $content_type )->setKey ( $s3_data ['s3file'] )->build ();
 		
 		// Modified - Perform the upload to S3. Abort the upload if something goes wrong
 		try {
@@ -146,9 +145,10 @@ error_log ( "file ---> $file" . PHP_EOL );
 						// Subject is required
 						'Subject' => array (
 								// Data is required
-								'Data' => $subject,
-								//'Charset' => 'iso-8859-1' 
-						),
+								'Data' => $subject 
+						)
+						// 'Charset' => 'iso-8859-1'
+						,
 						// Body is required
 						'Body' => array (
 								'Text' => array (

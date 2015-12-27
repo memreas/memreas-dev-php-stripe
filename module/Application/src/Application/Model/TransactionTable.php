@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Copyright (C) 2015 memreas llc. - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ */
 namespace Application\Model;
 
 use Zend\Db\Sql\Select;
@@ -8,12 +13,10 @@ use Application\memreas\MUUID;
 
 class TransactionTable {
 	protected $tableGateway;
-
-    public $account_id;
-    public $account_range;
-    public $offset = 0;
-    public $limit = 0;
-
+	public $account_id;
+	public $account_range;
+	public $offset = 0;
+	public $limit = 0;
 	public function __construct(TableGateway $tableGateway) {
 		$this->tableGateway = $tableGateway;
 	}
@@ -21,47 +24,38 @@ class TransactionTable {
 		$resultSet = $this->tableGateway->select ();
 		return $resultSet;
 	}
-    public function getAllTransactions($account_range, $page, $limit){
-        $this->offset = ($page - 1) * $limit;
-        $this->limit = $limit;
-        $this->account_range = $account_range;
-        $resultSet = $this->tableGateway->select(function(Select $select){
-            if ($this->account_range) {
-                $account_range = implode("','", $this->account_range);
-                $account_range = "'" . $account_range . "'";
-                $select->where("account_id IN({$account_range})")
-                    ->order('transaction_sent DESC')
-                    ->offset($this->offset)
-                    ->limit($this->limit);
-            }
-            else {
-                $select->order('transaction_sent DESC')
-                    ->offset($this->offset)
-                    ->limit($this->limit);
-            }
-        });
-        return $resultSet;
-    }
-	public function getTransactionByAccountId($account_id, $page = null, $limit = null) {
-        $this->account_id = $account_id;
-        if ($page && $limit){
-            $this->offset = ($page - 1) * $limit;
-            $this->limit = $limit;
-            $resultSet = $this->tableGateway->select(function (Select $select){
-                $select->where(array('account_id' => $this->account_id))
-                        ->order('transaction_sent DESC')
-                        ->offset($this->offset)
-                        ->limit($this->limit);
-            });
-        }
-		else {
-            $resultSet = $this->tableGateway->select ( array (
-                'account_id' => $account_id
-            ) );
-        }
+	public function getAllTransactions($account_range, $page, $limit) {
+		$this->offset = ($page - 1) * $limit;
+		$this->limit = $limit;
+		$this->account_range = $account_range;
+		$resultSet = $this->tableGateway->select ( function (Select $select) {
+			if ($this->account_range) {
+				$account_range = implode ( "','", $this->account_range );
+				$account_range = "'" . $account_range . "'";
+				$select->where ( "account_id IN({$account_range})" )->order ( 'transaction_sent DESC' )->offset ( $this->offset )->limit ( $this->limit );
+			} else {
+				$select->order ( 'transaction_sent DESC' )->offset ( $this->offset )->limit ( $this->limit );
+			}
+		} );
 		return $resultSet;
 	}
-	
+	public function getTransactionByAccountId($account_id, $page = null, $limit = null) {
+		$this->account_id = $account_id;
+		if ($page && $limit) {
+			$this->offset = ($page - 1) * $limit;
+			$this->limit = $limit;
+			$resultSet = $this->tableGateway->select ( function (Select $select) {
+				$select->where ( array (
+						'account_id' => $this->account_id 
+				) )->order ( 'transaction_sent DESC' )->offset ( $this->offset )->limit ( $this->limit );
+			} );
+		} else {
+			$resultSet = $this->tableGateway->select ( array (
+					'account_id' => $account_id 
+			) );
+		}
+		return $resultSet;
+	}
 	public function getTransaction($transaction_id) {
 		$rowset = $this->tableGateway->select ( array (
 				'transaction_id' => $transaction_id 
@@ -84,7 +78,7 @@ class TransactionTable {
 				'transaction_response' => $transaction->transaction_response,
 				'transaction_sent' => $transaction->transaction_sent,
 				'transaction_receive' => $transaction->transaction_receive,
-				'transaction_status' => $transaction->transaction_status
+				'transaction_status' => $transaction->transaction_status 
 		);
 		try {
 			if (isset ( $transaction->transaction_id )) {
@@ -108,10 +102,10 @@ class TransactionTable {
 	}
 	public function deleteTransaction($transactionId) {
 		$this->tableGateway->delete ( array (
-				'transactionId' => $transactionId ) );
+				'transactionId' => $transactionId 
+		) );
 	}
-
-    public function deleteAll(){
-        $this->tableGateway->delete("1");
-    }
+	public function deleteAll() {
+		$this->tableGateway->delete ( "1" );
+	}
 }

@@ -1,17 +1,10 @@
 <?php
 
 /**
- * Zend Framework (http://framework.zend.com/)
- *
- * @link      http://github.com/zendframework/ZendSkeletonApplication for the canonical source repository
- * @copyright Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
- * @license   http://framework.zend.com/license/new-bsd New BSD License
+ * Copyright (C) 2015 memreas llc. - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
  */
-
-// ///////////////////////////////
-// Author: John Meah
-// Copyright memreas llc 2013
-// ///////////////////////////////
 namespace Application\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
@@ -38,18 +31,6 @@ class IndexController extends AbstractActionController {
 	protected $mediaTable;
 	protected $eventmediaTable;
 	protected $friendmediaTable;
-	public function LogAction() {
-		error_log ( 'hellllllo' );
-		echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
-		exit ();
-	}
-	public function clearLogAction() {
-		unlink ( getcwd () . '/php_errors.log' );
-		error_log ( "Log has been cleared!" );
-		echo getcwd ();
-		echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
-		return array ();
-	}
 	public function fetchXML($action, $xml) {
 		$guzzle = new Client ();
 		
@@ -61,41 +42,47 @@ class IndexController extends AbstractActionController {
 		$response = $request->send ();
 		return $data = $response->getBody ( true );
 	}
-	public function ipnListenerAction() {
-		error_log ( "Inside ipnListenerAction...." );
-		// PayPal related calls...
-		$memreasPayPal = new MemreasPayPal ();
-		$memreas_paypal_tables = new MemreasPayPalTables ( $this->getServiceLocator () );
-		$result = $memreasPayPal->ipnListener ( null, $memreas_paypal_tables, $this->getServiceLocator () );
-		
-		http_response_code ( 200 );
-		exit ();
-	}
+	// public function ipnListenerAction() {
+	// error_log ( "Inside ipnListenerAction...." );
+	// // PayPal related calls...
+	// $memreasPayPal = new MemreasPayPal ();
+	// $memreas_paypal_tables = new MemreasPayPalTables ( $this->getServiceLocator () );
+	// $result = $memreasPayPal->ipnListener ( null, $memreas_paypal_tables, $this->getServiceLocator () );
+	
+	// http_response_code ( 200 );
+	// exit ();
+	// }
 	public function indexAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, '...' );
 		Mlog::addone ( __CLASS__ . __METHOD__ . '$_POST', $_POST );
 		Mlog::addone ( __CLASS__ . __METHOD__ . '$_REQUEST', $_REQUEST );
+		
+		if (! empty ( $_REQUEST ['action'] )) {
+			switch ($action) {
+				case 'showlog' :
+						/*
+					 	 * show log as web page - testing only
+						 */
+						ob_start ();
+					http_response_code ( 200 );
+					echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
+					ob_end_flush ();
+					exit ();
+					break;
+				case 'clearlog' :
+					unlink ( getcwd () . '/php_errors.log' );
+					error_log ( "Log has been cleared!" );
+					exit ();
+					break;
+				default :
+			}
+		}
 		if (! empty ( $_POST ['action'] )) {
 			try {
 				Mlog::addone ( __CLASS__ . __METHOD__ . '$_POST[action]', $_POST ['action'] );
 				$action = $_POST ['action'];
 				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 				switch ($action) {
-					case 'showlog' :
-						/*
-					 	 * show log as web page - testing only
-						 */
-						ob_start ();
-						http_response_code ( 200 );
-						echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
-						ob_end_flush ();
-						exit ();
-						break;
-					case 'clearlog' :
-						unlink ( getcwd () . '/php_errors.log' );
-						error_log ( "Log has been cleared!" );
-						exit ();
-						break;
 					/*
 					 * Support WS : ListPlans
 					 * Description: List plans from Stripe by specify customer id
@@ -299,7 +286,7 @@ class IndexController extends AbstractActionController {
 			
 			header ( "Content-Type: application/json" );
 			echo json_encode ( $result );
-			die ();
+			exit ();
 		}
 		
 		// Edited for Stripe

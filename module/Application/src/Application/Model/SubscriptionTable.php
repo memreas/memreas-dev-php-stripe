@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Copyright (C) 2015 memreas llc. - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ */
 namespace Application\Model;
 
 use Zend\Db\TableGateway\TableGateway;
@@ -26,7 +31,7 @@ class SubscriptionTable {
 		return $row;
 	}
 	public function saveSubscription(Subscription $subscription) {
-error_log("About to saveSubscription....".PHP_EOL);
+		error_log ( "About to saveSubscription...." . PHP_EOL );
 		$data = array (
 				'subscription_id' => $subscription->subscription_id,
 				'account_id' => $subscription->account_id,
@@ -45,32 +50,32 @@ error_log("About to saveSubscription....".PHP_EOL);
 		);
 		
 		try {
-		if (isset($subscription->subscription_id)) {
-			if ($this->getSubscription( $subscription->subscription_id )) {
-				$this->tableGateway->update ( $data, array ('subscription_id' =>  $subscription->subscription_id ) );
+			if (isset ( $subscription->subscription_id )) {
+				if ($this->getSubscription ( $subscription->subscription_id )) {
+					$this->tableGateway->update ( $data, array (
+							'subscription_id' => $subscription->subscription_id 
+					) );
+				} else {
+					throw new \Exception ( 'Form subscription_id does not exist' );
+				}
 			} else {
-				throw new \Exception ( 'Form subscription_id does not exist' );
+				$data ['subscription_id'] = MUUID::fetchUUID ();
+				$this->tableGateway->insert ( $data );
 			}
-		} else {
-			$data['subscription_id'] = MUUID::fetchUUID();
-			$this->tableGateway->insert ( $data );
+		} catch ( \Exception $e ) {
+			\Zend\Debug\Debug::dump ( $e->__toString () );
 		}
-		} catch (\Exception $e) {
-			\Zend\Debug\Debug::dump($e->__toString()); 
-		}
-		return $data['subscription_id'];
+		return $data ['subscription_id'];
 	}
-
 	public function deleteSubscription($subscription_id) {
 		$this->tableGateway->delete ( array (
 				'subscription_id' => $subscription_id 
 		) );
 	}
-
-    public function countUser($planId){
-        $rowset = $this->tableGateway->select ( array (
-            'plan' => $planId
-        ));
-        return count($rowset);
-    }
+	public function countUser($planId) {
+		$rowset = $this->tableGateway->select ( array (
+				'plan' => $planId 
+		) );
+		return count ( $rowset );
+	}
 }

@@ -1,10 +1,9 @@
 <?php
 
-/*
- * Memreas Stripe Paygate
- * Coder: Tran IT
- * Date: 05.05.2014
- * Referer document: https://stripe.com/docs/api
+/**
+ * Copyright (C) 2015 memreas llc. - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
  */
 namespace Application\memreas;
 
@@ -52,11 +51,12 @@ class MemreasStripe extends StripeInstance {
 	public function __construct($serviceLocator) {
 		try {
 			/**
-			 * TODO: Fix Stripe ... client is not being created...
+			 * TODO: Fix Stripe .
+			 * .. client is not being created...
 			 */
 			$this->serviceLocator = $serviceLocator;
 			$this->retreiveStripeKey ();
-			$this->stripeClient = new StripeClient ( $this->clientSecret, '2014-06-17');
+			$this->stripeClient = new StripeClient ( $this->clientSecret, '2014-06-17' );
 			$this->memreasStripeTables = new MemreasStripeTables ( $serviceLocator );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
 			
@@ -64,8 +64,8 @@ class MemreasStripe extends StripeInstance {
 			$this->user_id = $session->offsetGet ( 'user_id' );
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$this->user_id', $this->user_id );
 		} catch ( Exception $e ) {
-			Mlog::addone ( __CLASS__ . __METHOD__ . '$e->getMessage()', $e->getMessage() );
-			throw new \Exception($e->getMessage());
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$e->getMessage()', $e->getMessage () );
+			throw new \Exception ( $e->getMessage () );
 		}
 	}
 	
@@ -480,15 +480,15 @@ class StripeInstance {
 		$cardId = $paymentMethod->stripe_card_reference_id;
 		$customerId = $accountDetail->stripe_customer_id;
 		$transactionAmount = ( int ) ($data ['amount'] * 100); // Stripe use minimum amount conver for transaction. Eg: input $5
-		                                                   // convert request to stripe value is 500
+		                                                       // convert request to stripe value is 500
 		$stripeChargeParams = array (
 				'amount' => $transactionAmount,
 				'currency' => $currency,
 				'customer' => $customerId,
 				'card' => $cardId, // If this card param is null, Stripe will get primary customer card to charge
 				'description' => 'Add value to account' 
-		) // Set description more details later
-;
+		); // Set description more details later
+
 		$chargeResult = $this->stripeCard->createCharge ( $stripeChargeParams );
 		if ($chargeResult) {
 			// Check if Charge is successful or not
@@ -1013,7 +1013,7 @@ class StripeInstance {
 	 * Override card's function
 	 */
 	public function storeCard($card_data = null) {
-Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
+		Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
 		if (isset ( $card_data ['user_id'] ))
 			$user_id = $card_data ['user_id'];
 		else
@@ -1083,7 +1083,7 @@ Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
 					'message' => $stripeCard ['message'] 
 			);
 		$stripeCard = $stripeCard ['response'];
-Mlog::addone ( __CLASS__ . __METHOD__ . '::$stripeCard', $stripeCard );
+		Mlog::addone ( __CLASS__ . __METHOD__ . '::$stripeCard', $stripeCard );
 		
 		$now = date ( 'Y-m-d H:i:s' );
 		$transaction = new Memreas_Transaction ();
@@ -1253,15 +1253,15 @@ Mlog::addone ( __CLASS__ . __METHOD__ . '::$stripeCard', $stripeCard );
 			$cardId = $paymentMethod->stripe_card_reference_id;
 			$customerId = $accountDetail->stripe_customer_id;
 			$transactionAmount = ( int ) ($data ['amount'] * 100); // Stripe use minimum amount convert for transaction. Eg: input $5
-			                                                   // convert request to stripe value is 500
+			                                                       // convert request to stripe value is 500
 			$stripeChargeParams = array (
 					'amount' => $transactionAmount,
 					'currency' => 'USD',
 					'customer' => $customerId,
 					'card' => $cardId, // If this card param is null, Stripe will get primary customer card to charge
 					'description' => 'Charge for subscription : ' . $data ['plan'] 
-			) // Set description more details later
-;
+			); // Set description more details later
+
 			
 			if ($transactionAmount > 0)
 				$chargeResult = $this->stripeCard->createCharge ( $stripeChargeParams );
@@ -1746,7 +1746,7 @@ class StripeCustomer {
 	 * @return: result in JSON
 	 */
 	public function getCustomer($customer_id) {
-Mlog::addone ( __CLASS__ . __METHOD__ . 'customer_id', $customer_id  );
+		Mlog::addone ( __CLASS__ . __METHOD__ . 'customer_id', $customer_id );
 		
 		try {
 			$customer ['exist'] = true;
@@ -2105,7 +2105,7 @@ class StripeCard {
 	 * @return: JSON Object result
 	 */
 	public function storeCard($card_data = null) {
-Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
+		Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
 		if ($card_data) {
 			$this->setCarddata ( $card_data );
 			try {
