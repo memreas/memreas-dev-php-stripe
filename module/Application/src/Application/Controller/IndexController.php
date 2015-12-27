@@ -38,18 +38,18 @@ class IndexController extends AbstractActionController {
 	protected $mediaTable;
 	protected $eventmediaTable;
 	protected $friendmediaTable;
-        public function LogAction() {
-            error_log('hellllllo');
-            echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
-				exit ();
-        }
-         public function clearLogAction() {
-           unlink ( getcwd () . '/php_errors.log' );
-				error_log ( "Log has been cleared!" );
-                                echo getcwd ();
-				echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
-                                return array();
-        }
+	public function LogAction() {
+		error_log ( 'hellllllo' );
+		echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
+		exit ();
+	}
+	public function clearLogAction() {
+		unlink ( getcwd () . '/php_errors.log' );
+		error_log ( "Log has been cleared!" );
+		echo getcwd ();
+		echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
+		return array ();
+	}
 	public function fetchXML($action, $xml) {
 		$guzzle = new Client ();
 		
@@ -80,7 +80,13 @@ class IndexController extends AbstractActionController {
 				$action = $_POST ['action'];
 				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 				switch ($action) {
-					
+					case 'showlog' :
+						/*
+					 	 * show log as web page - testing only
+						 */
+						echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
+						exit ();
+						break;
 					case 'clearlog' :
 						unlink ( getcwd () . '/php_errors.log' );
 						error_log ( "Log has been cleared!" );
