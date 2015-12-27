@@ -39,6 +39,7 @@ class IndexController extends AbstractActionController {
 	protected $eventmediaTable;
 	protected $friendmediaTable;
         public function LogAction() {
+            error_log('hellllllo');
             echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
 				exit ();
         }
