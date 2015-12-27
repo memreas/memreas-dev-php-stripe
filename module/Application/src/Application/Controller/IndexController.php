@@ -74,6 +74,7 @@ class IndexController extends AbstractActionController {
 	public function indexAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, '...' );
 		Mlog::addone ( __CLASS__ . __METHOD__ . '$_POST', $_POST );
+		Mlog::addone ( __CLASS__ . __METHOD__ . '$_REQUEST', $_REQUEST );
 		if (! empty ( $_POST ['action'] )) {
 			try {
 				Mlog::addone ( __CLASS__ . __METHOD__ . '$_POST[action]', $_POST ['action'] );
