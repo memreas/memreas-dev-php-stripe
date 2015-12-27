@@ -55,8 +55,11 @@ class MemreasStripe extends StripeInstance {
 			 * TODO: Fix Stripe ... client is not being created...
 			 */
 			$this->serviceLocator = $serviceLocator;
+                        
 			$this->retreiveStripeKey ();
+                        echo 'creating client';
 			$this->stripeClient = new StripeClient ( $this->clientSecret, '2014-06-17');
+                        echo 'creating table';
 			$this->memreasStripeTables = new MemreasStripeTables ( $serviceLocator );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
 			
