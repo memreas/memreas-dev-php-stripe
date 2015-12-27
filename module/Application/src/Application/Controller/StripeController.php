@@ -38,18 +38,18 @@ class StripeController extends AbstractActionController {
     /*
      * List stripe plan
      * */
-    public function listPlanAction(){
+    public function listPlanAction(){echo '1';
 Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST['json'] );
-echo 2;
-        if (isset($_REQUEST['callback'])){echo 3;
+echo '2';
+        if (isset($_REQUEST['callback'])){echo '3';
             $callback = $_REQUEST['callback'];
             $json = $_REQUEST['json'];
             $jsonArr = json_decode($json, true);
             $message_data = $jsonArr['json'];
             $MemreasStripe = new MemreasStripe($this->getServiceLocator());
-            echo 4;
+            echo '4';
             echo $callback . "(" . json_encode($MemreasStripe->listPlans()) . ")";
-            echo 5;
+            echo '5';
             die();
         }
     }
