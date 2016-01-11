@@ -106,7 +106,9 @@ class StripeController extends AbstractActionController {
 				$userid = null;
 			
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-			echo $callback . "(" . json_encode ( $MemreasStripe->listCards ( $userid ) ) . ")";
+                        $out =$MemreasStripe->listCards ( $userid );
+                        Mlog::addone ( __CLASS__ . __METHOD__,$out  );
+			echo $callback . "(" . json_encode (  $out) . ")";
 			die ();
 		}
 	}
