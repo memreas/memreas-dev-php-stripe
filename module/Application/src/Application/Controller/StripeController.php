@@ -95,7 +95,7 @@ class StripeController extends AbstractActionController {
 		// }
 	}
 	public function listCardsAction() {
-		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST  );
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -135,6 +135,7 @@ class StripeController extends AbstractActionController {
 		}
 	}
 	public function deleteCardsAction() {
+            Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -288,6 +289,7 @@ class StripeController extends AbstractActionController {
 		die ();
 	}
 	public function resetDataAction() {
+            Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 		$MemreasStripe->memreasStripeTables->getAccountTable ()->deleteAll ();
 		$MemreasStripe->memreasStripeTables->getAccountBalancesTable ()->deleteAll ();
