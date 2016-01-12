@@ -16,14 +16,12 @@ class AWSMemreasRedisCache {
 	private $client = "";
 	private $isCacheEnable = MemreasConstants::REDIS_SERVER_USE;
 	private $dbAdapter;
-	private $url_signer;
 	public function __construct($service_locator) {
 		if (! $this->isCacheEnable) {
 			return;
 		}
 		
 		$this->dbAdapter = $service_locator->get ( 'doctrine.entitymanager.orm_default' );
-		$this->url_signer = new MemreasSignedURL ();
 		
 		try {
 			$this->cache = new \Predis\Client ( [ 
@@ -31,16 +29,9 @@ class AWSMemreasRedisCache {
 					'host' => MemreasConstants::REDIS_SERVER_ENDPOINT,
 					'port' => 6379 
 			] );
-		//} catch ( \Predis\Connection\ConnectionException $ex ) {
-		//	error_log ( "exception ---> " . print_r ( $ex, true ) . PHP_EOL );
-		} catch ( \Exception $ex ) {
-			error_log ( "predis connection exception ---> " . print_r ( $ex, true ) . PHP_EOL );
+		} catch ( \Predis\Connection\ConnectionException $ex ) {
+			error_log ( "exception ---> " . print_r ( $ex, true ) . PHP_EOL );
 		}
-		$this->cache->set('foo', 'bar');
-		error_log("Fetching from REDIS! ---> " . $this->cache->get('foo') . " for host --->" . gethostname () . PHP_EOL);
-		$this->cache->del ( 'foo' );
-		
-		// error_log("Fetching from REDIS! ---> " . $this->cache->get('foo') . PHP_EOL);
 	}
 	public function setCache($key, $value, $ttl = MemreasConstants::REDIS_CACHE_TTL) {
 		if (! $this->isCacheEnable) {
@@ -64,127 +55,8 @@ class AWSMemreasRedisCache {
 		}
 		return $result;
 	}
-	public function warmHashTagSet($user_id) {
-		sleep ( 1 );
-		$warming_hashtag = $this->cache->get ( 'warming_hashtag' );
-		error_log ( "warming_hashtag..." . $warming_hashtag . PHP_EOL );
-		if (! $warming_hashtag || ($warming_hashtag == "(nil)")) {
-			error_log ( "cache warming @warming_hashtag started..." . date ( 'Y-m-d H:i:s.u' ) . PHP_EOL );
-			$warming = $this->cache->set ( 'warming_hashtag', '1' );
-			
-			// Fetch all event ids to check for public and friend
-			$tagRep = $this->dbAdapter->getRepository ( 'Application\Entity\Event' );
-			$tags = $tagRep->getHashTags ();
-			$event_ids [] = array ();
-			foreach ( $tags as $tag ) {
-				$tag_meta = json_decode ( $tag ['meta'], true );
-				if (! empty ( $tag_meta ['event'] )) {
-					$event_ids [$tag_meta ['event'] [0]] = $tag ['tag'];
-				}
-			}
-			
-			/*
-			 * Now filter by public and friends and add to cache...
-			 */
-			$keys = array_keys ( $event_ids );
-			$public_event_ids = $tagRep->filterPublicHashTags ( $keys );
-			$hashtag_public_eid_hash = array ();
-			foreach ( $public_event_ids as $eid ) {
-				if (! empty ( $event_ids [$eid ['event_id']] )) {
-					// error_log("public_event_tags event_ids[eid['event_id']] ---> ".$event_ids[$eid['event_id']].PHP_EOL);
-					// error_log("public_event_tags eid['tag'] ---> ".$event_ids[$eid['event_id']].PHP_EOL);
-					$result = $this->cache->zadd ( '#hashtag', 0, $event_ids [$eid ['event_id']] );
-					$hashtag_public_eid_hash [$eid ['event_id']] = $event_ids [$eid ['event_id']];
-				}
-			}
-			$reply = $this->cache->hmset ( '#hashtag_public_eid_hash', $hashtag_public_eid_hash );
-			// error_log("ZCARD #hashtag result ---> ".$this->cache->zcard('#hashtag').PHP_EOL);
-			
-			$friend_event_ids = $tagRep->filterFriendHashTags ( $keys, $user_id );
-			$hashtag_friends_eid_hash = array ();
-			foreach ( $friend_event_ids as $eid ) {
-				// error_log("Insdie friend for loop...".PHP_EOL);
-				if (! empty ( $event_ids [$eid ['event_id']] )) {
-					// error_log("Insdie friend for loop if !empty...".PHP_EOL);
-					// error_log("friend_event_tags event_ids[eid['event_id']] ---> ".$event_ids[$eid['event_id']].PHP_EOL);
-					// error_log("friend_event_tags eid['tag'] ---> ".$event_ids[$eid['event_id']].PHP_EOL);
-					$result = $this->cache->zadd ( '#hashtag_' . $user_id, 0, $event_ids [$eid ['event_id']] );
-					$hashtag_friends_eid_hash [$eid ['event_id']] = $event_ids [$eid ['event_id']];
-				}
-			}
-			// error_log("friend_event_tags count ---> ".count($friend_event_ids).PHP_EOL);
-			// error_log("ZCARD #hashtag_".$user_id." result ---> ".$this->cache->zcard('#hashtag_'.$user_id).PHP_EOL);
-			$reply = $this->cache->hmset ( '#hashtag_friends_hash_' . $user_id, $hashtag_friends_eid_hash );
-			
-			$result = $this->cache->executeRaw ( array (
-					'HLEN',
-					'#hashtag_friends_hash_' . $user_id 
-			) );
-			// error_log("HLEN result ---> $result".PHP_EOL);
-			$result = $this->cache->executeRaw ( array (
-					'HLEN',
-					'#hashtag_public_eid_hash' 
-			) );
-			// error_log("HLEN result ---> $result".PHP_EOL);
-			$warming = $this->cache->set ( 'warming_hashtag', '0' );
-			// error_log("cache warming @warming_hashtag finished...".date( 'Y-m-d H:i:s.u' ).PHP_EOL);
-			
-			// $this->redis->setCache("!event", $mc);
-		}
-	}
-	public function warmPersonSet() {
-		sleep ( 1 );
-		$warming = $this->cache->get ( 'warming' );
-		error_log ( "warming--->" . $warming . PHP_EOL );
-		if (! $warming) {
-			error_log ( "cache warming @person started..." . date ( 'Y-m-d H:i:s.u' ) . PHP_EOL );
-			$warming = $this->cache->set ( 'warming', '1' );
-			
-			$url_signer = new MemreasSignedURL ();
-			$qb = $this->dbAdapter->createQueryBuilder ();
-			$qb->select ( 'u.user_id', 'u.username', 'u.email_address', 'm.metadata' );
-			$qb->from ( 'Application\Entity\User', 'u' );
-			// $qb->leftjoin ( 'Application\Entity\Media', 'm', 'WITH', 'm.user_id = u.user_id' );
-			$qb->leftjoin ( 'Application\Entity\Media', 'm', 'WITH', 'm.user_id = u.user_id AND m.is_profile_pic = 1' );
-			
-			// error_log("Inside warming qb ----->".$qb->getDql().PHP_EOL);
-			// create index for catch;
-			$userIndexArr = $qb->getQuery ()->getResult ();
-			$person_meta_hash = array ();
-			$person_uid_hash = array ();
-			foreach ( $userIndexArr as $row ) {
-				$json_array = json_decode ( $row ['metadata'], true );
-				if (empty ( $json_array ['S3_files'] ['thumbnails'] ['79x80'] )) {
-					$url1 = $this->url_signer->signArrayOfUrls ( 'static/profile-pic.jpg' );
-				} else {
-					$url1 = $this->url_signer->signArrayOfUrls ( $json_array ['S3_files'] ['thumbnails'] ['79x80'] );
-				}
-				
-				$person_json = json_encode ( array (
-						'username' => $row ['username'],
-						'user_id' => $row ['user_id'],
-						'email_address' => $row ['email_address'],
-						'profile_photo' => $url1 
-				) );
-				/*
-				 * TODO: need to send this in one shot
-				 */
-				$person_meta_hash [$row ['username']] = $person_json;
-				$person_uid_hash [$row ['user_id']] = $row ['username'];
-				$usernames [$row ['username']] = 0;
-				// $result = $this->cache->zadd ( '@person', 0, $row ['username'] );
-				// error_log ( "Inside warming zadd result " . $result . " username--->" . $row ['username'] . " user_id--->" . $row ['user_id'] . PHP_EOL );
-			}
-			// $result = $this->cache->zadd ( '@person', 0, $usernames );
-			$result = $this->cache->zadd ( '@person', $usernames );
-			error_log ( 'zadd array $result--->' . print_r ( $result, true ) . PHP_EOL );
-			$reply = $this->cache->hmset ( '@person_meta_hash', $person_meta_hash );
-			$reply = $this->cache->hmset ( '@person_uid_hash', $person_uid_hash );
-			
-			// Finished warming so reset flag
-			$warming = $this->cache->set ( 'warming', '0' );
-		}
-	}
+
+
 	public function findSet($set, $match) {
 		error_log ( "Inside findSet.... set $set match $match" . PHP_EOL );
 		// Scan the hash and return 0 or the sub-array
