@@ -5,7 +5,7 @@
     "keywords": [
         "framework",
         "zf2",
-        "paypal", 
+        "stripe", 
         "php", 
         "sdk"
     ],
@@ -17,6 +17,7 @@
         "ext-json": "*",
 		"ramsey/uuid": "2.8.0",
         "aws/aws-sdk-php": "2.8.9",
+		"predis/predis": "1.*",
         "zfr/zfr-stripe-module": "3.*"
     },    
     "config": {
