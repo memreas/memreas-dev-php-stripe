@@ -120,19 +120,19 @@ class StripeInstance {
 		$accounts['status'] = 'Success';
 		foreach ($accounts as $account) {
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-		
-			$accounts['customer'] = $this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
-			$accounts['account'] = $account;
-			$accounts['accountDetail'] = $accountDetail;
+			$accounts['account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
+			$accounts['account']['accountHeader'] = $account;
+			$accounts['account']['accountDetail'] = $accountDetail;
 			
 		}
 		
-		return array (
-				'status' => 'Success',
-				'customer' => ($stripe) ? $this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null,
-				'account' => $account,
-				'accountDetail' => $accountDetail 
-		);
+		//return array (
+		//		'status' => 'Success',
+		//		'customer' => ($stripe) ? $this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null,
+		//		'account' => $account,
+		//		'accountDetail' => $accountDetail 
+		//);
+		return $accounts;
 	}
 	public function refundAmount($data) {
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['user_id'] );
