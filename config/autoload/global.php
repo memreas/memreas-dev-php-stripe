@@ -11,17 +11,6 @@
  * file.
  */
 
-/*
-$dbParams = array(
-    'database'  => 'memreaspaymentsdb',
-    'username'  => 'root',
-    'password'  => 'john1016',
-    'hostname'  => 'localhost',
-    // buffer_results - only for mysqli buffered queries, skip for others
-    'options' => array('buffer_results' => true)
-);
-*/
-
 return array(
 	'db'=> array(
 		'adapters'=>array(
