@@ -61,6 +61,8 @@ class MemreasStripe extends StripeInstance {
 			$this->memreasStripeTables = new MemreasStripeTables ( $serviceLocator );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
 			
+			Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
+				
 			$this->user_id = $_SESSION['user_id'];
 			//$session = new Container ( 'user' );
 			//$this->user_id = $session->offsetGet ( 'user_id' );
@@ -111,7 +113,7 @@ class StripeInstance {
 		if (empty ( $account ))
 			return array (
 					'status' => 'Failure',
-					'message' => 'You have no any payment method at this time. please try to add card first' 
+					'message' => 'Account not found' 
 			);
 		
 		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );

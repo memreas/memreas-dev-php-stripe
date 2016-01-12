@@ -249,9 +249,11 @@ class IndexController extends AbstractActionController {
 						case 'getaccountdetail' :
 							
 							$user_id = $_POST ['user_id'];
+							Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::getAccountDetail $user_id', $user_id);
 							$result = $MemreasStripe->getCustomer ( array (
 									'userid' => $user_id 
 							) );
+							Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::getAccountDetail $result', $result);
 							break;
 						
 						/*
