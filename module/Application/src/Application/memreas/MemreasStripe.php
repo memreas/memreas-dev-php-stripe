@@ -48,6 +48,7 @@ class MemreasStripe extends StripeInstance {
 	protected $clientSecret;
 	protected $clientPublic;
 	protected $user_id;
+		
 	public function __construct($serviceLocator) {
 		try {
 			/**
@@ -60,9 +61,10 @@ class MemreasStripe extends StripeInstance {
 			$this->memreasStripeTables = new MemreasStripeTables ( $serviceLocator );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
 			
-			$session = new Container ( 'user' );
-			$this->user_id = $session->offsetGet ( 'user_id' );
-			Mlog::addone ( __CLASS__ . __METHOD__ . '$this->user_id', $this->user_id );
+			$this->user_id = $_SESSION['user_id'];
+			//$session = new Container ( 'user' );
+			//$this->user_id = $session->offsetGet ( 'user_id' );
+			//Mlog::addone ( __CLASS__ . __METHOD__ . '$this->user_id', $this->user_id );
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$e->getMessage()', $e->getMessage () );
 			throw new \Exception ( $e->getMessage () );
