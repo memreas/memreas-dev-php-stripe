@@ -63,16 +63,16 @@ class IndexController extends AbstractActionController {
 		$hasSession = false;
 		try {
 			$this->setupSaveHandler ();
-			if (! emtpy ( $_REQUEST ['sid'] )) {
+			if (! empty ( $_REQUEST ['sid'] )) {
 				$this->sid = $_REQUEST ['sid'];
 				$this->sessHandler->startSessionWithSID ( $this->sid );
-			} else if (! emtpy ( $_POST ['sid'] )) {
+			} else if (! empty ( $_POST ['sid'] )) {
 				$this->sid = $_POST ['sid'];
 				$this->sessHandler->startSessionWithSID ( $this->sid );
-			} else if (! emtpy ( $_REQUEST ['memreascookie'] )) {
+			} else if (! empty ( $_REQUEST ['memreascookie'] )) {
 				$this->memreascookie = $_REQUEST ['memreascookie'];
 				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
-			} else if (! emtpy ( $_POST ['memreascookie'] )) {
+			} else if (! empty ( $_POST ['memreascookie'] )) {
 				$this->memreascookie = $_POST ['memreascookie'];
 				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
 			}
