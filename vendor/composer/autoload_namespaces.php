@@ -21,5 +21,4 @@ return array(
     'Doctrine\\Common\\' => array($vendorDir . '/doctrine/common/lib'),
     'DoctrineORMModule\\' => array($vendorDir . '/doctrine/doctrine-orm-module/src'),
     'DoctrineModule\\' => array($vendorDir . '/doctrine/doctrine-module/src'),
-    'Aws' => array($vendorDir . '/aws/aws-sdk-php/src'),
 );

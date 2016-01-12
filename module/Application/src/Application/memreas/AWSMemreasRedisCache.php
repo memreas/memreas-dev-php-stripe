@@ -8,7 +8,6 @@
 namespace Application\memreas;
 
 use Application\Model\MemreasConstants;
-use Aws\ElastiCache;
 use Predis\Collection\Iterator;
 
 class AWSMemreasRedisCache {
