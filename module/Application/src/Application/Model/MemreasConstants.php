@@ -8,6 +8,15 @@
 namespace Application\Model;
 
 class MemreasConstants {
+
+	// Redis section ubuntu standalone for redis 3 version
+	//const REDIS_SERVER_ENDPOINT = "54.225.187.57";
+	const REDIS_SERVER_ENDPOINT = "10.179.214.247";
+	const REDIS_SERVER_USE = true;
+	const REDIS_SERVER_SESSION_ONLY = true;
+	const REDIS_SERVER_PORT = "6379";
+	const REDIS_CACHE_TTL = 3600;
+		
 	const MEMREASDB = 'memreasdb';
 	const MEMREASPAYMENTSDB = 'memreaspaymentstripe';
 	const S3BUCKET = "memreasdev";
