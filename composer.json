@@ -18,6 +18,7 @@
 		"ramsey/uuid": "2.8.0",
         "aws/aws-sdk-php": "2.8.9",
 		"predis/predis": "1.*",
+		"doctrine/doctrine-orm-module": "0.8.0",		
         "zfr/zfr-stripe-module": "3.*"
     },    
     "config": {
