@@ -37,7 +37,7 @@ class IndexController extends AbstractActionController {
 	//
 	// start session by fetching and starting from REDIS - security check
 	//
-	public function setupSaveHandler($useSID, $sid = '', $memreascookie = '') {
+	public function setupSaveHandler() {
 		$this->redis = new AWSMemreasRedisCache ( $this->getServiceLocator () );
 		$this->sessHandler = new AWSMemreasRedisSessionHandler ( $this->redis, $this->getServiceLocator () );
 		session_set_save_handler ( $this->sessHandler );
