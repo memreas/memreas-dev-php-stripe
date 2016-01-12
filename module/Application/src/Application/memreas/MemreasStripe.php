@@ -85,7 +85,7 @@ class MemreasStripe extends StripeInstance {
 }
 
 /*
- * Mail Class
+ * Stripe Class
  */
 class StripeInstance {
 	public $serviceLocator;
@@ -107,7 +107,7 @@ class StripeInstance {
 		return $this->{$propertyName};
 	}
 	public function getCustomer($data, $stripe = false) {
-		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'] );
+		$accounts = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'] );
 		
 		// Check if exist account
 		if (empty ( $account ))
@@ -116,7 +116,16 @@ class StripeInstance {
 					'message' => 'Account not found' 
 			);
 		
-		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
+		$accounts = array();
+		$accounts['status'] = 'Success';
+		foreach ($accounts as $account) {
+			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
+		
+			$accounts['customer'] = $this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
+			$accounts['account'] = $account;
+			$accounts['accountDetail'] = $accountDetail;
+			
+		}
 		
 		return array (
 				'status' => 'Success',
