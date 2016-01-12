@@ -16,6 +16,8 @@ use Guzzle\Http\Client;
 use Application\Model\MemreasConstants;
 use Application\memreas\Mlog;
 use Application\memreas\MemreasStripe;
+use Application\memreas\AWSMemreasRedisCache;
+use Application\memreas\AWSMemreasRedisSessionHandler;
 
 class IndexController extends AbstractActionController {
 	// protected $url = MemreasConstants::ORIGINAL_URL;
