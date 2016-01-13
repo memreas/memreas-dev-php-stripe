@@ -107,28 +107,44 @@ class StripeInstance {
 		return $this->{$propertyName};
 	}
 	public function getCustomer($data, $stripe = false) {
-		$accounts = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'] );
 
-		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::account count-->', count($accounts));
+		$account_found = false;
+		$accounts = array();
+		
+		//
+		// Fetch Buyer Account
+		//
+		$buyer_account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'] );
+		if (!empty ( $account )) {
+			$account_found = true;
+			$buyerAccountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $buyer_account->account_id );
+			$accounts['account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
+			$accounts['account']['accountHeader'] = $buyer_account;
+			$accounts['account']['accountDetail'] = $buyerAccountDetail;
+		}
+		
+		//
+		// Fetch Seller Account
+		//
+		$seller_account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'], 'seller' );
+		if (!empty ( $account )) {
+			$account_found = true;
+			$sellerAccountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $seller_account->account_id );
+			$accounts['account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
+			$accounts['account']['accountHeader'] = $buyer_account;
+			$accounts['account']['accountDetail'] = $buyerAccountDetail;
+		}
+		
 		// Check if exist account
-		if (empty ( $account )) {
+		if (!$account_found) {
 			return array (
 					'status' => 'Failure',
 					'message' => 'Account not found' 
 			);
 		}
 		
-		// Account exists
-		$accounts = array();
+		// account exists
 		$accounts['status'] = 'Success';
-		foreach ($accounts as $account) {
-			Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::inside foreach account-->', $account->account_id);
-			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-			$accounts['account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
-			$accounts['account']['accountHeader'] = $account;
-			$accounts['account']['accountDetail'] = $accountDetail;
-			
-		}
 		
 		//return array (
 		//		'status' => 'Success',
@@ -139,7 +155,7 @@ class StripeInstance {
 		return $accounts;
 	}
 	public function refundAmount($data) {
-		$account = $this->memreasStripeTables->getAccountTable ()->getAllAccountsByUserId ( $data ['user_id'] );
+		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['user_id'] );
 		
 		// Check if exist account
 		if (empty ( $account ))

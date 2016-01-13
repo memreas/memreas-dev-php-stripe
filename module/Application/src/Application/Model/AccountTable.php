@@ -49,15 +49,6 @@ class AccountTable {
 		}
 		return $row;
 	}
-	public function getAllAccountsByUserId($user_id) {
-		$rowset = $this->tableGateway->select ( array (
-				'user_id' => $user_id 
-		) );
-		if (! $rowset) {
-			return null;
-		}
-		return $rowset;
-	}
 	public function getAccountByUserId($user_id, $account_type = 'buyer') {
 		$rowset = $this->tableGateway->select ( array (
 				'user_id' => $user_id,
