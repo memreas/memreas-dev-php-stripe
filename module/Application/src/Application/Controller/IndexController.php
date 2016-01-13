@@ -334,30 +334,12 @@ class IndexController extends AbstractActionController {
 		// $view->setTemplate ( $path ); // path to phtml file under view folder
 		// return $view;
 	}
-	public function setSession($username) {
-		//
-		// Validate user_data against Redis Cache
-		//
-	}
+
 	public function getUserTable() {
 		if (! $this->userTable) {
 			$sm = $this->getServiceLocator ();
 			$this->userTable = $sm->get ( 'Application\Model\UserTable' );
 		}
 		return $this->userTable;
-	}
-	public function getAuthService() {
-		if (! $this->authservice) {
-			$this->authservice = $this->getServiceLocator ()->get ( 'AuthService' );
-		}
-		
-		return $this->authservice;
-	}
-	public function getSessionStorage() {
-		if (! $this->storage) {
-			$this->storage = $this->getServiceLocator ()->get ( 'Application\Model\MyAuthStorage' );
-		}
-		
-		return $this->storage;
 	}
 } // end class IndexController
