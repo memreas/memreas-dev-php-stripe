@@ -115,7 +115,7 @@ class StripeInstance {
 		// Fetch Buyer Account
 		//
 		$buyer_account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'] );
-		if (!empty ( $account )) {
+		if (!empty ( $buyer_account )) {
 			$account_found = true;
 			$buyerAccountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $buyer_account->account_id );
 			$accounts['account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
@@ -127,7 +127,7 @@ class StripeInstance {
 		// Fetch Seller Account
 		//
 		$seller_account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'], 'seller' );
-		if (!empty ( $account )) {
+		if (!empty ( $seller_account )) {
 			$account_found = true;
 			$sellerAccountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $seller_account->account_id );
 			$accounts['account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
