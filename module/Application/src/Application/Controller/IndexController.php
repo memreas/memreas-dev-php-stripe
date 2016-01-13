@@ -77,7 +77,7 @@ class IndexController extends AbstractActionController {
 				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
 			}
 			$hasSession = true;
-			//Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::Redis Session found->', $_SESSION);
+			// Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::Redis Session found->', $_SESSION);
 		} catch ( \Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session lookup error->', $e->getMessage () );
 		}
@@ -249,11 +249,11 @@ class IndexController extends AbstractActionController {
 						case 'getaccountdetail' :
 							
 							$user_id = $_POST ['user_id'];
-							Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::getAccountDetail $user_id', $user_id);
+							Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::getAccountDetail $user_id', $user_id );
 							$result = $MemreasStripe->getCustomer ( array (
 									'userid' => $user_id 
-							) , true);
-							Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::getAccountDetail $result', $result);
+							), false ); // set to true to retrieve Stripe data
+							Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::getAccountDetail $result', $result );
 							break;
 						
 						/*
@@ -334,7 +334,6 @@ class IndexController extends AbstractActionController {
 		// $view->setTemplate ( $path ); // path to phtml file under view folder
 		// return $view;
 	}
-
 	public function getUserTable() {
 		if (! $this->userTable) {
 			$sm = $this->getServiceLocator ();
