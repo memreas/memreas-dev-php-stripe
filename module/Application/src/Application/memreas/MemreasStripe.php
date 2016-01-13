@@ -61,7 +61,7 @@ class MemreasStripe extends StripeInstance {
 			$this->memreasStripeTables = new MemreasStripeTables ( $serviceLocator );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
 			
-			Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
+			//Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
 				
 			$this->user_id = $_SESSION['user_id'];
 			//$session = new Container ( 'user' );
@@ -108,17 +108,21 @@ class StripeInstance {
 	}
 	public function getCustomer($data, $stripe = false) {
 		$accounts = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'] );
-		
+
+		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::account count-->', count($accounts));
 		// Check if exist account
-		if (empty ( $account ))
+		if (empty ( $account )) {
 			return array (
 					'status' => 'Failure',
 					'message' => 'Account not found' 
 			);
+		}
 		
+		// Account exists
 		$accounts = array();
 		$accounts['status'] = 'Success';
 		foreach ($accounts as $account) {
+			Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::inside foreach account-->', $account->account_id);
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
 			$accounts['account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
 			$accounts['account']['accountHeader'] = $account;
