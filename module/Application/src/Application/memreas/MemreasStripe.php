@@ -118,9 +118,9 @@ class StripeInstance {
 		if (!empty ( $account )) {
 			$account_found = true;
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-			$accounts['account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
-			$accounts['account']['accountHeader'] = $account;
-			$accounts['account']['accountDetail'] = $accountDetail;
+			$accounts[]['account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
+			$accounts[]['account']['accountHeader'] = $account;
+			$accounts[]['account']['accountDetail'] = $accountDetail;
 		}
 		
 		//
@@ -130,9 +130,9 @@ class StripeInstance {
 		if (!empty ( $account )) {
 			$account_found = true;
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-			$accounts['account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
-			$accounts['account']['accountHeader'] = $account;
-			$accounts['account']['accountDetail'] = $accountDetail;
+			$accounts[]['account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
+			$accounts[]['account']['accountHeader'] = $account;
+			$accounts[]['account']['accountDetail'] = $accountDetail;
 		}
 
 		// Check if exist account
