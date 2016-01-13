@@ -114,27 +114,27 @@ class StripeInstance {
 		//
 		// Fetch Buyer Account
 		//
-		$buyer_account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'] );
-		if (!empty ( $buyer_account )) {
+		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'] );
+		if (!empty ( $account )) {
 			$account_found = true;
-			$buyerAccountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $buyer_account->account_id );
+			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
 			$accounts['account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
-			$accounts['account']['accountHeader'] = $buyer_account;
-			$accounts['account']['accountDetail'] = $buyerAccountDetail;
+			$accounts['account']['accountHeader'] = $account;
+			$accounts['account']['accountDetail'] = $accountDetail;
 		}
 		
 		//
 		// Fetch Seller Account
 		//
-		$seller_account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'], 'seller' );
-		if (!empty ( $seller_account )) {
+		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'], 'seller' );
+		if (!empty ( $account )) {
 			$account_found = true;
-			$sellerAccountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $seller_account->account_id );
+			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
 			$accounts['account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
-			$accounts['account']['accountHeader'] = $buyer_account;
-			$accounts['account']['accountDetail'] = $buyerAccountDetail;
+			$accounts['account']['accountHeader'] = $account;
+			$accounts['account']['accountDetail'] = $accountDetail;
 		}
-		
+
 		// Check if exist account
 		if (!$account_found) {
 			return array (
