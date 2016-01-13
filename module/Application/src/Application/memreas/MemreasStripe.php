@@ -139,7 +139,7 @@ class StripeInstance {
 		return $accounts;
 	}
 	public function refundAmount($data) {
-		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['user_id'] );
+		$account = $this->memreasStripeTables->getAccountTable ()->getAllAccountsByUserId ( $data ['user_id'] );
 		
 		// Check if exist account
 		if (empty ( $account ))
