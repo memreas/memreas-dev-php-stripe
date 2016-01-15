@@ -77,7 +77,7 @@ class IndexController extends AbstractActionController {
 				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
 			}
 			$hasSession = true;
-			Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::Redis Session found->', $_SESSION);
+			// Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::Redis Session found->', $_SESSION);
 		} catch ( \Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session lookup error->', $e->getMessage () );
 		}
@@ -309,9 +309,6 @@ class IndexController extends AbstractActionController {
 							break;
 						
 						default :
-                                                    //calling $MemreasStripe action
-                                                    $MemreasStripe->$action();
-                                                    break;
 					}
 				} catch ( Exception $e ) {
 					$result = array (
