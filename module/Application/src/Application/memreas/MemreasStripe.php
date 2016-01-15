@@ -41,7 +41,7 @@ use Guzzle\Service\Exception\ValidationException;
 use Zend\Validator\CreditCard as ZendCreditCard;
 use ZfrStripe\Exception\BadRequestException;
 
-class MemreasStripe extends StripeInstance {
+class MemreasStripe  {
 	private $stripeClient;
 	private $stripeInstance;
 	public $memreasStripeTables;
@@ -59,7 +59,7 @@ class MemreasStripe extends StripeInstance {
 			$this->retreiveStripeKey ();
 			$this->stripeClient = new StripeClient ( $this->clientSecret, '2014-06-17' );
 			$this->memreasStripeTables = new MemreasStripeTables ( $serviceLocator );
-			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
+			$this->stripeInstance = new StripeInstance ( $this->stripeClient, $this->memreasStripeTables );
 			
 			//Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
 				
