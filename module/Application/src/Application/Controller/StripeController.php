@@ -20,6 +20,48 @@ use Application\memreas\Mlog;
 use Application\memreas\StripePlansConfig;
 
 class StripeController extends AbstractActionController {
+	
+	//
+	// start session by fetching and starting from REDIS - security check
+	//
+	public function setupSaveHandler() {
+		$this->redis = new AWSMemreasRedisCache ( $this->getServiceLocator () );
+		$this->sessHandler = new AWSMemreasRedisSessionHandler ( $this->redis, $this->getServiceLocator () );
+		session_set_save_handler ( $this->sessHandler );
+	}
+	
+	public function fetchSession() {
+		/**
+		 * Setup save handler and start session
+		 */
+		$hasSession = false;
+		try {
+			$this->setupSaveHandler ();
+			if (! empty ( $_REQUEST ['sid'] )) {
+				$this->sid = $_REQUEST ['sid'];
+				$this->sessHandler->startSessionWithSID ( $this->sid );
+			} else if (! empty ( $_POST ['sid'] )) {
+				$this->sid = $_POST ['sid'];
+				$this->sessHandler->startSessionWithSID ( $this->sid );
+			} else if (! empty ( $_REQUEST ['memreascookie'] )) {
+				$this->memreascookie = $_REQUEST ['memreascookie'];
+				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
+			} else if (! empty ( $_POST ['memreascookie'] )) {
+				$this->memreascookie = $_POST ['memreascookie'];
+				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
+			}
+			$hasSession = true;
+			// Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::Redis Session found->', $_SESSION);
+		} catch ( \Exception $e ) {
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session lookup error->', $e->getMessage () );
+		}
+		
+		//
+		// If session is valid on wsj we can proceed
+		//
+		return $hasSession;
+	}
+	
 	public function fetchXML($action, $xml) {
 		$guzzle = new Client ();
 		
@@ -31,16 +73,20 @@ class StripeController extends AbstractActionController {
 		$response = $request->send ();
 		return $data = $response->getBody ( true );
 	}
-	public function indexAction() {
-		$view = new ViewModel ();
-		$view->setTemplate ( 'application/stripe/index.phtml' );
-		return $view;
-	}
+	//public function indexAction() {
+	//	if ($this->fetchSession()) {
+	//	$view = new ViewModel ();
+	//	$view->setTemplate ( 'application/stripe/index.phtml' );
+	//	return $view;
+	//	} 
+	//}
 	
 	/*
 	 * List stripe plan
 	 */
 	public function listPlanAction() {
+		if ($this->fetchSession()) {
+			
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
@@ -51,12 +97,14 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode ( $MemreasStripe->listPlans () ) . ")";
 			die ();
 		}
-	}
+				}
+		}
 	
 	/*
 	 * Ajax functions
 	 */
 	public function storeCardAction() {
+		if ($this->fetchSession()) {
 		header ( 'Access-Control-Allow-Origin: *' );
 		Mlog::addone ( __CLASS__ . __METHOD__ . '::request', $_REQUEST );
 		// if (isset($_REQUEST['callback'])){
@@ -92,10 +140,11 @@ class StripeController extends AbstractActionController {
 		Mlog::addone ( __CLASS__ . __METHOD__ . '::$result', $result );
 		echo $result;
 		die ();
-		// }
+		}
 	}
 	public function listCardsAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST  );
+		if ($this->fetchSession()) {
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -110,9 +159,11 @@ class StripeController extends AbstractActionController {
  			echo $callback . "(" . json_encode (  $out) . ")";
 			die ();
 		}
+		}
 	}
 	public function viewCardAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession()) {
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -122,9 +173,11 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode ( $MemreasStripe->listCard ( $jsonArr ['json'] ) ) . ")";
 			die ();
 		}
+		}
 	}
 	public function updateCardAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession()) {
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -134,10 +187,12 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode ( $MemreasStripe->saveCard ( $jsonArr ['json'] ) ) . ")";
 			die ();
 		}
+		}
 	}
 	public function deleteCardsAction() {
             Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if (isset ( $_REQUEST ['callback'] )) {
+		if ($this->fetchSession()) {
+            if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
 			$jsonArr = json_decode ( $json, true );
@@ -145,9 +200,11 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode ( $MemreasStripe->deleteCards ( $jsonArr ['json'] ) ) . ")";
 			die ();
 		}
+		}
 	}
 	public function addSellerAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession()) {
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -157,9 +214,11 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode ( $addSeller ) . ")";
 			die ();
 		}
+		}
 	}
 	public function addValueAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession()) {
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -169,9 +228,11 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode ( $addValue ) . ")";
 			die ();
 		}
+		}
 	}
 	public function decrementAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession()) {
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -181,9 +242,11 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode ( $decrement ) . ")";
 			die ();
 		}
+		}
 	}
 	public function accounthistoryAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession()) {
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -193,9 +256,11 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode ( $accountHistory ) . ")";
 			die ();
 		}
+		}
 	}
 	public function subscribeAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession()) {
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -205,9 +270,11 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode ( $accountHistory ) . ")";
 			die ();
 		}
+		}
 	}
 	public function listMassPayeeAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession()) {
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -217,9 +284,11 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode ( $accountHistory ) . ")";
 			die ();
 		}
+		}
 	}
 	public function getCustomerInfoAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession()) {
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -230,9 +299,11 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode ( $customer ) . ")";
 			die ();
 		}
+		}
 	}
 	public function activeCreditAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession()) {
 		$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 		$token = $_GET ['token'];
 		$activeBalance = $MemreasStripe->activePendingBalanceToAccount ( $token );
@@ -240,9 +311,11 @@ class StripeController extends AbstractActionController {
 		if ($activeBalance ['status'] == 'Success')
 			echo '<script type="text/javascript">document.location.href="http://fe.memreas.com";</script>';
 		die ();
+		}
 	}
 	public function getUserBalanceAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession()) {
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -252,9 +325,11 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode ( $customer ) . ")";
 			die ();
 		}
+		}
 	}
 	public function buyMediaAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession()) {
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -264,9 +339,11 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode ( $result ) . ")";
 			die ();
 		}
+		}
 	}
 	public function checkOwnEventAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession()) {
 		if (isset ( $_REQUEST ['callback'] )) {
 			$callback = $_REQUEST ['callback'];
 			$json = $_REQUEST ['json'];
@@ -276,9 +353,11 @@ class StripeController extends AbstractActionController {
 			echo $callback . "(" . json_encode ( $result ) . ")";
 			die ();
 		}
+		}
 	}
 	public function testAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession()) {
 		$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 		$result = $MemreasStripe->MakePayout ( array (
 				'account_id' => 'fda56136-c589-43f5-bad3-28ff45d4631a',
@@ -288,6 +367,7 @@ class StripeController extends AbstractActionController {
 		echo '<pre>';
 		print_r ( $result );
 		die ();
+		}
 	}
 	public function resetDataAction() {
             Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
