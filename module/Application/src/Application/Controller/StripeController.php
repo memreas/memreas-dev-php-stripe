@@ -85,6 +85,7 @@ class StripeController extends AbstractActionController {
 	 * List stripe plan
 	 */
 	public function listPlanAction() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST );
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
 			if (isset ( $_REQUEST ['callback'] )) {
