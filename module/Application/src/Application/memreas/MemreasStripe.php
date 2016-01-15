@@ -229,6 +229,7 @@ class StripeInstance {
 		);
 	}
 	public function listPlans() {
+		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$this->stripePlan->getAllPlans ()::', $this->stripePlan->getAllPlans ());
 		return $this->stripePlan->getAllPlans ();
 	}
 	public function getTotalPlanUser($planId) {
