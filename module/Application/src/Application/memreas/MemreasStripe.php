@@ -82,6 +82,261 @@ class MemreasStripe extends StripeInstance {
 		$this->clientSecret = $stripeConfig ['stripe_constants'] ['SECRET_KEY'];
 		$this->clientPublic = $stripeConfig ['stripe_constants'] ['PUBLIC_KEY'];
 	}
+        /*
+	 * List stripe plan
+	 */
+	public function listPlan() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			echo $callback . "(" . json_encode ( $this->listPlans () ) . ")";
+			die ();
+}
+	}
+
+/*
+	 * Ajax functions
+	 */
+	public function storeCard() {
+		header ( 'Access-Control-Allow-Origin: *' );
+		Mlog::addone ( __CLASS__ . __METHOD__ . '::request', $_REQUEST );
+		// if (isset($_REQUEST['callback'])){
+		// $callback = $_REQUEST['callback'];
+		$json = $_REQUEST ['json'];
+		$jsonArr = json_decode ( $json, true );
+		$message_data = $jsonArr ['json'];
+		
+		Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data', $message_data );
+		
+		// Prepare card data
+		$card_data = array (
+				'user_id' => $message_data ['user_id'],
+				'number' => $message_data ['credit_card_number'],
+				'type' => $message_data ['credit_card_type'],
+				'exp_month' => $message_data ['expiration_month'],
+				'exp_year' => $message_data ['expiration_year'],
+				'cvc' => $message_data ['cvc'],
+				'name' => $message_data ['first_name'] . ' ' . $message_data ['last_name'],
+				'country' => 'US', // Change this to dynamic form value
+				'address_line1' => $message_data ['address_line_1'],
+				'address_line2' => $message_data ['address_line_2'],
+				'address_city' => $message_data ['city'],
+				'address_state' => $message_data ['state'],
+				'address_zip' => $message_data ['zip_code'],
+				'address_country' => 'US' 
+		) // Change this to dynamic form value
+;
+		Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
+		// echo $callback . "(" . json_encode($this->storeCard($card_data)) . ")";
+		// header('application/json');
+		$result = json_encode ( $this->storeCard ( $card_data ) );
+		Mlog::addone ( __CLASS__ . __METHOD__ . '::$result', $result );
+		echo $result;
+		die ();
+		// }
+	}
+	public function listCards() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST  );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			$json = $_REQUEST ['json'];
+			$jsonArr = json_decode ( $json, true );
+			if (isset ( $jsonArr ['json'] ['userid'] ))
+				$userid = $jsonArr ['json'] ['userid'];
+			else
+				$userid = null;
+			
+			
+                        $out =$this->listCards ( $userid );
+ 			echo $callback . "(" . json_encode (  $out) . ")";
+			die ();
+		}
+	}
+	public function viewCard() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			$json = $_REQUEST ['json'];
+			$jsonArr = json_decode ( $json, true );
+			
+			
+			echo $callback . "(" . json_encode ( $this->listCard ( $jsonArr ['json'] ) ) . ")";
+			die ();
+		}
+	}
+	public function updateCard() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			$json = $_REQUEST ['json'];
+			$jsonArr = json_decode ( $json, true );
+			
+			 
+			echo $callback . "(" . json_encode ( $this->saveCard ( $jsonArr ['json'] ) ) . ")";
+			die ();
+		}
+	}
+	public function deleteCards() {
+            Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			$json = $_REQUEST ['json'];
+			$jsonArr = json_decode ( $json, true );
+			echo $callback . "(" . json_encode ( $this->deleteCards ( $jsonArr ['json'] ) ) . ")";
+			die ();
+		}
+	}
+	public function addSeller() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			$json = $_REQUEST ['json'];
+			$jsonArr = json_decode ( $json, true );
+			
+			$addSeller = $this->addSeller ( $jsonArr ['json'] );
+			echo $callback . "(" . json_encode ( $addSeller ) . ")";
+			die ();
+		}
+	}
+	public function addValue() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			$json = $_REQUEST ['json'];
+			$jsonArr = json_decode ( $json, true );
+ 			$addValue = $this->addValueToAccount ( $jsonArr ['json'] );
+			echo $callback . "(" . json_encode ( $addValue ) . ")";
+			die ();
+		}
+	}
+	public function decrement() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			$json = $_REQUEST ['json'];
+			$jsonArr = json_decode ( $json, true );
+ 			$decrement = $this->decrementAmount ( $jsonArr ['json'] );
+			echo $callback . "(" . json_encode ( $decrement ) . ")";
+			die ();
+		}
+	}
+	public function accounthistory() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			$json = $_REQUEST ['json'];
+			$jsonArr = json_decode ( $json, true );
+ 			$accountHistory = $this->AccountHistory ( $jsonArr ['json'] );
+			echo $callback . "(" . json_encode ( $accountHistory ) . ")";
+			die ();
+		}
+	}
+	public function subscribe() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			$json = $_REQUEST ['json'];
+			$jsonArr = json_decode ( $json, true );
+			 
+			$accountHistory = $this->setSubscription ( $jsonArr ['json'] );
+			echo $callback . "(" . json_encode ( $accountHistory ) . ")";
+			die ();
+		}
+	}
+	public function listMassPayee() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			$json = $_REQUEST ['json'];
+			$jsonArr = json_decode ( $json, true );
+			 
+			$accountHistory = $this->listMassPayee ( 1, 10 );
+			echo $callback . "(" . json_encode ( $accountHistory ) . ")";
+			die ();
+		}
+	}
+	public function getCustomer() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			$json = $_REQUEST ['json'];
+			$jsonArr = json_decode ( $json, true );
+			 
+			$customer = $this->getCustomer ( $jsonArr ['json'], true );
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$customer', $customer );
+			echo $callback . "(" . json_encode ( $customer ) . ")";
+			die ();
+		}
+	}
+	public function activeCredit() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		 
+		$token = $_GET ['token'];
+		$activeBalance = $this->activePendingBalanceToAccount ( $token );
+		echo '<h3 style="text-align: center">' . $activeBalance ['message'] . '</h3>';
+		if ($activeBalance ['status'] == 'Success')
+			echo '<script type="text/javascript">document.location.href="http://fe.memreas.com";</script>';
+		die ();
+	}
+	public function getUserBalance() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			$json = $_REQUEST ['json'];
+			$jsonArr = json_decode ( $json, true );
+			 
+			$customer = $this->getAccountBalance ( $jsonArr ['json'], true );
+			echo $callback . "(" . json_encode ( $customer ) . ")";
+			die ();
+		}
+	}
+	public function buyMedia() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			$json = $_REQUEST ['json'];
+			$jsonArr = json_decode ( $json, true );
+			 
+			$result = $this->buyMedia ( $jsonArr ['json'], true );
+			echo $callback . "(" . json_encode ( $result ) . ")";
+			die ();
+		}
+	}
+	public function checkOwnEvent() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if (isset ( $_REQUEST ['callback'] )) {
+			$callback = $_REQUEST ['callback'];
+			$json = $_REQUEST ['json'];
+			$jsonArr = json_decode ( $json, true );
+ 			$result = $this->checkOwnEvent ( $jsonArr ['json'], true );
+			echo $callback . "(" . json_encode ( $result ) . ")";
+			die ();
+		}
+	}
+	public function test() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+ 		$result = $this->MakePayout ( array (
+				'account_id' => 'fda56136-c589-43f5-bad3-28ff45d4631a',
+				'amount' => 1,
+				'description' => 'explain something' 
+		) );
+		echo '<pre>';
+		print_r ( $result );
+		die ();
+	}
+	public function resetData() {
+            Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		 
+		$this->memreasStripeTables->getAccountTable ()->deleteAll ();
+		$this->memreasStripeTables->getAccountBalancesTable ()->deleteAll ();
+		$this->memreasStripeTables->getAccountDetailTable ()->deleteAll ();
+		$this->memreasStripeTables->getPaymentMethodTable ()->deleteAll ();
+		$this->memreasStripeTables->getTransactionTable ()->deleteAll ();
+		die ( 'done' );
+	}
+        
+        
+        
 }
 
 /*
