@@ -309,6 +309,9 @@ class IndexController extends AbstractActionController {
 							break;
 						
 						default :
+                                                    //calling $MemreasStripe action
+                                                    $MemreasStripe->$action();
+                                                    break;
 					}
 				} catch ( Exception $e ) {
 					$result = array (
