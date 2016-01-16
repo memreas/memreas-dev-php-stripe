@@ -37,6 +37,9 @@ class StripeController extends AbstractActionController {
 		 */
 		$hasSession = false;
 		try {
+			error_log('fetchSession $_COOKIE'.print_r($_COOKIE , true).PHP_EOL);
+			error_log('fetchSession $_REQUEST'.print_r($_REQUEST , true).PHP_EOL);
+			error_log('fetchSession $_POST'.print_r($_POST , true).PHP_EOL);
 			$this->setupSaveHandler ();
 			if (! empty ( $_REQUEST ['sid'] )) {
 				$this->sid = $_REQUEST ['sid'];
@@ -50,6 +53,8 @@ class StripeController extends AbstractActionController {
 			} else if (! empty ( $_POST ['memreascookie'] )) {
 				$this->memreascookie = $_POST ['memreascookie'];
 				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
+			} else if (! empty ( $_REQUEST ['json'] )) {
+				$jsonArr = json_decode($_REQUEST ['json']);
 			}
 			$hasSession = true;
 			Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::Redis Session found->', $_SESSION);
