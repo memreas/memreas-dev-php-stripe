@@ -54,8 +54,10 @@ class StripeController extends AbstractActionController {
 				$this->memreascookie = $_POST ['memreascookie'];
 				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
 			} else if (! empty ( $_REQUEST ['json'] )) {
-				$jsonArr = json_decode($_REQUEST ['json'], true);
-				$this->memreascookie = $jsonArr['memreascookie'];
+				$json = $_REQUEST ['json'];
+				$jsonArr = json_decode ( $json, true );
+				$message_data = $jsonArr ['json'];
+				$this->memreascookie = $message_data['memreascookie'];
 				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
 			}
 			$hasSession = true;
