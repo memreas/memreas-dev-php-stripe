@@ -96,9 +96,9 @@ class StripeController extends AbstractActionController {
 				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 				$result = $MemreasStripe->listPlans ();
 				if ($result) {
-					$result['Success'];
+					$result['status'] = 'Success';
 				} else {
-					$result['Failure'];
+					$result['status'] = 'Failure';
 				}
 				error_log(__CLASS__.__METHOD__.__LINE__.'::$this->stripePlan->getAllPlans ()::'.print_r($result, true).PHP_EOL);
 				header ( "Content-Type: application/json" );
