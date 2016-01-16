@@ -55,6 +55,8 @@ class StripeController extends AbstractActionController {
 				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
 			} else if (! empty ( $_REQUEST ['json'] )) {
 				$jsonArr = json_decode($_REQUEST ['json']);
+				$this->memreascookie = $jsonArr['memreascookie'];
+				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
 			}
 			$hasSession = true;
 			Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::Redis Session found->', $_SESSION);
