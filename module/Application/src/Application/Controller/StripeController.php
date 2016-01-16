@@ -90,7 +90,7 @@ class StripeController extends AbstractActionController {
 		error_log(__CLASS__.__METHOD__.__LINE__.'$_REQUEST::'.print_r($_REQUEST, true).PHP_EOL);
 		if ($this->fetchSession ()) {
 			Mlog::addone ( __CLASS__ . __METHOD__, "past fetch session.." );
-			if (isset ( $_REQUEST ['callback'] )) {
+			//if (isset ( $_REQUEST ['callback'] )) {
 				Mlog::addone ( __CLASS__ . __METHOD__, "past callback..." );
 				$callback = $_REQUEST ['callback'];
 				$json = $_REQUEST ['json'];
@@ -104,7 +104,7 @@ class StripeController extends AbstractActionController {
 				header ( "Content-Type: application/json" );
 				echo json_encode ( $result );
 				exit ();
-			}
+			//}
 		}
 	}
 	
