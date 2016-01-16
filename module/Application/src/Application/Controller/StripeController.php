@@ -99,10 +99,11 @@ class StripeController extends AbstractActionController {
 				$message_data = $jsonArr ['json'];
 				Mlog::addone ( __CLASS__ . __METHOD__.'::$message_data::', $message_data);
 				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				//header('Content-Type: application/json');
 				echo json_encode ( $MemreasStripe->listPlans () );
 				//echo $callback . "(" . json_encode ( $MemreasStripe->listPlans () ) . ")";
-				die ();
+				header ( "Content-Type: application/json" );
+				echo json_encode ( $result );
+				exit ();
 			}
 		}
 	}
