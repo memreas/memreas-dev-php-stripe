@@ -85,24 +85,19 @@ class StripeController extends AbstractActionController {
 	 * List stripe plan
 	 */
 	public function listPlanAction() {
-		//Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST );
-		//Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		error_log(__CLASS__.__METHOD__.__LINE__.'$_REQUEST::'.print_r($_REQUEST, true).PHP_EOL);
 		if ($this->fetchSession ()) {
-			Mlog::addone ( __CLASS__ . __METHOD__, "past fetch session.." );
 			//if (isset ( $_REQUEST ['callback'] )) {
-				Mlog::addone ( __CLASS__ . __METHOD__, "past callback..." );
 				$callback = $_REQUEST ['callback'];
 				$json = $_REQUEST ['json'];
-				Mlog::addone ( __CLASS__ . __METHOD__.'::json::', $json );
 				$jsonArr = json_decode ( $json, true );
 				$message_data = $jsonArr ['json'];
 				Mlog::addone ( __CLASS__ . __METHOD__.'::$message_data::', $message_data);
 				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				//echo json_encode ( $MemreasStripe->listPlans () );
-				//echo $callback . "(" . json_encode ( $MemreasStripe->listPlans () ) . ")";
+				$result = $MemreasStripe->listPlans ();
+				error_log(__CLASS__.__METHOD__.__LINE__.'::$this->stripePlan->getAllPlans ()::'.print_r($result, true).PHP_EOL);
 				header ( "Content-Type: application/json" );
-				echo json_encode ( $MemreasStripe->listPlans () );
+				echo json_encode ( $result );
 				exit ();
 			//}
 		}
