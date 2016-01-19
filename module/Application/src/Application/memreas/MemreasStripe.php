@@ -48,11 +48,11 @@ class MemreasStripe extends StripeInstance {
 	protected $clientSecret;
 	protected $clientPublic;
 	protected $user_id;
-		
 	public function __construct($serviceLocator) {
 		try {
 			/**
 			 * TODO: Fix Stripe .
+			 *
 			 * .. client is not being created...
 			 */
 			$this->serviceLocator = $serviceLocator;
@@ -61,12 +61,12 @@ class MemreasStripe extends StripeInstance {
 			$this->memreasStripeTables = new MemreasStripeTables ( $serviceLocator );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
 			
-			//Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
-				
-			$this->user_id = $_SESSION['user_id'];
-			//$session = new Container ( 'user' );
-			//$this->user_id = $session->offsetGet ( 'user_id' );
-			//Mlog::addone ( __CLASS__ . __METHOD__ . '$this->user_id', $this->user_id );
+			// Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
+			
+			$this->user_id = $_SESSION ['user_id'];
+			// $session = new Container ( 'user' );
+			// $this->user_id = $session->offsetGet ( 'user_id' );
+			// Mlog::addone ( __CLASS__ . __METHOD__ . '$this->user_id', $this->user_id );
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$e->getMessage()', $e->getMessage () );
 			throw new \Exception ( $e->getMessage () );
@@ -107,36 +107,35 @@ class StripeInstance {
 		return $this->{$propertyName};
 	}
 	public function getCustomer($data, $stripe = false) {
-
 		$account_found = false;
-		$accounts = array();
+		$accounts = array ();
 		
 		//
 		// Fetch Buyer Account
 		//
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'] );
-		if (!empty ( $account )) {
+		if (! empty ( $account )) {
 			$account_found = true;
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-			$accounts['buyer_account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
-			$accounts['buyer_account']['accountHeader'] = $account;
-			$accounts['buyer_account']['accountDetail'] = $accountDetail;
+			$accounts ['buyer_account'] ['customer'] = ($stripe) ? $this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
+			$accounts ['buyer_account'] ['accountHeader'] = $account;
+			$accounts ['buyer_account'] ['accountDetail'] = $accountDetail;
 		}
 		
 		//
 		// Fetch Seller Account
 		//
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'], 'seller' );
-		if (!empty ( $account )) {
+		if (! empty ( $account )) {
 			$account_found = true;
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-			$accounts['seller_account']['customer'] = ($stripe) ?$this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
-			$accounts['seller_account']['accountHeader'] = $account;
-			$accounts['seller_account']['accountDetail'] = $accountDetail;
+			$accounts ['seller_account'] ['customer'] = ($stripe) ? $this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
+			$accounts ['seller_account'] ['accountHeader'] = $account;
+			$accounts ['seller_account'] ['accountDetail'] = $accountDetail;
 		}
-
+		
 		// Check if exist account
-		if (!$account_found) {
+		if (! $account_found) {
 			return array (
 					'status' => 'Failure',
 					'message' => 'Account not found' 
@@ -144,14 +143,14 @@ class StripeInstance {
 		}
 		
 		// account exists
-		$accounts['status'] = 'Success';
+		$accounts ['status'] = 'Success';
 		
-		//return array (
-		//		'status' => 'Success',
-		//		'customer' => ($stripe) ? $this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null,
-		//		'account' => $account,
-		//		'accountDetail' => $accountDetail 
-		//);
+		// return array (
+		// 'status' => 'Success',
+		// 'customer' => ($stripe) ? $this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null,
+		// 'account' => $account,
+		// 'accountDetail' => $accountDetail
+		// );
 		return $accounts;
 	}
 	public function refundAmount($data) {
@@ -521,7 +520,7 @@ class StripeInstance {
 				'card' => $cardId, // If this card param is null, Stripe will get primary customer card to charge
 				'description' => 'Add value to account' 
 		); // Set description more details later
-
+		
 		$chargeResult = $this->stripeCard->createCharge ( $stripeChargeParams );
 		if ($chargeResult) {
 			// Check if Charge is successful or not
@@ -1294,7 +1293,6 @@ class StripeInstance {
 					'card' => $cardId, // If this card param is null, Stripe will get primary customer card to charge
 					'description' => 'Charge for subscription : ' . $data ['plan'] 
 			); // Set description more details later
-
 			
 			if ($transactionAmount > 0)
 				$chargeResult = $this->stripeCard->createCharge ( $stripeChargeParams );
@@ -2261,7 +2259,7 @@ class StripeCard {
 				$this->exp_month = $card_data->exp_month;
 				$this->exp_year = $card_data->exp_year;
 				$this->cvc = $card_data->cvc;
-				//$this->type = $card_data->type;
+				// $this->type = $card_data->type;
 				$this->type = $card_data->brand;
 				$this->last4 = $card_data->last4;
 				$this->name = (isset ( $card_data->name ) ? $card_data->name : null);
@@ -2290,6 +2288,8 @@ class StripeCard {
 		$this->id = $card_data ['id'];
 		$this->type = $card_data ['type'];
 		$this->fingerprint = $card_data ['fingerprint'];
+		// $this->type = $card_data->type;
+		$this->type = $card_data['brand'];
 		$this->last4 = $card_data ['last4'];
 		$this->customer = ! empty ( $card_data ['customer'] ) ? $card_data ['customer'] : $this->customer;
 		$this->country = ! empty ( $card_data ['country'] ) ? $card_data ['country'] : $this->country;
