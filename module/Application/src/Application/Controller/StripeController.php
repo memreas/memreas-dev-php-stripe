@@ -145,9 +145,8 @@ class StripeController extends AbstractActionController {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
 			// echo $callback . "(" . json_encode($MemreasStripe->storeCard($card_data)) . ")";
 			// header('application/json');
-			$result = json_encode ( $MemreasStripe->storeCard ( $card_data ) );
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$result', $result );
-			echo $result;
+			echo $callback . "(" . json_encode ( $MemreasStripe->storeCard ( $card_data ) ) . ")";
 			die ();
 		}
 	}
