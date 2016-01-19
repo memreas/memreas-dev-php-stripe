@@ -29,11 +29,15 @@ class Mlog {
 	public static function addone($objname, $obj, $opt = '\n') {
 		if (empty ( $obj )) {
 			$obj = 'object is empty';
-		} else if (is_array ( $obj )) {
+		} else if ((is_array ( $obj )) && ($opt != 'p')) {
 			$obj = json_encode ( $obj );
+		} else if ((is_array ( $obj )) && ($opt == 'p')) {
+			$obj = print_r ( $obj, true );
+		} else if (is_object ( $obj )) {
+			$obj = print_r ( $obj, true );
 		}
 		
-		self::add ( $objname . '---->' . $obj, $opt );
+		self::add ( $objname . '::' . $obj, $opt );
 		self::out ();
 	}
 	

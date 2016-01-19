@@ -2261,7 +2261,9 @@ class StripeCard {
 				$this->exp_month = $card_data->exp_month;
 				$this->exp_year = $card_data->exp_year;
 				$this->cvc = $card_data->cvc;
-				$this->type = $card_data->type;
+				//$this->type = $card_data->type;
+				$this->type = $card_data->brand;
+				$this->last4 = $card_data->last4;
 				$this->name = (isset ( $card_data->name ) ? $card_data->name : null);
 				$this->fingerprint = (isset ( $card_data->finfer_print ) ? $card_data->fingerprint : '');
 				$this->customer = (isset ( $card_data->customer ) ? $card_data->customer : null);
