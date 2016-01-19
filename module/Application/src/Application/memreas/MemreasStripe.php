@@ -2286,11 +2286,10 @@ class StripeCard {
 	 */
 	private function updateInfo($card_data) {
 		$this->id = $card_data ['id'];
-		$this->type = $card_data ['type'];
-		$this->fingerprint = $card_data ['fingerprint'];
-		// $this->type = $card_data->type;
 		$this->type = $card_data['brand'];
 		$this->last4 = $card_data ['last4'];
+		$this->fingerprint = $card_data ['fingerprint'];
+		// $this->type = $card_data->type;
 		$this->customer = ! empty ( $card_data ['customer'] ) ? $card_data ['customer'] : $this->customer;
 		$this->country = ! empty ( $card_data ['country'] ) ? $card_data ['country'] : $this->country;
 		$this->name = ! empty ( $card_data ['name'] ) ? $card_data ['name'] : $this->name;
