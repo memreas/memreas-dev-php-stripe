@@ -37,9 +37,9 @@ class StripeController extends AbstractActionController {
 		 */
 		$hasSession = false;
 		try {
-			error_log('fetchSession $_COOKIE'.print_r($_COOKIE , true).PHP_EOL);
-			error_log('fetchSession $_REQUEST'.print_r($_REQUEST , true).PHP_EOL);
-			error_log('fetchSession $_POST'.print_r($_POST , true).PHP_EOL);
+			error_log ( 'fetchSession $_COOKIE' . print_r ( $_COOKIE, true ) . PHP_EOL );
+			error_log ( 'fetchSession $_REQUEST' . print_r ( $_REQUEST, true ) . PHP_EOL );
+			error_log ( 'fetchSession $_POST' . print_r ( $_POST, true ) . PHP_EOL );
 			$this->setupSaveHandler ();
 			if (! empty ( $_REQUEST ['sid'] )) {
 				$this->sid = $_REQUEST ['sid'];
@@ -57,11 +57,11 @@ class StripeController extends AbstractActionController {
 				$json = $_REQUEST ['json'];
 				$jsonArr = json_decode ( $json, true );
 				$message_data = $jsonArr ['json'];
-				$this->memreascookie = $message_data['memreascookie'];
+				$this->memreascookie = $message_data ['memreascookie'];
 				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
 			}
 			$hasSession = true;
-			Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::Redis Session found->', $_SESSION);
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
 		} catch ( \Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session lookup error->', $e->getMessage () );
 		}
@@ -94,17 +94,17 @@ class StripeController extends AbstractActionController {
 	 * List stripe plan
 	 */
 	public function listPlanAction() {
-		error_log(__CLASS__.__METHOD__.__LINE__.'$_REQUEST::'.print_r($_REQUEST, true).PHP_EOL);
+		error_log ( __CLASS__ . __METHOD__ . __LINE__ . '$_REQUEST::' . print_r ( $_REQUEST, true ) . PHP_EOL );
 		if ($this->fetchSession ()) {
 			if (isset ( $_REQUEST ['callback'] )) {
 				$callback = $_REQUEST ['callback'];
 				$json = $_REQUEST ['json'];
 				$jsonArr = json_decode ( $json, true );
 				$message_data = $jsonArr ['json'];
-				//Mlog::addone ( __CLASS__ . __METHOD__.'::$message_data::', $message_data);
+				// Mlog::addone ( __CLASS__ . __METHOD__.'::$message_data::', $message_data);
 				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 				echo $callback . "(" . json_encode ( $MemreasStripe->listPlans () ) . ")";
-				die();
+				die ();
 			}
 		}
 	}
@@ -116,38 +116,39 @@ class StripeController extends AbstractActionController {
 		if ($this->fetchSession ()) {
 			header ( 'Access-Control-Allow-Origin: *' );
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::request', $_REQUEST );
-			// if (isset($_REQUEST['callback'])){
-			// $callback = $_REQUEST['callback'];
-			$json = $_REQUEST ['json'];
-			$jsonArr = json_decode ( $json, true );
-			$message_data = $jsonArr ['json'];
-			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-			Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data', $message_data );
-			
-			// Prepare card data
-			$card_data = array (
-					'user_id' => $message_data ['user_id'],
-					'number' => $message_data ['credit_card_number'],
-					'type' => $message_data ['credit_card_type'],
-					'exp_month' => $message_data ['expiration_month'],
-					'exp_year' => $message_data ['expiration_year'],
-					'cvc' => $message_data ['cvc'],
-					'name' => $message_data ['first_name'] . ' ' . $message_data ['last_name'],
-					'country' => 'US', // Change this to dynamic form value
-					'address_line1' => $message_data ['address_line_1'],
-					'address_line2' => $message_data ['address_line_2'],
-					'address_city' => $message_data ['city'],
-					'address_state' => $message_data ['state'],
-					'address_zip' => $message_data ['zip_code'],
-					'address_country' => 'US' 
-			); // Change this to dynamic form value
-
-			Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
-			// echo $callback . "(" . json_encode($MemreasStripe->storeCard($card_data)) . ")";
-			// header('application/json');
-			Mlog::addone ( __CLASS__ . __METHOD__ . '::$result', $result );
-			echo $callback . "(" . json_encode ( $MemreasStripe->storeCard ( $card_data ) ) . ")";
-			die ();
+			if (isset ( $_REQUEST ['callback'] )) {
+				$callback = $_REQUEST ['callback'];
+				$json = $_REQUEST ['json'];
+				$jsonArr = json_decode ( $json, true );
+				$message_data = $jsonArr ['json'];
+				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+				Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data', $message_data );
+				
+				// Prepare card data
+				$card_data = array (
+						'user_id' => $message_data ['user_id'],
+						'number' => $message_data ['credit_card_number'],
+						'type' => $message_data ['credit_card_type'],
+						'exp_month' => $message_data ['expiration_month'],
+						'exp_year' => $message_data ['expiration_year'],
+						'cvc' => $message_data ['cvc'],
+						'name' => $message_data ['first_name'] . ' ' . $message_data ['last_name'],
+						'country' => 'US', // Change this to dynamic form value
+						'address_line1' => $message_data ['address_line_1'],
+						'address_line2' => $message_data ['address_line_2'],
+						'address_city' => $message_data ['city'],
+						'address_state' => $message_data ['state'],
+						'address_zip' => $message_data ['zip_code'],
+						'address_country' => 'US' 
+				); // Change this to dynamic form value
+				
+				Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
+				// echo $callback . "(" . json_encode($MemreasStripe->storeCard($card_data)) . ")";
+				// header('application/json');
+				Mlog::addone ( __CLASS__ . __METHOD__ . '::$result', $result );
+				echo $callback . "(" . json_encode ( $MemreasStripe->storeCard ( $card_data ) ) . ")";
+				die ();
+			}
 		}
 	}
 	public function listCardsAction() {
