@@ -82,13 +82,13 @@ class StripeController extends AbstractActionController {
 		$response = $request->send ();
 		return $data = $response->getBody ( true );
 	}
-	// public function indexAction() {
-	// if ($this->fetchSession()) {
-	// $view = new ViewModel ();
-	// $view->setTemplate ( 'application/stripe/index.phtml' );
-	// return $view;
-	// }
-	// }
+	public function indexAction() {
+		if ($this->fetchSession ()) {
+			$view = new ViewModel ();
+			$view->setTemplate ( 'application/error/500.phtml' );
+			return $view;
+		}
+	}
 	
 	/*
 	 * List stripe plan
