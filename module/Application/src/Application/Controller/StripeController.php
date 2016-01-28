@@ -32,34 +32,19 @@ class StripeController extends AbstractActionController {
 		session_set_save_handler ( $this->sessHandler );
 	}
 	public function fetchSession() {
+		$cm = __CLASS__ . __METHOD__;
 		/**
 		 * Setup save handler and start session
 		 */
 		$hasSession = false;
+		Mlog::addone($cm.__LINE__.'$_COOKIE', $_REQUEST, 'p');
+		$json = $_REQUEST ['json'];
+		$jsonArr = json_decode ( $json, true );
+		$memreascookie = $jsonArr ['memreascookie'];
+		$memreascookieArr = json_decode ( $memreascookie, true );
 		try {
-			error_log ( 'fetchSession $_COOKIE' . print_r ( $_COOKIE, true ) . PHP_EOL );
-			error_log ( 'fetchSession $_REQUEST' . print_r ( $_REQUEST, true ) . PHP_EOL );
-			error_log ( 'fetchSession $_POST' . print_r ( $_POST, true ) . PHP_EOL );
 			$this->setupSaveHandler ();
-			if (! empty ( $_REQUEST ['sid'] )) {
-				$this->sid = $_REQUEST ['sid'];
-				$this->sessHandler->startSessionWithSID ( $this->sid );
-			} else if (! empty ( $_POST ['sid'] )) {
-				$this->sid = $_POST ['sid'];
-				$this->sessHandler->startSessionWithSID ( $this->sid );
-			} else if (! empty ( $_REQUEST ['memreascookie'] )) {
-				$this->memreascookie = $_REQUEST ['memreascookie'];
-				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
-			} else if (! empty ( $_POST ['memreascookie'] )) {
-				$this->memreascookie = $_POST ['memreascookie'];
-				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
-			} else if (! empty ( $_REQUEST ['json'] )) {
-				$json = $_REQUEST ['json'];
-				$jsonArr = json_decode ( $json, true );
-				$message_data = $jsonArr ['json'];
-				$this->memreascookie = $message_data ['memreascookie'];
-				$this->sessHandler->startSessionWithMemreasCookie ( $this->memreascookie );
-			}
+			$this->sessHandler->startSessionWithMemreasCookie ( $memreascookieArr['memreascookie'] );
 			$hasSession = true;
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
 		} catch ( \Exception $e ) {
