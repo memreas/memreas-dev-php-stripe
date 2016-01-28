@@ -1,5 +1,6 @@
 <IfModule mod_authz_host.c>
-Allow from memreas.com
+Require host memreas.com
+Require local
 </IfModule>
 <IfModule mod_php5.c>
 
