@@ -53,6 +53,7 @@ class MemreasStripe extends StripeInstance {
 			/**
 			 * TODO: Fix Stripe .
 			 *
+			 *
 			 * .. client is not being created...
 			 */
 			$this->serviceLocator = $serviceLocator;
@@ -1532,21 +1533,23 @@ class StripeInstance {
 	 * List card by user_id
 	 */
 	public function listCards($user_id) {
-		if (empty ( $user_id ))
-			$user_id = $this->session->offsetGet ( 'user_id' );
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
 		
 		// Check if exist account
-		if (empty ( $account ))
+		if (empty ( $account )) {
+			Mlog::addone("listCards", "empty account");
 			return array (
 					'status' => 'Failure',
 					'message' => 'You have no any payment method at this time. please try to add card first' 
 			);
+		}
 		
 		$paymentMethods = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodsByAccountId ( $account->account_id );
 		
 		// Check if account has payment method
 		if (empty ( $paymentMethods ))
+			Mlog::addone("listCards", "empty payment methods");
+				
 			return array (
 					'status' => 'Failure',
 					'message' => 'No record found.' 
@@ -1556,6 +1559,7 @@ class StripeInstance {
 		$listPayments = array ();
 		$index = 0;
 		foreach ( $paymentMethods as $paymentMethod ) {
+			Mlog::addone("listCards for loop ", $paymentMethod, 'p');
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $paymentMethod ['account_id'] );
 			
 			if (empty ( $accountDetail ))
@@ -1564,12 +1568,14 @@ class StripeInstance {
 						'message' => 'Data corrupt with this account. Please try add new card first.' 
 				);
 				
-				// Check if this card has exist at Stripe
+			// Check if this card has exist at Stripe
 			$stripeCard = $this->stripeCard->getCard ( $accountDetail->stripe_customer_id, $paymentMethod ['stripe_card_reference_id'] );
 			if (! $stripeCard ['exist']) {
+				Mlog::addone("listCards for loop - stripe card does not exist ", $stripeCard ['message']);				
 				$listPayments [$index] ['stripe_card'] = 'Failure';
 				$listPayments [$index] ['stripe_card_respone'] = $stripeCard ['message'];
 			} else {
+				Mlog::addone("listCards for loop - stripe card does exist ", $stripeCard ['info']);				
 				$listPayments [$index] ['stripe_card'] = 'Success';
 				$listPayments [$index] ['stripe_card_response'] = $stripeCard ['info'];
 			}
@@ -1593,6 +1599,7 @@ class StripeInstance {
 			$listPayments [$index] ['state'] = $accountDetail->state;
 			$listPayments [$index] ['zip_code'] = $accountDetail->zip_code;
 			++ $index;
+			Mlog::addone("listCards for loop bottom - stripe card does exist ", $listPayments [$index]);				
 		}
 		
 		return array (
@@ -2286,7 +2293,7 @@ class StripeCard {
 	 */
 	private function updateInfo($card_data) {
 		$this->id = $card_data ['id'];
-		$this->type = $card_data['brand'];
+		$this->type = $card_data ['brand'];
 		$this->last4 = $card_data ['last4'];
 		$this->fingerprint = $card_data ['fingerprint'];
 		// $this->type = $card_data->type;

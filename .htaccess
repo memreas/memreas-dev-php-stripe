@@ -6,9 +6,9 @@ Require local
 
 #Prevent public display of PHP errors via htaccess
 # supress php errors
-#php_flag display_startup_errors off
-#php_flag display_errors off
-#php_flag html_errors off
+php_flag display_startup_errors off
+php_flag display_errors off
+php_flag html_errors off
 #php_flag error_reporting off
 #php_value docref_root 0
 #php_value docref_ext 0
@@ -16,7 +16,7 @@ Require local
 
 # PHP error handling for development servers
 #php_flag display_startup_errors on
-php_flag display_errors on
+#php_flag display_errors on
 #php_flag html_errors on
 php_flag log_errors on
 #php_value error_reporting on

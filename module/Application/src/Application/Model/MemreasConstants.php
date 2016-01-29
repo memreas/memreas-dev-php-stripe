@@ -11,7 +11,7 @@ class MemreasConstants {
 	
 	// Redis section ubuntu standalone for redis 3 version
 	//const REDIS_SERVER_ENDPOINT = "54.225.187.57";
-	const REDIS_SERVER_ENDPOINT = "10.179.214.247";
+	const REDIS_SERVER_ENDPOINT = "localhost";
 	const REDIS_SERVER_USE = true;
 	const REDIS_SERVER_SESSION_ONLY = true;
 	const REDIS_SERVER_PORT = "6379";
@@ -50,20 +50,5 @@ class MemreasConstants {
 	const PLAN_DETAILS_D = "plan d: $9.95 for 100GB monthly";
 	const PLAN_GB_STORAGE_AMOUNT_D = 100;
 	
-	// const SITEURL = "http://memreasdev.elasticbeanstalk.com/eventapp_zend2.1";
-	const DATA_PATH = "/data/";
-	const MEDIA_PATH = "/media/";
-	const IMAGES_PATH = "/images/";
-	const USERIMAGE_PATH = "/media/userimage/";
-	const FOLDER_PATH = "/data/media/";
-	const FOLDER_AUDIO = "upload_audio";
-	const FOLDER_VIDEO = "uploadVideo";
-	const VIDEO = "/data/media/uploadVideo";
-	const AUDIO = "/data/media/upload_audio";
-	const CLOUDFRONT_STREAMING_HOST = 'rtmp://sliq2chtodqqky.cloudfront.net/';
-	const CLOUDFRONT_DOWNLOAD_HOST = 'http://d1ckv7o9k6o3x9.cloudfront.net/';
-	// const MEMREAS_TRANSCODER_URL = 'http://memreasbackend.elasticbeanstalk.com/';
-	const MEMREAS_TRANSCODER_URL = 'http://192.168.1.13/memreas-dev-php-backend/app/';
-	const MEMREAS_TRANSCODER_TOPIC_ARN = 'arn:aws:sns:us-east-1:004184890641:us-east-upload-transcode-worker-int';
 	const ADMIN_EMAIL = 'admin@memreas.com';
 }
