@@ -10,13 +10,12 @@ namespace Application\Model;
 class MemreasConstants {
 	
 	// Redis section ubuntu standalone for redis 3 version
-	//const REDIS_SERVER_ENDPOINT = "54.225.187.57";
+	// const REDIS_SERVER_ENDPOINT = "54.225.187.57";
 	const REDIS_SERVER_ENDPOINT = "localhost";
 	const REDIS_SERVER_USE = true;
 	const REDIS_SERVER_SESSION_ONLY = true;
 	const REDIS_SERVER_PORT = "6379";
 	const REDIS_CACHE_TTL = 3600; // 1 hour
-	
 	const MEMREASDB = 'memreasdb';
 	const MEMREASPAYMENTSDB = 'memreaspaymentstripe';
 	const S3BUCKET = "memreasdev";
@@ -25,9 +24,14 @@ class MemreasConstants {
 	const MEDIA_URL = "http://memreas-dev-php-ws.localhost/?action=addmediaevent";
 	const MEMREAS_WS = "http://memreas-dev-php-ws.localhost";
 	const URL = "/index";
+	
+	// Key data
+	const SECRET_KEY = 'sk_test_AFU42eViRyXQfXVSxCPPh05Q';
+	const PUBLIC_KEY = 'pk_test_nvbjKhLYYUe4iuuPE3PC6BZ8';
+	
+	// Account data
 	const ACCOUNT_MEMREAS_FLOAT = "memreasfloat";
 	const ACCOUNT_MEMREAS_MASTER = "memreasmaster";
-	const PAYPAL_MEMREAS_MASTER_EMAIL = 'johnmeah-facilitator@paypal.com';
 	const PLAN_BILLINGFREQUENCY = "1";
 	const PLAN_BILLINGPERIOD = "Month";
 	const PLAN_BILLINGCYCLES = "36";
@@ -49,6 +53,5 @@ class MemreasConstants {
 	const PLAN_ID_D = 'PLAN_D_100GB_MONTHLY';
 	const PLAN_DETAILS_D = "plan d: $9.95 for 100GB monthly";
 	const PLAN_GB_STORAGE_AMOUNT_D = 100;
-	
 	const ADMIN_EMAIL = 'admin@memreas.com';
 }

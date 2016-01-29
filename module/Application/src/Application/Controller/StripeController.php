@@ -22,25 +22,22 @@ use Application\memreas\Mlog;
 use Application\memreas\StripePlansConfig;
 
 class StripeController extends AbstractActionController {
-
+	
 	//
 	// start session by fetching and starting from REDIS - security check
 	//
 	public function setupSaveHandler() {
-		//start capture
-		ob_start();
+		// start capture
+		ob_start ();
 		
 		$this->redis = new AWSMemreasRedisCache ( $this->getServiceLocator () );
 		$this->sessHandler = new AWSMemreasRedisSessionHandler ( $this->redis, $this->getServiceLocator () );
 		session_set_save_handler ( $this->sessHandler );
-	
-		//clean the buffer we don't need to send back session data
-		ob_end_clean();
 		
+		// clean the buffer we don't need to send back session data
+		ob_end_clean ();
 	}
 	public function fetchSession() {
-		
-		
 		$cm = __CLASS__ . __METHOD__;
 		/**
 		 * Setup save handler and start session
@@ -49,7 +46,7 @@ class StripeController extends AbstractActionController {
 		header ( 'Access-Control-Allow-Origin: *' );
 		$this->setupSaveHandler ();
 		try {
-			if (!empty($_REQUEST ['json'])) {
+			if (! empty ( $_REQUEST ['json'] )) {
 				$json = $_REQUEST ['json'];
 				Mlog::addone ( $cm . __LINE__ . '$json', $json );
 				$jsonArr = json_decode ( $json, true );
@@ -60,7 +57,7 @@ class StripeController extends AbstractActionController {
 				$this->sessHandler->startSessionWithMemreasCookie ( $memreascookie );
 				$hasSession = true;
 				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
-			} else if (!empty($_REQUEST ['sid'])) {
+			} else if (! empty ( $_REQUEST ['sid'] )) {
 				$sid = $_REQUEST ['sid'];
 				Mlog::addone ( $cm . __LINE__ . '$sid', $sid );
 				$this->sessHandler->startSessionWithSID ( $sid );
@@ -104,7 +101,7 @@ class StripeController extends AbstractActionController {
 				$json = $_REQUEST ['json'];
 				$jsonArr = json_decode ( $json, true );
 				$message_data = $jsonArr ['json'];
-				// Mlog::addone ( __CLASS__ . __METHOD__.'::$message_data::', $message_data);
+				Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data::', $message_data );
 				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 				echo $callback . "(" . json_encode ( $MemreasStripe->listPlans () ) . ")";
 				die ();
@@ -298,7 +295,6 @@ class StripeController extends AbstractActionController {
 		}
 	}
 	public function getCustomerInfoAction() {
-		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
 			if (isset ( $_REQUEST ['callback'] )) {
 				$callback = $_REQUEST ['callback'];
@@ -309,16 +305,15 @@ class StripeController extends AbstractActionController {
 				Mlog::addone ( __CLASS__ . __METHOD__ . '$customer', $customer );
 				echo $callback . "(" . json_encode ( $customer ) . ")";
 				die ();
-			} else if(isset($_REQUEST ['sid'])) {
-				$user_id = $_POST ['user_id'];
+			} else if (isset ( $_REQUEST ['sid'] )) {
+				$stripe_customer_id = $_POST ['stripe_customer_id'];
 				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 				$result = $MemreasStripe->getCustomer ( array (
-									'userid' => $user_id 
-							), false );
+						'userid' => $stripe_customer_id 
+				), false );
 				Mlog::addone ( __CLASS__ . __METHOD__ . '$result', $result );
 				echo json_encode ( $result );
 				die ();
-				
 			}
 		}
 	}
