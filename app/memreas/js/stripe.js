@@ -72,7 +72,7 @@ jQuery.paypalAddSeller = function () {
 	  	//alert("Inside error jqXHR...");
        	alert(jqXHR.responseText);
        	alert(jqXHR.status);
-    	//alert(textStatus);
+       	//alert(textStatus);
        	//alert(errorThrown);
 	  }
 	});
