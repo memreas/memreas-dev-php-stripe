@@ -41,6 +41,7 @@ class StripeController extends AbstractActionController {
 		flush ();
 	}
 	public function fetchSession() {
+		Mlog::addone(__CLASS__.__METHOD__.'::$_SERVER-->', $_SERVER);
 		$cm = __CLASS__ . __METHOD__;
 		// start capture
 		ob_start ();
@@ -87,6 +88,13 @@ class StripeController extends AbstractActionController {
 		return $data = $response->getBody ( true );
 	}
 	public function indexAction() {
+		
+		Mlog::addone(__CLASS__.__METHOD__.'::$_SERVER-->', $_SERVER);
+		$referer = parse_url($_SERVER['HTTP_REFERER']);
+		Mlog::addone(__CLASS__.__METHOD__.'::referrer-->', $referer);
+		$referer = $referer['host'];
+		Mlog::addone(__CLASS__.__METHOD__.'::referrer host-->', $referer);
+		
 		if ($this->fetchSession ()) {
 			$view = new ViewModel ();
 			$view->setTemplate ( 'application/error/500.phtml' );
