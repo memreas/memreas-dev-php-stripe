@@ -30,7 +30,7 @@ class MemreasStripeTables {
 		return $this->userTable;
 	}
 	
-	// PayPal related tables
+	// Payment related tables
 	public function getAccountTable() {
 		if (! $this->accountTable) {
 			$this->accountTable = $this->service_locator->get ( 'Application\Model\AccountTable' );

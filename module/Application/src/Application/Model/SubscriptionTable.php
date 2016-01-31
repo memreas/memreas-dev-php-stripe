@@ -43,8 +43,8 @@ class SubscriptionTable {
 				'billing_frequency' => $subscription->billing_frequency,
 				'start_date' => $subscription->start_date,
 				'end_date' => $subscription->end_date,
-				'paypal_subscription_profile_id' => $subscription->paypal_subscription_profile_id,
-				'paypal_subscription_profile_status' => $subscription->paypal_subscription_profile_status,
+				'subscription_profile_id' => $subscription->subscription_profile_id,
+				'subscription_profile_status' => $subscription->subscription_profile_status,
 				'create_date' => $subscription->createDate,
 				'update_time' => $subscription->updateTime 
 		);

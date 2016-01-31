@@ -410,7 +410,7 @@ class StripeInstance {
 					'message' => 'No user related to this username' 
 			);
 			
-			// Get Paypal email address
+			// Get $stripe_email_address email address
 		$stripe_email_address = $seller_data ['stripe_email_address'];
 		
 		// Fetch the Account
@@ -479,7 +479,7 @@ class StripeInstance {
 		) );
 		$account_detail_id = $this->memreasStripeTables->getAccountDetailTable ()->saveAccountDetail ( $accountDetail );
 		
-		// Store the transaction that is sent to PayPal
+		// Store the transaction that is sent to Stripe
 		$now = date ( 'Y-m-d H:i:s' );
 		$transaction = new Memreas_Transaction ();
 		$transaction->exchangeArray ( array (
@@ -1426,8 +1426,8 @@ class StripeInstance {
 					'billing_frequency' => MemreasConstants::PLAN_BILLINGFREQUENCY,
 					'start_date' => $now,
 					'end_date' => null,
-					'paypal_subscription_profile_id' => $createSubscribe ['id'],
-					'paypal_subscription_profile_status' => 'Active',
+					'subscription_profile_id' => $createSubscribe ['id'],
+					'subscription_profile_status' => 'Active',
 					'create_date' => $now,
 					'update_time' => $now 
 			) );

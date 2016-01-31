@@ -31,8 +31,8 @@ class Subscription {
 		$this->billing_frequency = (isset ( $data ['billing_frequency'] )) ? $data ['billing_frequency'] : null;
 		$this->start_date = (isset ( $data ['start_date'] )) ? $data ['start_date'] : null;
 		$this->end_date = (isset ( $data ['end_date'] )) ? $data ['end_date'] : null;
-		$this->paypal_subscription_profile_id = (isset ( $data ['paypal_subscription_profile_id'] )) ? $data ['paypal_subscription_profile_id'] : null;
-		$this->paypal_subscription_profile_status = (isset ( $data ['paypal_subscription_profile_status'] )) ? $data ['paypal_subscription_profile_status'] : null;
+		$this->subscription_profile_id = (isset ( $data ['subscription_profile_id'] )) ? $data ['subscription_profile_id'] : null;
+		$this->subscription_profile_status = (isset ( $data ['subscription_profile_status'] )) ? $data ['subscription_profile_status'] : null;
 		$this->createDate = (isset ( $data ['create_date'] )) ? $data ['create_date'] : null;
 		$this->updateTime = (isset ( $data ['update_time'] )) ? $data ['update_time'] : null;
 	}
