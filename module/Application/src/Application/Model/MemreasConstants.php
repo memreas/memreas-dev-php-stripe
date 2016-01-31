@@ -11,7 +11,7 @@ class MemreasConstants {
 	
 	// Redis section ubuntu standalone for redis 3 version
 	// const REDIS_SERVER_ENDPOINT = "54.225.187.57";
-	const REDIS_SERVER_ENDPOINT = "localhost";
+	const REDIS_SERVER_ENDPOINT = "10.179.214.247";
 	const REDIS_SERVER_USE = true;
 	const REDIS_SERVER_SESSION_ONLY = true;
 	const REDIS_SERVER_PORT = "6379";
@@ -20,10 +20,10 @@ class MemreasConstants {
 	const MEMREASPAYMENTSDB = 'memreaspaymentstripe';
 	const S3BUCKET = "memreasdev";
 	const TOPICARN = "arn:aws:sns:us-east-1:004184890641:us-east-upload-transcode-worker-int";
-	const ORIGINAL_URL = "http://memreas-dev-php-stripe.localhost/";
-	const MEDIA_URL = "http://memreas-dev-php-ws.localhost/?action=addmediaevent";
-	const MEMREAS_WS = "http://memreas-dev-php-ws.localhost";
+	const ORIGINAL_URL = "https://memreasdev-pay.memreas.com/";
+	const MEDIA_URL = "https://memreasdev-wsj.memreas.com/?action=addmediaevent";
 	const URL = "/index";
+	const MEMREAS_WS = "https://memreasdev-wsj.memreas.com";
 	
 	// Key data
 	const SECRET_KEY = 'sk_test_AFU42eViRyXQfXVSxCPPh05Q';
