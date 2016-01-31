@@ -55,8 +55,6 @@ class AWSMemreasRedisCache {
 		}
 		return $result;
 	}
-
-
 	public function findSet($set, $match) {
 		error_log ( "Inside findSet.... set $set match $match" . PHP_EOL );
 		// Scan the hash and return 0 or the sub-array
@@ -119,12 +117,12 @@ class AWSMemreasRedisCache {
 				$set 
 		) );
 	}
-        public function remSetKeys($set) {
-            $i=0;
-            foreach ($set as $cacheKey) {
-	    	$i+=$this->cache->del($cacheKey);
-	    }
-		 return $i;
+	public function remSetKeys($set) {
+		$i = 0;
+		foreach ( $set as $cacheKey ) {
+			$i += $this->cache->del ( $cacheKey );
+		}
+		return $i;
 	}
 	public function getCache($key) {
 		if (! $this->isCacheEnable) {
@@ -174,10 +172,10 @@ class AWSMemreasRedisCache {
 	 * Add function to invalidate cache for media
 	 */
 	public function invalidateMedia($user_id, $event_id = null, $media_id = null) {
-		 //error_log("Inside invalidateMedia".PHP_EOL);
-                 //error_log('Inside invalidateMedia $user_id ----> *' . $user_id . '*' . PHP_EOL);
-		 //error_log('Inside invalidateMedia $event_id ----> *' . $event_id . '*' . PHP_EOL);
-		 //error_log('Inside invalidateMedia $media_id ----> *' . $media_id . '*' . PHP_EOL);
+		// error_log("Inside invalidateMedia".PHP_EOL);
+		// error_log('Inside invalidateMedia $user_id ----> *' . $user_id . '*' . PHP_EOL);
+		// error_log('Inside invalidateMedia $event_id ----> *' . $event_id . '*' . PHP_EOL);
+		// error_log('Inside invalidateMedia $media_id ----> *' . $media_id . '*' . PHP_EOL);
 		// write functions for media
 		// - add media event (key is event_id or user_id)
 		// - mediainappropriate (key is user id for invalidate)

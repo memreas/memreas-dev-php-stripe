@@ -1,28 +1,27 @@
-<?php 
-/////////////////////////////////
+<?php
+// ///////////////////////////////
 // Author: John Meah
 // Copyright memreas llc 2013
-/////////////////////////////////
-
+// ///////////////////////////////
 use Guzzle\Http\Client;
 use Zend\Session\Container;
 
-$session = new Container('user');        
-$user_id = $session->offsetGet('user_id');
-$username = $session->offsetGet('username');
-//echo "user_id ----> " . $user_id;
-//echo "<p>";
-echo "Welcome to Stripe Services".PHP_EOL;
+$session = new Container ( 'user' );
+$user_id = $session->offsetGet ( 'user_id' );
+$username = $session->offsetGet ( 'username' );
+// echo "user_id ----> " . $user_id;
+// echo "<p>";
+echo "Welcome to Stripe Services" . PHP_EOL;
 echo "whoami ----> " . $username . " : " . $user_id;
 
 /*
-error_log("OUTPUT JSON IN paypal.phtml ----> " . $this->json);
-if (isset($this->json)) {
-	echo $this->json;
-} else {
-	echo("json not found");
-}
-*/
+ * error_log("OUTPUT JSON IN paypal.phtml ----> " . $this->json);
+ * if (isset($this->json)) {
+ * echo $this->json;
+ * } else {
+ * echo("json not found");
+ * }
+ */
 
 ?>
 <!doctype html>
@@ -30,14 +29,16 @@ if (isset($this->json)) {
 <head>
 <meta charset="utf-8">
 <title>memreas</title>
-<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
-  
+<link rel="stylesheet"
+	href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+
 <!--jQuery Lybrary-->
 <!--
 <script src="/memreas/js/jquery.js"></script>
 -->
 <!-- JQuery -->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script
+	src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script src="/memreas/js/modernizr.custom.17475.js"></script>
 <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 <!--Bootstrap jQuery-->
@@ -181,54 +182,72 @@ if (isset($this->json)) {
 </head>
 <body>
 
-<input type="hidden" name="user_id" value="<?php echo $user_id; ?>"/>
-<div id="tabs">
-  <ul>
-    <li><a href="#tabs-1">Store Card</a></li>
-    <li><a href="#tabs-2">List and Delete Cards</a></li>
-    <li><a href="#tabs-3">Add a Seller</a></li>
-    <li><a href="#tabs-4">Add Value to Account</a></li>
-    <li><a href="#tabs-5">Decrement Account</a></li>
-    <li><a href="#tabs-6">Account History</a></li>
-    <li><a href="#tabs-7">MassPay</a></li>
-    <li><a href="#tabs-8">Subscriptions</a></li>
-    <li><a href="#tabs-9">Transcoder</a></li>
-  </ul>
-  <div id="tabs-1">
-	<form id="store_card_form" name=store_card_form" action="/index/paypal">
-	<table>
-		<tr>
-			<td>first name:
-			<td><input type="text" id="first_name" name="first_name" value="John">
-			<td>last name:
-			<td><input type="text" id="last_name" name="last_name" value="Meah">
-		</tr>
-		<tr>
-			<td>address line 1:
-			<td><input type="text" id="address_line_1" name="address_line_1" value="125 Bowery Street">
-			<td>credit card #:
-			<td>								
-							<select id="credit_card_type" name="credit_card_type"
-								onChange="javascript:generateCC(); return false;">
-									<option value="Visa" selected="selected">Visa</option>
-									<option value="MasterCard">MasterCard</option>
-									<option value="Discover">Discover</option>
-									<option value="Amex">American Express</option>
-							</select>				
-
-		</tr>
-		<tr>
-			<td>address line 2:
-			<td><input type="text" id="address_line_2" name="address_line_2" value="Suite 814">
-			<td>credit card #:
-			<td><input type="text" id="credit_card_number" name="credit_card_number">
-		</tr>
-		<tr>
-			<td>city:
-			<td><input type="text" id="city" name="city" value="New York">
-			<td>expiration date:
-			<td>						
-							<select id="expiration_month" name="expiration_month">
+	<input type="hidden" name="user_id" value="<?php echo $user_id; ?>" />
+	<div id="tabs">
+		<ul>
+			<li><a href="#tabs-1">Store Card</a></li>
+			<li><a href="#tabs-2">List and Delete Cards</a></li>
+			<li><a href="#tabs-3">Add a Seller</a></li>
+			<li><a href="#tabs-4">Add Value to Account</a></li>
+			<li><a href="#tabs-5">Decrement Account</a></li>
+			<li><a href="#tabs-6">Account History</a></li>
+			<li><a href="#tabs-7">MassPay</a></li>
+			<li><a href="#tabs-8">Subscriptions</a></li>
+			<li><a href="#tabs-9">Transcoder</a></li>
+		</ul>
+		<div id="tabs-1">
+			<form id="store_card_form" name=store_card_form
+				" action="/index/paypal">
+				<table>
+					<tr>
+						<td>first name:
+						
+						<td><input type="text" id="first_name" name="first_name"
+							value="John">
+						
+						<td>last name:
+						
+						<td><input type="text" id="last_name" name="last_name"
+							value="Meah">
+					
+					</tr>
+					<tr>
+						<td>address line 1:
+						
+						<td><input type="text" id="address_line_1" name="address_line_1"
+							value="125 Bowery Street">
+						
+						<td>credit card #:
+						
+						<td><select id="credit_card_type" name="credit_card_type"
+							onChange="javascript:generateCC(); return false;">
+								<option value="Visa" selected="selected">Visa</option>
+								<option value="MasterCard">MasterCard</option>
+								<option value="Discover">Discover</option>
+								<option value="Amex">American Express</option>
+						</select>
+					
+					</tr>
+					<tr>
+						<td>address line 2:
+						
+						<td><input type="text" id="address_line_2" name="address_line_2"
+							value="Suite 814">
+						
+						<td>credit card #:
+						
+						<td><input type="text" id="credit_card_number"
+							name="credit_card_number">
+					
+					</tr>
+					<tr>
+						<td>city:
+						
+						<td><input type="text" id="city" name="city" value="New York">
+						
+						<td>expiration date:
+						
+						<td><select id="expiration_month" name="expiration_month">
 								<option value="01">01</option>
 								<option value="02">02</option>
 								<option value="03">03</option>
@@ -241,8 +260,7 @@ if (isset($this->json)) {
 								<option value="10">10</option>
 								<option value="11">11</option>
 								<option value="12">12</option>
-							</select>
-							<select id="expiration_year" name="expiration_year">					
+						</select> <select id="expiration_year" name="expiration_year">
 								<option value="2013">2013</option>
 								<option value="2014" selected>2014</option>
 								<option value="2015">2015</option>
@@ -250,17 +268,18 @@ if (isset($this->json)) {
 								<option value="2017">2017</option>
 								<option value="2018">2018</option>
 								<option value="2019">2019</option>
-								<option value="2020">2020</option>						
-							</select>
-		</tr>
-		<tr>
-			<td>CVC</td>
-			<td><input id="cvc" type="text" name="cvc" value="111"/></td>
-		</tr>
-		<tr>
-			<td>state:
-			<td>						
-							<select id=state name="state">
+								<option value="2020">2020</option>
+						</select>
+					
+					</tr>
+					<tr>
+						<td>CVC</td>
+						<td><input id="cvc" type="text" name="cvc" value="111" /></td>
+					</tr>
+					<tr>
+						<td>state:
+						
+						<td><select id=state name="state">
 								<option value=""></option>
 								<option value="AK">AK</option>
 								<option value="AL">AL</option>
@@ -324,90 +343,136 @@ if (isset($this->json)) {
 								<option value="PR">PR</option>
 								<option value="PW">PW</option>
 								<option value="VI">VI</option>
-							</select>
-			<td>
-			<td>
-		</tr>
-		<tr>
-			<td>zip:
-			<td><input type="text" id="zip_code" name="zip_code" value="10018">
-			<td>
-			<td><input type="hidden" id="isValid" name="isValid" value="1">
-		</tr>
-		<tr>
-			<td>
-			<td><input id="btnOK" type="button" name="ok" value="ok">
-			<td>
-			<td><input id="btnClear" type="button" name="clear" value="cancel">
-		</tr>
-	</table>
-	<div id="store_card_form_results">
-		<table>
-			<tr>
-				<td>Results:
-			</tr>
-			<tr>
-				<td><textarea id="results" name="results" rows="10" cols="120">Result will be shown here.</textarea>
-			</tr>
-		</table>
-	</div>
-  </div>
-  
-  <div id="tabs-2">
-	<form id="list_delete_cards_form" name=list_delete_cards_form" action="/index/paypalListDeleteCards">
-		<table>
-			<div id="card_list">
-			</div>
-			<tr>
-				<td>
-				<td><input id="btnOK2" type="button" name="ok" value="list cards">
-				<td>
-				<td><input id="btnDelete" type="button" name="delete" value="delete">
-			</tr>
-		</table>
+						</select>
+						
+						<td>
+						
+						<td>
+					
+					</tr>
+					<tr>
+						<td>zip:
+						
+						<td><input type="text" id="zip_code" name="zip_code" value="10018">
+						
+						<td>
+						
+						<td><input type="hidden" id="isValid" name="isValid" value="1">
+					
+					</tr>
+					<tr>
+						<td>
+						
+						<td><input id="btnOK" type="button" name="ok" value="ok">
+						
+						<td>
+						
+						<td><input id="btnClear" type="button" name="clear" value="cancel">
+					
+					</tr>
+				</table>
+				<div id="store_card_form_results">
+					<table>
+						<tr>
+							<td>Results:
+						
+						</tr>
+						<tr>
+							<td><textarea id="results" name="results" rows="10" cols="120">Result will be shown here.</textarea>
+						
+						</tr>
+					</table>
+				</div>
 		
-	<div id="list_delete_cards_form_results">
-	<table>
-		<tr>
-			<td>Results:
-		</tr>
-		<tr>
-			<td><textarea id="list_delete_cards_results" name="list_delete_cards_results" rows="10" cols="120">Result will be shown here.</textarea>
-		</tr>
-	</table>
-  	</div>
-  </div>
-  <div id="tabs-3">
-	<form id="add_seller_form" name=add_seller_form" action="/index/paypal">
-	<table>
-		<tr>
-			<td>user name:
-			<td><input type="text" id="add_seller_user_name" name="add_seller_user_name" value="jmeah2">
-			<td>stripe email address:
-			<td><input type="text" id="add_seller_paypal_email_address" name="add_seller_paypal_email_address" value="jmeah_seller@memreas.com">
-		</tr>
-		<tr>
-			<td>first name:
-			<td><input type="text" id="add_seller_first_name" name="add_seller_first_name" value="John">
-			<td>last name:
-			<td><input type="text" id="add_seller_last_name" name="add_seller_last_name" value="Meah">
-		</tr>
-		<tr>
-			<td>address line 1:
-			<td><input type="text" id="add_seller_address_line_1" name="add_seller_address_line_1" value="125 Bowery Street">
-		</tr>
-		<tr>
-			<td>address line 2:
-			<td><input type="text" id="add_seller_address_line_2" name="add_seller_address_line_2" value="Suite 814">
-		</tr>
-		<tr>
-			<td>city:
-			<td><input type="text" id="add_seller_city" name="add_seller_city" value="New York">
-		</tr>
-		<tr>
-			<td>state:
-			<td>						
-							<select id="add_seller_state" name="add_seller_state">
+		</div>
+
+		<div id="tabs-2">
+			<form id="list_delete_cards_form" name=list_delete_cards_form
+				" action="/index/paypalListDeleteCards">
+				<table>
+					<div id="card_list"></div>
+					<tr>
+						<td>
+						
+						<td><input id="btnOK2" type="button" name="ok" value="list cards">
+						
+						<td>
+						
+						<td><input id="btnDelete" type="button" name="delete"
+							value="delete">
+					
+					</tr>
+				</table>
+
+				<div id="list_delete_cards_form_results">
+					<table>
+						<tr>
+							<td>Results:
+						
+						</tr>
+						<tr>
+							<td><textarea id="list_delete_cards_results"
+									name="list_delete_cards_results" rows="10" cols="120">Result will be shown here.</textarea>
+						
+						</tr>
+					</table>
+				</div>
+		
+		</div>
+		<div id="tabs-3">
+			<form id="add_seller_form" name=add_seller_form
+				" action="/index/paypal">
+				<table>
+					<tr>
+						<td>user name:
+						
+						<td><input type="text" id="add_seller_user_name"
+							name="add_seller_user_name" value="jmeah2">
+						
+						<td>stripe email address:
+						
+						<td><input type="text" id="add_seller_paypal_email_address"
+							name="add_seller_paypal_email_address"
+							value="jmeah_seller@memreas.com">
+					
+					</tr>
+					<tr>
+						<td>first name:
+						
+						<td><input type="text" id="add_seller_first_name"
+							name="add_seller_first_name" value="John">
+						
+						<td>last name:
+						
+						<td><input type="text" id="add_seller_last_name"
+							name="add_seller_last_name" value="Meah">
+					
+					</tr>
+					<tr>
+						<td>address line 1:
+						
+						<td><input type="text" id="add_seller_address_line_1"
+							name="add_seller_address_line_1" value="125 Bowery Street">
+					
+					</tr>
+					<tr>
+						<td>address line 2:
+						
+						<td><input type="text" id="add_seller_address_line_2"
+							name="add_seller_address_line_2" value="Suite 814">
+					
+					</tr>
+					<tr>
+						<td>city:
+						
+						<td><input type="text" id="add_seller_city" name="add_seller_city"
+							value="New York">
+					
+					</tr>
+					<tr>
+						<td>state:
+						
+						<td><select id="add_seller_state" name="add_seller_state">
 								<option value=""></option>
 								<option value="AK">AK</option>
 								<option value="AL">AL</option>
@@ -471,108 +536,165 @@ if (isset($this->json)) {
 								<option value="PR">PR</option>
 								<option value="PW">PW</option>
 								<option value="VI">VI</option>
-							</select>
-			<td>
-			<td>
-		</tr>
-		<tr>
-			<td>zip:
-			<td><input type="text" id="add_seller_zip_code" name="add_seller_zip_code" value="10018">
-			<td>
-			<td><input type="hidden" id="isValid" name="isValid" value="1">
-		</tr>
-		<tr>
-			<td>
-			<td><input id="btnOK3" type="button" name="ok" value="ok">
-			<td>
-			<td><input id="btnClear" type="button" name="clear" value="cancel">
-		</tr>
-	</table>
-	<div id="add_seller_results">
-		<table>
-			<tr>
-				<td>Results:
-			</tr>
-			<tr>
-				<td><textarea id="add_seller_form_results" name="add_seller_form_results" rows="10" cols="120">Result will be shown here.</textarea>
-			</tr>
-		</table>
-	</div>
-  </div>  <div id="tabs-4">
-	<form id="add_value_form" name=add_value_form" action="/index/paypalAddValue">
-		<table>
-			<div id="card_list4">
-			</div>
-			<tr>
-				<td>
-				<td>$ amount(USD):
-				<td>
-				<td><input id="amount" type="text" name="amount" value="5">
-			</tr>
-			<tr>
-				<td>
-				<td><input id="btnOK4" type="button" name="ok" value="list cards">
-				<td>
-				<td><input id="btnAddValue4" type="button" name="add_value" value="add value">
-			</tr>
-		</table>
+						</select>
+						
+						<td>
+						
+						<td>
+					
+					</tr>
+					<tr>
+						<td>zip:
+						
+						<td><input type="text" id="add_seller_zip_code"
+							name="add_seller_zip_code" value="10018">
+						
+						<td>
+						
+						<td><input type="hidden" id="isValid" name="isValid" value="1">
+					
+					</tr>
+					<tr>
+						<td>
+						
+						<td><input id="btnOK3" type="button" name="ok" value="ok">
+						
+						<td>
+						
+						<td><input id="btnClear" type="button" name="clear" value="cancel">
+					
+					</tr>
+				</table>
+				<div id="add_seller_results">
+					<table>
+						<tr>
+							<td>Results:
+						
+						</tr>
+						<tr>
+							<td><textarea id="add_seller_form_results"
+									name="add_seller_form_results" rows="10" cols="120">Result will be shown here.</textarea>
+						
+						</tr>
+					</table>
+				</div>
 		
-	<div id="add_value_form_results">
-	<table>
-		<tr>
-			<td>Results:
-		</tr>
-		<tr>
-			<td><textarea id="add_value_results" name="add_value_results" rows="10" cols="120">Result will be shown here.</textarea>
-		</tr>
-	</table> 
-	</div>
-  </div>
-  <div id="tabs-5">
-	<form id="decrement_value_form" name=decrement_value_form" action="/index/paypalAddValue">
-		<table>
-			<tr>
-				<td>
-				<td>Seller:
-				<td>
-				<td><input id="seller" type="text" name="seller" value="jmeah2">
-			</tr>
-			<tr>
-				<td>
-				<td>memreas_master:
-				<td>
-				<td><input id="memreas_master" type="text" name="memreas_master" value="jmeah3">
-			</tr>
-			<tr>
-				<td>
-				<td>$ amount(USD):
-				<td>
-				<td><input id="decrement_amount" type="text" name="decrement_amount" value=".25">
-			</tr>
-			<tr>
-				<td>
-				<td><input id="btnDecrementValue5" type="button" name="ok" value="purchase">
-			</tr>
-		</table>
+		</div>
+		<div id="tabs-4">
+			<form id="add_value_form" name=add_value_form
+				" action="/index/paypalAddValue">
+				<table>
+					<div id="card_list4"></div>
+					<tr>
+						<td>
+						
+						<td>$ amount(USD):
+						
+						<td>
+						
+						<td><input id="amount" type="text" name="amount" value="5">
+					
+					</tr>
+					<tr>
+						<td>
+						
+						<td><input id="btnOK4" type="button" name="ok" value="list cards">
+						
+						<td>
+						
+						<td><input id="btnAddValue4" type="button" name="add_value"
+							value="add value">
+					
+					</tr>
+				</table>
+
+				<div id="add_value_form_results">
+					<table>
+						<tr>
+							<td>Results:
+						
+						</tr>
+						<tr>
+							<td><textarea id="add_value_results" name="add_value_results"
+									rows="10" cols="120">Result will be shown here.</textarea>
+						
+						</tr>
+					</table>
+				</div>
 		
-	<div id="decrement_value_form_results">
-	<table>
-		<tr>
-			<td>Results:
-		</tr>
-		<tr>
-			<td><textarea id="decrement_value_results" name="decrement_value_results" rows="10" cols="120">Result will be shown here.</textarea>
-		</tr>
-	</table> 
-	</div>  </div>
-  <div id="tabs-6">
-	<form id="account_history_form" name=account_history_form" action="/index/paypalListDeleteCards">
-		<table>
-			<tr>
-				<td>User Name:
-				<td><input id="account_history_form_user_name" type="text" name="account_history_form_user_name" value="jmeah1">
-			</tr>
-			<!--
+		</div>
+		<div id="tabs-5">
+			<form id="decrement_value_form" name=decrement_value_form
+				" action="/index/paypalAddValue">
+				<table>
+					<tr>
+						<td>
+						
+						<td>Seller:
+						
+						<td>
+						
+						<td><input id="seller" type="text" name="seller" value="jmeah2">
+					
+					</tr>
+					<tr>
+						<td>
+						
+						<td>memreas_master:
+						
+						<td>
+						
+						<td><input id="memreas_master" type="text" name="memreas_master"
+							value="jmeah3">
+					
+					</tr>
+					<tr>
+						<td>
+						
+						<td>$ amount(USD):
+						
+						<td>
+						
+						<td><input id="decrement_amount" type="text"
+							name="decrement_amount" value=".25">
+					
+					</tr>
+					<tr>
+						<td>
+						
+						<td><input id="btnDecrementValue5" type="button" name="ok"
+							value="purchase">
+					
+					</tr>
+				</table>
+
+				<div id="decrement_value_form_results">
+					<table>
+						<tr>
+							<td>Results:
+						
+						</tr>
+						<tr>
+							<td><textarea id="decrement_value_results"
+									name="decrement_value_results" rows="10" cols="120">Result will be shown here.</textarea>
+						
+						</tr>
+					</table>
+				</div>
+		
+		</div>
+		<div id="tabs-6">
+			<form id="account_history_form" name=account_history_form
+				" action="/index/paypalListDeleteCards">
+				<table>
+					<tr>
+						<td>User Name:
+						
+						<td><input id="account_history_form_user_name" type="text"
+							name="account_history_form_user_name" value="jmeah1">
+					
+					</tr>
+					<!--
 			<tr>
 				<td>Date From:
 				<td><input id="dteFrom" type="text" name="dteFrom" value="">
@@ -580,231 +702,307 @@ if (isset($this->json)) {
 				<td><input id="dteTo" type="text" name="dteTo" value="">
 			</tr>
 			-->
-			<tr>
-				<td>
-				<td><input id="btnAccountHistory6" type="button" name="ok" value="get history">
-			</tr>
-		</table>
+					<tr>
+						<td>
+						
+						<td><input id="btnAccountHistory6" type="button" name="ok"
+							value="get history">
+					
+					</tr>
+				</table>
+
+				<div id="account_history_form_results">
+					<table>
+						<tr>
+							<td>Results:
+						
+						</tr>
+						<tr>
+							<td><textarea id="account_history_results"
+									name="account_history_results" rows="10" cols="120">Result will be shown here.</textarea>
+						
+						</tr>
+					</table>
+				</div>
 		
-	<div id="account_history_form_results">
-	<table>
-		<tr>
-			<td>Results:
-		</tr>
-		<tr>
-			<td><textarea id="account_history_results" name="account_history_results" rows="10" cols="120">Result will be shown here.</textarea>
-		</tr>
-	</table>
-  	</div>
-  </div>
-  <div id="tabs-7">
-	<form id="mass_pay_form" name=mass_pay_form" action="/index/payPalListMassPayee">
-		<table>
-			<div id="mass_pay_list">
-			</div>
-			<tr>
-				<td>
-				<td><input id="btnOK7" type="button" name="btnOK7" value="list mass payees">
-				<td>
-				<td><input id="btnPayOut7" type="button" name="btnPayOut7" value="payout">
-			</tr>
-		</table>
+		</div>
+		<div id="tabs-7">
+			<form id="mass_pay_form" name=mass_pay_form
+				" action="/index/payPalListMassPayee">
+				<table>
+					<div id="mass_pay_list"></div>
+					<tr>
+						<td>
+						
+						<td><input id="btnOK7" type="button" name="btnOK7"
+							value="list mass payees">
+						
+						<td>
+						
+						<td><input id="btnPayOut7" type="button" name="btnPayOut7"
+							value="payout">
+					
+					</tr>
+				</table>
+
+				<div id="mass_pay_form_results">
+					<table>
+						<tr>
+							<td>Results:
+						
+						</tr>
+						<tr>
+							<td><textarea id="mass_pay_results" name="mass_pay_results"
+									rows="10" cols="120">Result will be shown here.</textarea>
+						
+						</tr>
+					</table>
+				</div>
 		
-	<div id="mass_pay_form_results">
-	<table>
-		<tr>
-			<td>Results:
-		</tr>
-		<tr>
-			<td><textarea id="mass_pay_results" name="mass_pay_results" rows="10" cols="120">Result will be shown here.</textarea>
-		</tr>
-	</table>
-  	</div>
-  </div>
-  <div id="tabs-8">
-	<form id="subscribe_form" name=subscribe_form" action="/index/paypal">
-  		<table>
-			<div id="subscribe_card_list">
-			</div>
-			<tr>
-				<td>plan:
-				<td>						
-					<select id=plan name="plan">
-						<option value="PLAN_A_2GB_MONTHLY" selected>plan a: free for 2GB monthly</option>
-						<option value="PLAN_B_10GB_MONTHLY">plan b: $2.95 for 10GB monthly</option>
-						<option value="PLAN_C_50GB_MONTHLY">plan c: $4.95 for 50GB monthly</option>
-						<option value="PLAN_D_100GB_MONTHLY">plan d: $9.95 for 100GB monthly</option>
-					</select>
-				<td>
-				<td>
-			</tr>
-			<tr>
-				<td>first name:
-				<td><input type="text" id="subscribe_first_name" name="subscribe_first_name" value="Joe">
-				<td>last name:
-				<td><input type="text" id="subscribe_last_name" name="subscribe_last_name" value="Blake">
-			</tr>
-			<tr>
-				<td>address line 1:
-				<td><input type="text" id="subscribe_address_line_1" name="subscribe_address_line_1" value="900 Overbrook Drive">
-				<td>Card Type#:
-				<td>								
-								<select id="subscribe_credit_card_type" name="subscribe_credit_card_type"
-									onChange="javascript:generateCC(); return false;">
-										<option value="Visa" selected="selected">Visa</option>
-										<option value="MasterCard">MasterCard</option>
-										<option value="Discover">Discover</option>
-										<option value="Amex">American Express</option>
-								</select>				
-	
-			</tr>
-			<tr>
-				<td>address line 2:
-				<td><input type="text" id="subscribe_address_line_2" name="subscribe_address_line_2" value="Suite 109">
-				<td>credit card #:
-				<td><input type="text" id="subscribe_credit_card_number" name="subscribe_credit_card_number">
-			</tr>
-			<tr>
-				<td>city:
-				<td><input type="text" id="subscribe_city" name="subscribe_city" value="New York">
-				<td>expiration date:
-				<td>						
-								<select id="subscribe_expiration_month" name="subscribe_expiration_month">
-									<option value="01">01</option>
-									<option value="02">02</option>
-									<option value="03">03</option>
-									<option value="04">04</option>
-									<option value="05">05</option>
-									<option value="06">06</option>
-									<option value="07">07</option>
-									<option value="08 selected">08</option>
-									<option value="09">09</option>
-									<option value="10">10</option>
-									<option value="11">11</option>
-									<option value="12">12</option>
-								</select>
-								<select id="subscribe_expiration_year" name="subscribe_expiration_year">					
-									<option value="2013">2013</option>
-									<option value="2014" selected>2014</option>
-									<option value="2015">2015</option>
-									<option value="2016">2016</option>
-									<option value="2017">2017</option>
-									<option value="2018">2018</option>
-									<option value="2019">2019</option>
-									<option value="2020">2020</option>						
-								</select>
-			</tr>
-			<tr>
-				<td>CVC</td>
-				<td><input type="text" name="cvc" value="111" /></td>
-			</tr>
-			<tr>
-				<td>state:
-				<td>						
-								<select id=subscribe_state name="subscribe_state">
-									<option value=""></option>
-									<option value="AK">AK</option>
-									<option value="AL">AL</option>
-									<option value="AR">AR</option>
-									<option value="AZ">AZ</option>
-									<option value="CA" selected>CA</option>
-									<option value="CO">CO</option>
-									<option value="CT">CT</option>
-									<option value="DC">DC</option>
-									<option value="DE">DE</option>
-									<option value="FL">FL</option>
-									<option value="GA">GA</option>
-									<option value="HI">HI</option>
-									<option value="IA">IA</option>
-									<option value="ID">ID</option>
-									<option value="IL">IL</option>
-									<option value="IN">IN</option>
-									<option value="KS">KS</option>
-									<option value="KY">KY</option>
-									<option value="LA">LA</option>
-									<option value="MA">MA</option>
-									<option value="MD">MD</option>
-									<option value="ME">ME</option>
-									<option value="MI">MI</option>
-									<option value="MN">MN</option>
-									<option value="MO">MO</option>
-									<option value="MS">MS</option>
-									<option value="MT">MT</option>
-									<option value="NC">NC</option>
-									<option value="ND">ND</option>
-									<option value="NE">NE</option>
-									<option value="NH">NH</option>
-									<option value="NJ">NJ</option>
-									<option value="NM">NM</option>
-									<option value="NV">NV</option>
-									<option value="NY" selected>NY</option>
-									<option value="OH">OH</option>
-									<option value="OK">OK</option>
-									<option value="OR">OR</option>
-									<option value="PA">PA</option>
-									<option value="RI">RI</option>
-									<option value="SC">SC</option>
-									<option value="SD">SD</option>
-									<option value="TN">TN</option>
-									<option value="TX">TX</option>
-									<option value="UT">UT</option>
-									<option value="VA">VA</option>
-									<option value="VT">VT</option>
-									<option value="WA">WA</option>
-									<option value="WI">WI</option>
-									<option value="WV">WV</option>
-									<option value="WY">WY</option>
-									<option value="AA">AA</option>
-									<option value="AE">AE</option>
-									<option value="AP">AP</option>
-									<option value="AS">AS</option>
-									<option value="FM">FM</option>
-									<option value="GU">GU</option>
-									<option value="MH">MH</option>
-									<option value="MP">MP</option>
-									<option value="PR">PR</option>
-									<option value="PW">PW</option>
-									<option value="VI">VI</option>
-								</select>
-				<td>
-				<td>
-			</tr>
-			<tr>
-				<td>zip:
-				<td><input type="text" id="subscribe_zip_code" name="subscribe_zip_code" value="10018">
-			</tr>			
-			<tr>
-				<td>
-				<td><input id="btnListCardsForSubscribe" type="button" name="ok" value="list cards">
-				<td>
-				<td><input id="btnSubscribe" type="button" name="subscribe" value="subscribe">
-			</tr>
-		</table>
+		</div>
+		<div id="tabs-8">
+			<form id="subscribe_form" name=subscribe_form
+				" action="/index/paypal">
+				<table>
+					<div id="subscribe_card_list"></div>
+					<tr>
+						<td>plan:
+						
+						<td><select id=plan name="plan">
+								<option value="PLAN_A_2GB_MONTHLY" selected>plan a: free for 2GB
+									monthly</option>
+								<option value="PLAN_B_10GB_MONTHLY">plan b: $2.95 for 10GB
+									monthly</option>
+								<option value="PLAN_C_50GB_MONTHLY">plan c: $4.95 for 50GB
+									monthly</option>
+								<option value="PLAN_D_100GB_MONTHLY">plan d: $9.95 for 100GB
+									monthly</option>
+						</select>
+						
+						<td>
+						
+						<td>
+					
+					</tr>
+					<tr>
+						<td>first name:
+						
+						<td><input type="text" id="subscribe_first_name"
+							name="subscribe_first_name" value="Joe">
+						
+						<td>last name:
+						
+						<td><input type="text" id="subscribe_last_name"
+							name="subscribe_last_name" value="Blake">
+					
+					</tr>
+					<tr>
+						<td>address line 1:
+						
+						<td><input type="text" id="subscribe_address_line_1"
+							name="subscribe_address_line_1" value="900 Overbrook Drive">
+						
+						<td>Card Type#:
+						
+						<td><select id="subscribe_credit_card_type"
+							name="subscribe_credit_card_type"
+							onChange="javascript:generateCC(); return false;">
+								<option value="Visa" selected="selected">Visa</option>
+								<option value="MasterCard">MasterCard</option>
+								<option value="Discover">Discover</option>
+								<option value="Amex">American Express</option>
+						</select>
+					
+					</tr>
+					<tr>
+						<td>address line 2:
+						
+						<td><input type="text" id="subscribe_address_line_2"
+							name="subscribe_address_line_2" value="Suite 109">
+						
+						<td>credit card #:
+						
+						<td><input type="text" id="subscribe_credit_card_number"
+							name="subscribe_credit_card_number">
+					
+					</tr>
+					<tr>
+						<td>city:
+						
+						<td><input type="text" id="subscribe_city" name="subscribe_city"
+							value="New York">
+						
+						<td>expiration date:
+						
+						<td><select id="subscribe_expiration_month"
+							name="subscribe_expiration_month">
+								<option value="01">01</option>
+								<option value="02">02</option>
+								<option value="03">03</option>
+								<option value="04">04</option>
+								<option value="05">05</option>
+								<option value="06">06</option>
+								<option value="07">07</option>
+								<option value="08 selected">08</option>
+								<option value="09">09</option>
+								<option value="10">10</option>
+								<option value="11">11</option>
+								<option value="12">12</option>
+						</select> <select id="subscribe_expiration_year"
+							name="subscribe_expiration_year">
+								<option value="2013">2013</option>
+								<option value="2014" selected>2014</option>
+								<option value="2015">2015</option>
+								<option value="2016">2016</option>
+								<option value="2017">2017</option>
+								<option value="2018">2018</option>
+								<option value="2019">2019</option>
+								<option value="2020">2020</option>
+						</select>
+					
+					</tr>
+					<tr>
+						<td>CVC</td>
+						<td><input type="text" name="cvc" value="111" /></td>
+					</tr>
+					<tr>
+						<td>state:
+						
+						<td><select id=subscribe_state name="subscribe_state">
+								<option value=""></option>
+								<option value="AK">AK</option>
+								<option value="AL">AL</option>
+								<option value="AR">AR</option>
+								<option value="AZ">AZ</option>
+								<option value="CA" selected>CA</option>
+								<option value="CO">CO</option>
+								<option value="CT">CT</option>
+								<option value="DC">DC</option>
+								<option value="DE">DE</option>
+								<option value="FL">FL</option>
+								<option value="GA">GA</option>
+								<option value="HI">HI</option>
+								<option value="IA">IA</option>
+								<option value="ID">ID</option>
+								<option value="IL">IL</option>
+								<option value="IN">IN</option>
+								<option value="KS">KS</option>
+								<option value="KY">KY</option>
+								<option value="LA">LA</option>
+								<option value="MA">MA</option>
+								<option value="MD">MD</option>
+								<option value="ME">ME</option>
+								<option value="MI">MI</option>
+								<option value="MN">MN</option>
+								<option value="MO">MO</option>
+								<option value="MS">MS</option>
+								<option value="MT">MT</option>
+								<option value="NC">NC</option>
+								<option value="ND">ND</option>
+								<option value="NE">NE</option>
+								<option value="NH">NH</option>
+								<option value="NJ">NJ</option>
+								<option value="NM">NM</option>
+								<option value="NV">NV</option>
+								<option value="NY" selected>NY</option>
+								<option value="OH">OH</option>
+								<option value="OK">OK</option>
+								<option value="OR">OR</option>
+								<option value="PA">PA</option>
+								<option value="RI">RI</option>
+								<option value="SC">SC</option>
+								<option value="SD">SD</option>
+								<option value="TN">TN</option>
+								<option value="TX">TX</option>
+								<option value="UT">UT</option>
+								<option value="VA">VA</option>
+								<option value="VT">VT</option>
+								<option value="WA">WA</option>
+								<option value="WI">WI</option>
+								<option value="WV">WV</option>
+								<option value="WY">WY</option>
+								<option value="AA">AA</option>
+								<option value="AE">AE</option>
+								<option value="AP">AP</option>
+								<option value="AS">AS</option>
+								<option value="FM">FM</option>
+								<option value="GU">GU</option>
+								<option value="MH">MH</option>
+								<option value="MP">MP</option>
+								<option value="PR">PR</option>
+								<option value="PW">PW</option>
+								<option value="VI">VI</option>
+						</select>
+						
+						<td>
+						
+						<td>
+					
+					</tr>
+					<tr>
+						<td>zip:
+						
+						<td><input type="text" id="subscribe_zip_code"
+							name="subscribe_zip_code" value="10018">
+					
+					</tr>
+					<tr>
+						<td>
+						
+						<td><input id="btnListCardsForSubscribe" type="button" name="ok"
+							value="list cards">
+						
+						<td>
+						
+						<td><input id="btnSubscribe" type="button" name="subscribe"
+							value="subscribe">
+					
+					</tr>
+				</table>
+
+				<div id="subscribe_form_results">
+					<table>
+						<tr>
+							<td>Results:
+						
+						</tr>
+						<tr>
+							<td><textarea id="subscribe_results" name="subscribe_results"
+									rows="10" cols="120">Result will be shown here.</textarea>
+						
+						</tr>
+					</table>
+				</div>
 		
-	<div id="subscribe_form_results">
-	<table>
-		<tr>
-			<td>Results:
-		</tr>
-		<tr>
-			<td><textarea id="subscribe_results" name="subscribe_results" rows="10" cols="120">Result will be shown here.</textarea>
-		</tr>
-	</table> 
+		</div>
+
+		<div id="tabs-9">
+			<p>Mauris eleifend est et turpis. Duis id erat. Suspendisse potenti.
+				Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat,
+				eu congue orci lorem eget lorem. Vestibulum non ante. Class aptent
+				taciti sociosqu ad litora torquent per conubia nostra, per inceptos
+				himenaeos. Fusce sodales. Quisque eu urna vel enim commodo
+				pellentesque. Praesent eu risus hendrerit ligula tempus pretium.
+				Curabitur lorem enim, pretium nec, feugiat nec, luctus a, lacus.</p>
+			<p>Duis cursus. Maecenas ligula eros, blandit nec, pharetra at,
+				semper at, magna. Nullam ac lacus. Nulla facilisi. Praesent viverra
+				justo vitae neque. Praesent blandit adipiscing velit. Suspendisse
+				potenti. Donec mattis, pede vel pharetra blandit, magna ligula
+				faucibus eros, id euismod lacus dolor eget odio. Nam scelerisque.
+				Donec non libero sed nulla mattis commodo. Ut sagittis. Donec nisi
+				lectus, feugiat porttitor, tempor ac, tempor vitae, pede. Aenean
+				vehicula velit eu tellus interdum rutrum. Maecenas commodo.
+				Pellentesque nec elit. Fusce in lacus. Vivamus a libero vitae lectus
+				hendrerit hendrerit.</p>
+		</div>
 	</div>
-  </div>
 
-  <div id="tabs-9">
-    <p>Mauris eleifend est et turpis. Duis id erat. Suspendisse potenti. Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat, eu congue orci lorem eget lorem. Vestibulum non ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce sodales. Quisque eu urna vel enim commodo pellentesque. Praesent eu risus hendrerit ligula tempus pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a, lacus.</p>
-    <p>Duis cursus. Maecenas ligula eros, blandit nec, pharetra at, semper at, magna. Nullam ac lacus. Nulla facilisi. Praesent viverra justo vitae neque. Praesent blandit adipiscing velit. Suspendisse potenti. Donec mattis, pede vel pharetra blandit, magna ligula faucibus eros, id euismod lacus dolor eget odio. Nam scelerisque. Donec non libero sed nulla mattis commodo. Ut sagittis. Donec nisi lectus, feugiat porttitor, tempor ac, tempor vitae, pede. Aenean vehicula velit eu tellus interdum rutrum. Maecenas commodo. Pellentesque nec elit. Fusce in lacus. Vivamus a libero vitae lectus hendrerit hendrerit.</p>
-  </div>
-</div>
-
-</form>
-</div>
+	</form>
+	</div>
 
 
 
-<script language="JavaScript">
+	<script language="JavaScript">
 	function generateCC(){
 		$('#credit_card_number').val('4242424242424242');
 		$('#subscribe_credit_card_number').val('4242424242424242');
@@ -861,7 +1059,7 @@ if (isset($this->json)) {
 		$('#subscribe_credit_card_number').val(cc);
 }
 </script>
-<script language="javascript">
+	<script language="javascript">
 	generateCC();
 </script>
 

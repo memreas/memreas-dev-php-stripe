@@ -130,152 +130,143 @@ qtipConfig = {
 
 </script>
 <?php
-  
-  $exception = $this->exception;
-if(!empty($exception))
-{
-  echo "<table>
+$exception = $this->exception;
+if (! empty ( $exception )) {
+	echo "<table>
       <tr>
         <td>Type</td>
-        <td>".$exception["class"]."</td>
+        <td>" . $exception ["class"] . "</td>
       </tr>
       <tr>
         <td>Message</td>
-        <td>".$exception["message"]."</td>
+        <td>" . $exception ["message"] . "</td>
       </tr>
       <tr>
         <td>Detailed message</td>
-        <td>".$exception["details_message"]."</td>
+        <td>" . $exception ["details_message"] . "</td>
       </tr>
     </table>";
 }
-  ?>
-<form action="" method="post">        
-        <div class="note">A refund can be made against the entire
-            payKey,or an individual transaction belonging to a payKey,or a
-            tracking id, or a specific receiver of a payKey.</div>
-        <div class="params">
-          <div class="param_name">Pay key</div>
-          <div class="param_value">
-            <input name="payKey" id="payKey" value="" />
-          </div>
-        </div>
-        <div class="params">
-          <div class="param_name">Transaction Id</div>
-          <div class="param_value">
-            <input name="transactionId" id="transactionId" value="" />
-          </div>
-        </div>
-        <div class="params">
-          <div class="param_name">Tracking id</div>
-          <div class="param_value">
-            <input name="trackingId" id="trackingId" value="" />
-          </div>
-        </div>
-        <div class="params">
-          <div class="param_name">Currency code</div>
-          <div class="param_value">
-            <input name="currencyCode" id="currencyCode" value="USD" />
-          </div>
-        </div>
-        <div class="section_header">Receiver info</div>
-        <div class="note">Receiver is the party where funds are
-            transferred to. A primary receiver receives a payment directly
-            from the sender in a chained split payment. A primary receiver
-            should not be specified when making a single or parallel split
-            payment. Must set either mail or phone number</div>
-        <table class="params" id="receiverTable">
-          <tr>
-            <th></th>
-            <th>Email *</th>
-            <th>Amount *</th>
-            <th>Phone number</th>
-            <th>Primary receiver</th>
-            <th>Invoice Id</th>
-            <th>Payment type</th>
-            <th>Payment subtype</th>
-          </tr>
-          <tr id="receiverTable_0">
-            <td align="left"><input type="checkbox" name="receiver_0"
-              id="receiver_0" /></td>
-            <td><input type="text" name="receiverEmail[]" id="receiveremail_0"
-              value="platfo_1255612361_per@gmail.com">
-            </td>
-            <td><input type="text" name="receiverAmount[]" id="amount_0"
-              value="1.0" class="smallfield">
-            </td>
-            <td style="display: block;"><input type="text"
-              name="phoneCountry[]" id="phoneCountry_0" value=""
-              class="xsmallfield"> <input type="text" name="phoneNumber[]"
-              id="phoneNumber_0" value="" class="xsmallfield"> <input
-              type="text" name="phoneExtn[]" id="phoneExtn_0" value=""
-              class="xsmallfield">
-            </td>
-            <td><select name="primaryReceiver[]" id="primaryReceiver_0"
-              class="smallfield">
-                <option value="true">true</option>
-                <option value="false" selected="selected">false</option>
-            </select>
-            </td>
-            <td><input type="text" name="invoiceId[]" id="invoiceid_0"
-              value="" class="smallfield">
-            </td>
-            <td><select name="paymentType[]" id="paymentType_0"
-              class="smallfield">
-                <option>- Select -</option>
-                <option>GOODS</option>
-                <option>SERVICE</option>
-                <option>PERSONAL</option>
-                <option>CASHADVANCE</option>
-                <option>DIGITALGOODS</option>
-            </select>
-            </td>
-            <td><input type="text" name="paymentSubType[]" id="paymentSubType"
-              value="" class="smallfield">
-            </td>
-          </tr>
-        </table>
-        <a rel="receiverControls"></a>
-        <table align="center">
-          <tr>
-            <td><a href="#receiverControls" onclick="cloneRow('receiverTable', 8)" id="Submit"><span>Add
-                  Receiver </span> </a></td>
-            <td><a href="#receiverControls" onclick="deleteRow('receiverTable')" id="Submit"><span>
-                  Delete Receiver</span> </a></td>
-          </tr>
-        </table>
-        <div class="submit">
-          <input type="submit" value="Submit" />
-        </div>
-      </form>
+?>
+<form action="" method="post">
+	<div class="note">A refund can be made against the entire payKey,or an
+		individual transaction belonging to a payKey,or a tracking id, or a
+		specific receiver of a payKey.</div>
+	<div class="params">
+		<div class="param_name">Pay key</div>
+		<div class="param_value">
+			<input name="payKey" id="payKey" value="" />
+		</div>
+	</div>
+	<div class="params">
+		<div class="param_name">Transaction Id</div>
+		<div class="param_value">
+			<input name="transactionId" id="transactionId" value="" />
+		</div>
+	</div>
+	<div class="params">
+		<div class="param_name">Tracking id</div>
+		<div class="param_value">
+			<input name="trackingId" id="trackingId" value="" />
+		</div>
+	</div>
+	<div class="params">
+		<div class="param_name">Currency code</div>
+		<div class="param_value">
+			<input name="currencyCode" id="currencyCode" value="USD" />
+		</div>
+	</div>
+	<div class="section_header">Receiver info</div>
+	<div class="note">Receiver is the party where funds are transferred to.
+		A primary receiver receives a payment directly from the sender in a
+		chained split payment. A primary receiver should not be specified when
+		making a single or parallel split payment. Must set either mail or
+		phone number</div>
+	<table class="params" id="receiverTable">
+		<tr>
+			<th></th>
+			<th>Email *</th>
+			<th>Amount *</th>
+			<th>Phone number</th>
+			<th>Primary receiver</th>
+			<th>Invoice Id</th>
+			<th>Payment type</th>
+			<th>Payment subtype</th>
+		</tr>
+		<tr id="receiverTable_0">
+			<td align="left"><input type="checkbox" name="receiver_0"
+				id="receiver_0" /></td>
+			<td><input type="text" name="receiverEmail[]" id="receiveremail_0"
+				value="platfo_1255612361_per@gmail.com"></td>
+			<td><input type="text" name="receiverAmount[]" id="amount_0"
+				value="1.0" class="smallfield"></td>
+			<td style="display: block;"><input type="text" name="phoneCountry[]"
+				id="phoneCountry_0" value="" class="xsmallfield"> <input type="text"
+				name="phoneNumber[]" id="phoneNumber_0" value="" class="xsmallfield">
+				<input type="text" name="phoneExtn[]" id="phoneExtn_0" value=""
+				class="xsmallfield"></td>
+			<td><select name="primaryReceiver[]" id="primaryReceiver_0"
+				class="smallfield">
+					<option value="true">true</option>
+					<option value="false" selected="selected">false</option>
+			</select></td>
+			<td><input type="text" name="invoiceId[]" id="invoiceid_0" value=""
+				class="smallfield"></td>
+			<td><select name="paymentType[]" id="paymentType_0"
+				class="smallfield">
+					<option>- Select -</option>
+					<option>GOODS</option>
+					<option>SERVICE</option>
+					<option>PERSONAL</option>
+					<option>CASHADVANCE</option>
+					<option>DIGITALGOODS</option>
+			</select></td>
+			<td><input type="text" name="paymentSubType[]" id="paymentSubType"
+				value="" class="smallfield"></td>
+		</tr>
+	</table>
+	<a rel="receiverControls"></a>
+	<table align="center">
+		<tr>
+			<td><a href="#receiverControls"
+				onclick="cloneRow('receiverTable', 8)" id="Submit"><span>Add
+						Receiver </span> </a></td>
+			<td><a href="#receiverControls" onclick="deleteRow('receiverTable')"
+				id="Submit"><span> Delete Receiver</span> </a></td>
+		</tr>
+	</table>
+	<div class="submit">
+		<input type="submit" value="Submit" />
+	</div>
+</form>
 <?php
-  if(!empty($this->response)){
-$ack = strtoupper($this->response->responseEnvelope->ack);
-if($ack != "SUCCESS"){
-  echo "<b>Error </b>";
-  echo "<pre>";
-  print_r($this->response);
-  echo "</pre>";
-} else { 
-  $status = $this->response->refundInfoList->refundInfo[0]->refundStatus;
-  echo "<table>";
-  echo "<tr><td>Ack :</td><td><div id='Ack'>$ack</div> </td></tr>";
-  echo "<tr><td>RefundStatus :</td><td><div id='RefundStatus'>$status</div></td></tr>";
-  echo "</table>";
-  echo "<pre>";
-  print_r($this->response);
-  echo "</pre>";
+if (! empty ( $this->response )) {
+	$ack = strtoupper ( $this->response->responseEnvelope->ack );
+	if ($ack != "SUCCESS") {
+		echo "<b>Error </b>";
+		echo "<pre>";
+		print_r ( $this->response );
+		echo "</pre>";
+	} else {
+		$status = $this->response->refundInfoList->refundInfo [0]->refundStatus;
+		echo "<table>";
+		echo "<tr><td>Ack :</td><td><div id='Ack'>$ack</div> </td></tr>";
+		echo "<tr><td>RefundStatus :</td><td><div id='RefundStatus'>$status</div></td></tr>";
+		echo "</table>";
+		echo "<pre>";
+		print_r ( $this->response );
+		echo "</pre>";
+	}
+	
+	// Redirect to paypal.com here
+	$token = $this->response->preapprovalKey;
+	$payPalURL = 'https://www.sandbox.paypal.com/webscr&cmd=_ap-preapproval&preapprovalkey=' . $token;
+	
+	echo "<table>";
+	echo "<tr><td>Ack :</td><td><div id='Ack'>$ack</div> </td></tr>";
+	echo "<tr><td>PreapprovalKey :</td><td><div id='PreapprovalKey'>$token</div> </td></tr>";
+	echo "<tr><td><a href=$payPalURL><b>Redirect URL to Complete Preapproval Authorization</b></a></td></tr>";
+	echo "</table>";
 }
-  
-  // Redirect to paypal.com here
-  $token = $this->response->preapprovalKey;
-  $payPalURL = 'https://www.sandbox.paypal.com/webscr&cmd=_ap-preapproval&preapprovalkey='.$token;
-  
-  echo "<table>";
-  echo "<tr><td>Ack :</td><td><div id='Ack'>$ack</div> </td></tr>";
-  echo "<tr><td>PreapprovalKey :</td><td><div id='PreapprovalKey'>$token</div> </td></tr>";
-  echo "<tr><td><a href=$payPalURL><b>Redirect URL to Complete Preapproval Authorization</b></a></td></tr>";
-  echo "</table>";
-}
-    
-    ?>
+
+?>

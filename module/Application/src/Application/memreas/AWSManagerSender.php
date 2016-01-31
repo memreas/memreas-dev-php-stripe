@@ -83,10 +83,10 @@ class AWSManagerSender {
 				$result = $this->sqs->sendMessage ( array (
 						'QueueUrl' => MemreasConstants::QUEUEURL,
 						'MessageBody' => $json 
-				)
+				) )
 				// 'Subject' => 'Hello',
 				// 'MessageBody' => 'Hello World!',
-				 );
+				;
 				error_log ( 'Just published to MemreasConstants::QUEUEURL' . MemreasConstants::QUEUEURL . PHP_EOL );
 			} else {
 				/* - publish to topic here */
@@ -146,9 +146,8 @@ class AWSManagerSender {
 						'Subject' => array (
 								// Data is required
 								'Data' => $subject 
-						)
+						),
 						// 'Charset' => 'iso-8859-1'
-						,
 						// Body is required
 						'Body' => array (
 								'Text' => array (

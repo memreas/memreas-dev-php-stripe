@@ -31,11 +31,11 @@ class Mlog {
 			$obj = 'object is empty';
 		} else if ($opt != '\n') {
 			// do nothing option set...
-		} else if ( (is_array ( $obj )) || (is_object ( $obj )) ) {
+		} else if ((is_array ( $obj )) || (is_object ( $obj ))) {
 			$opt = 'p';
 		}
 		
-		self::addObj ( $objname . '::' , $obj, $opt );
+		self::addObj ( $objname . '::', $obj, $opt );
 		self::out ();
 	}
 	
@@ -64,7 +64,7 @@ class Mlog {
 		self::$log [] = array (
 				'objname' => $objname,
 				'obj' => $obj,
-				'opt' => $opt
+				'opt' => $opt 
 		);
 		if ($out) {
 			self::out ();
@@ -79,7 +79,7 @@ class Mlog {
 	 */
 	public static function out() {
 		foreach ( self::$log as $item ) {
-			if ( !empty($item ['objname']) ) {
+			if (! empty ( $item ['objname'] )) {
 				$objname = $item ['objname'];
 			} else {
 				$objname = '';
@@ -91,7 +91,7 @@ class Mlog {
 			} else if ($opt == 'p') {
 				error_log ( $objname . print_r ( $obj, true ) . PHP_EOL );
 			} else {
-				//must be string
+				// must be string
 				error_log ( $objname . $obj . PHP_EOL );
 			}
 		} // end for

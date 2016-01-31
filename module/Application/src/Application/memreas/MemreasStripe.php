@@ -50,10 +50,9 @@ class MemreasStripe extends StripeInstance {
 	protected $user_id;
 	public function __construct($serviceLocator) {
 		try {
-			/**
+			/*
+			 * -
 			 * TODO: Fix Stripe .
-			 *
-			 *
 			 * .. client is not being created...
 			 */
 			$this->serviceLocator = $serviceLocator;
@@ -64,10 +63,11 @@ class MemreasStripe extends StripeInstance {
 			
 			// Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
 			
+			/*
+			 * -
+			 * Retrieve memreas user_id from session
+			 */
 			$this->user_id = $_SESSION ['user_id'];
-			// $session = new Container ( 'user' );
-			// $this->user_id = $session->offsetGet ( 'user_id' );
-			// Mlog::addone ( __CLASS__ . __METHOD__ . '$this->user_id', $this->user_id );
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$e->getMessage()', $e->getMessage () );
 			throw new \Exception ( $e->getMessage () );
@@ -75,17 +75,18 @@ class MemreasStripe extends StripeInstance {
 	}
 	
 	/*
+	 * -
 	 * Retreive Stripe account configuration SECRET and PUBLIC key
 	 * Refer file : Application/Config/Autoload/Local.php
 	 */
 	private function retreiveStripeKey() {
-		$stripeConfig = $this->serviceLocator->get ( 'config' );
-		$this->clientSecret = $stripeConfig ['stripe_constants'] ['SECRET_KEY'];
-		$this->clientPublic = $stripeConfig ['stripe_constants'] ['PUBLIC_KEY'];
+		$this->clientSecret = MemreasConstants::SECRET_KEY;
+		$this->clientPublic = MemreasConstants::PUBLIC_KEY;
 	}
 }
 
 /*
+ * -
  * Stripe Class
  */
 class StripeInstance {
@@ -96,6 +97,11 @@ class StripeInstance {
 	private $stripePlan;
 	protected $session;
 	protected $memreasStripeTables;
+	
+	/*
+	 * -
+	 * Constructor
+	 */
 	public function __construct($stripeClient, $memreasStripeTables) {
 		$this->stripeCustomer = new StripeCustomer ( $stripeClient );
 		$this->stripeRecipient = new StripeRecipient ( $stripeClient );
@@ -107,6 +113,11 @@ class StripeInstance {
 	public function get($propertyName) {
 		return $this->{$propertyName};
 	}
+	
+	/*
+	 * -
+	 * get stripe customer data from stripe
+	 */
 	public function getCustomer($data, $stripe = false) {
 		$account_found = false;
 		$accounts = array ();
@@ -154,6 +165,11 @@ class StripeInstance {
 		// );
 		return $accounts;
 	}
+	
+	/*
+	 * -
+	 * provide refund via stripe and store data
+	 */
 	public function refundAmount($data) {
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['user_id'] );
 		
@@ -161,7 +177,7 @@ class StripeInstance {
 		if (empty ( $account ))
 			return array (
 					'status' => 'Failure',
-					'message' => 'You have no any payment method at this time. please try to add card first' 
+					'message' => 'Please add a payment method.' 
 			);
 		
 		$now = date ( 'Y-m-d H:i:s' );
@@ -210,6 +226,11 @@ class StripeInstance {
 				'message' => 'Refund completed' 
 		);
 	}
+	
+	/*
+	 * -
+	 * Retrieve subscriptions customer has
+	 */
 	public function getCustomerPlans($user_id) {
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
 		
@@ -228,6 +249,11 @@ class StripeInstance {
 				'plans' => $customerPlans 
 		);
 	}
+	
+	/*
+	 * -
+	 * Retrieve Stripe plans
+	 */
 	public function listPlans() {
 		return $this->stripePlan->getAllPlans ();
 	}
@@ -293,14 +319,29 @@ class StripeInstance {
 					'message' => 'No record' 
 			);
 	}
+	
+	/*
+	 * -
+	 * retrieve order data
+	 */
 	public function getOrder($transaction_id) {
 		return $this->memreasStripeTables->getTransactionTable ()->getTransaction ( $transaction_id );
 	}
+	
+	/*
+	 * -
+	 * retrieve account detail
+	 */
 	public function getAccountDetailByAccountId($account_id) {
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $account_id );
 		$userDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
 		return $userDetail;
 	}
+	
+	/*
+	 * -
+	 * get account and user detail by memreas user_id
+	 */
 	public function getUserById($user_id) {
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
 		$userDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
@@ -308,6 +349,7 @@ class StripeInstance {
 	}
 	
 	/*
+	 * -
 	 * Check user type based on user id
 	 */
 	public function checkUserType($username) {
@@ -1208,13 +1250,14 @@ class StripeInstance {
 		// Create a charge for this subscription
 		$paymentMethod = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodByStripeReferenceId ( $card );
 		
-		if (empty ( $paymentMethod ))
+		if (empty ( $paymentMethod )) {
 			return array (
 					'status' => 'Failure',
 					'message' => 'This card not relate to your account' 
 			);
-			
-			// Check if user has activated subscription or not
+		}
+		
+		// Check if user has activated subscription or not
 		$stripeCustomerInfo = $this->stripeCustomer->getCustomer ( $stripeCustomerId );
 		
 		$upgrade = true;
@@ -1537,7 +1580,7 @@ class StripeInstance {
 		
 		// Check if exist account
 		if (empty ( $account )) {
-			Mlog::addone("listCards", "empty account");
+			Mlog::addone ( "listCards", "empty account" );
 			return array (
 					'status' => 'Failure',
 					'message' => 'You have no any payment method at this time. please try to add card first' 
@@ -1548,18 +1591,18 @@ class StripeInstance {
 		
 		// Check if account has payment method
 		if (empty ( $paymentMethods ))
-			Mlog::addone("listCards", "empty payment methods");
-				
-			return array (
-					'status' => 'Failure',
-					'message' => 'No record found.' 
-			);
-			
-			// Fetching results
+			Mlog::addone ( "listCards", "empty payment methods" );
+		
+		return array (
+				'status' => 'Failure',
+				'message' => 'No record found.' 
+		);
+		
+		// Fetching results
 		$listPayments = array ();
 		$index = 0;
 		foreach ( $paymentMethods as $paymentMethod ) {
-			Mlog::addone("listCards for loop ", $paymentMethod, 'p');
+			Mlog::addone ( "listCards for loop ", $paymentMethod, 'p' );
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $paymentMethod ['account_id'] );
 			
 			if (empty ( $accountDetail ))
@@ -1568,14 +1611,14 @@ class StripeInstance {
 						'message' => 'Data corrupt with this account. Please try add new card first.' 
 				);
 				
-			// Check if this card has exist at Stripe
+				// Check if this card has exist at Stripe
 			$stripeCard = $this->stripeCard->getCard ( $accountDetail->stripe_customer_id, $paymentMethod ['stripe_card_reference_id'] );
 			if (! $stripeCard ['exist']) {
-				Mlog::addone("listCards for loop - stripe card does not exist ", $stripeCard ['message']);				
+				Mlog::addone ( "listCards for loop - stripe card does not exist ", $stripeCard ['message'] );
 				$listPayments [$index] ['stripe_card'] = 'Failure';
 				$listPayments [$index] ['stripe_card_respone'] = $stripeCard ['message'];
 			} else {
-				Mlog::addone("listCards for loop - stripe card does exist ", $stripeCard ['info']);				
+				Mlog::addone ( "listCards for loop - stripe card does exist ", $stripeCard ['info'] );
 				$listPayments [$index] ['stripe_card'] = 'Success';
 				$listPayments [$index] ['stripe_card_response'] = $stripeCard ['info'];
 			}
@@ -1599,7 +1642,7 @@ class StripeInstance {
 			$listPayments [$index] ['state'] = $accountDetail->state;
 			$listPayments [$index] ['zip_code'] = $accountDetail->zip_code;
 			++ $index;
-			Mlog::addone("listCards for loop bottom - stripe card does exist ", $listPayments [$index]);				
+			Mlog::addone ( "listCards for loop bottom - stripe card does exist ", $listPayments [$index] );
 		}
 		
 		return array (
