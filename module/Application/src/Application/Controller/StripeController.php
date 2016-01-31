@@ -27,22 +27,18 @@ class StripeController extends AbstractActionController {
 	// start session by fetching and starting from REDIS - security check
 	//
 	public function setupSaveHandler() {
-		
 		$this->redis = new AWSMemreasRedisCache ( $this->getServiceLocator () );
 		$this->sessHandler = new AWSMemreasRedisSessionHandler ( $this->redis, $this->getServiceLocator () );
 		session_set_save_handler ( $this->sessHandler );
 	}
 	public function flushResponse($response) {
-		
-		header('Content-Type: application/json');
-		$arr = headers_list();
-		Mlog::addone('response headers -->', $arr);
-		
+		header ( 'Content-Type: application/json' );
+		// $arr = headers_list ();
+		// Mlog::addone ( 'response headers -->', $arr );
 		echo $response;
 		// clean the buffer we don't need to send back session data
-		ob_end_flush (); 
+		ob_end_flush ();
 		flush ();
-		
 	}
 	public function fetchSession() {
 		$cm = __CLASS__ . __METHOD__;
@@ -104,16 +100,23 @@ class StripeController extends AbstractActionController {
 	public function listPlanAction() {
 		if ($this->fetchSession ()) {
 			Mlog::addone ( $cm . '$_REQUEST', $_REQUEST );
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				Mlog::addone ( __CLASS__ . __METHOD__ . '::$json::', $json );
-				$message_data = json_decode ( $json, true );
-				Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data::', $message_data );
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$this->flushResponse( $callback . "(" . json_encode ( $MemreasStripe->listPlans () ) . ")");
-				die ();
-			}
+			// if (isset ( $_REQUEST ['callback'] )) {
+			// $callback = $_REQUEST ['callback'];
+			// $json = $_REQUEST ['json'];
+			// Mlog::addone ( __CLASS__ . __METHOD__ . '::$json::', $json );
+			// $message_data = json_decode ( $json, true );
+			// Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data::', $message_data );
+			// $MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			// $this->flushResponse( $callback . "(" . json_encode ( $MemreasStripe->listPlans () ) . ")");
+			// die ();
+			// }
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '::$json::', $json );
+			$message_data = json_decode ( $json, true );
+			Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data::', $message_data );
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->listPlans () ) );
+			die ();
 		}
 	}
 	
@@ -171,7 +174,7 @@ class StripeController extends AbstractActionController {
 				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 				$out = $MemreasStripe->listCards ( $_SESSION ['user_id'] );
 				Mlog::addone ( __CLASS__ . __METHOD__ . '$out-->', $callback . "(" . json_encode ( $out ) . ")" );
-				$this->flushResponse( $callback . "(" . json_encode ( $out ) . ")");
+				$this->flushResponse ( $callback . "(" . json_encode ( $out ) . ")" );
 				die ();
 			}
 		}
@@ -185,7 +188,7 @@ class StripeController extends AbstractActionController {
 				$jsonArr = json_decode ( $json, true );
 				
 				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$this->flushResponse( $callback . "(" . json_encode ( $MemreasStripe->listCard ( $jsonArr ['json'] ) ) . ")" );
+				$this->flushResponse ( $callback . "(" . json_encode ( $MemreasStripe->listCard ( $jsonArr ['json'] ) ) . ")" );
 				die ();
 			}
 		}
@@ -268,7 +271,7 @@ class StripeController extends AbstractActionController {
 				$jsonArr = json_decode ( $json, true );
 				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 				$accountHistory = $MemreasStripe->AccountHistory ( $jsonArr ['json'] );
-				$this->flushResponse( $callback . "(" . json_encode ( $accountHistory ) . ")" );
+				$this->flushResponse ( $callback . "(" . json_encode ( $accountHistory ) . ")" );
 				die ();
 			}
 		}
@@ -307,8 +310,8 @@ class StripeController extends AbstractActionController {
 				$callback = $_REQUEST ['callback'];
 				$json = $_REQUEST ['json'];
 				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				//$jsonArr = json_decode ( $json, true );
-				//$customer = $MemreasStripe->getCustomer ( $jsonArr ['json'], true );
+				// $jsonArr = json_decode ( $json, true );
+				// $customer = $MemreasStripe->getCustomer ( $jsonArr ['json'], true );
 				$message_data = json_decode ( $json, true );
 				$customer = $MemreasStripe->getCustomer ( $message_data, true );
 				Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data::', $message_data );
@@ -335,7 +338,7 @@ class StripeController extends AbstractActionController {
 			$activeBalance = $MemreasStripe->activePendingBalanceToAccount ( $token );
 			echo '<h3 style="text-align: center">' . $activeBalance ['message'] . '</h3>';
 			if ($activeBalance ['status'] == 'Success') {
-				$this->flushResponse( '<script type="text/javascript">document.location.href="http://fe.memreas.com";</script>' );
+				$this->flushResponse ( '<script type="text/javascript">document.location.href="http://fe.memreas.com";</script>' );
 			}
 			die ();
 		}
