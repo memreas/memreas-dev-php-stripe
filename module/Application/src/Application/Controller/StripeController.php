@@ -35,13 +35,14 @@ class StripeController extends AbstractActionController {
 		header ( 'Content-Type: application/json' );
 		// $arr = headers_list ();
 		// Mlog::addone ( 'response headers -->', $arr );
+		Mlog::addone ( 'response-->', $response );
 		echo $response;
 		// clean the buffer we don't need to send back session data
 		ob_end_flush ();
 		flush ();
 	}
 	public function fetchSession() {
-		Mlog::addone(__CLASS__.__METHOD__.'::$_SERVER-->', $_SERVER);
+		Mlog::addone ( __CLASS__ . __METHOD__ . '::$_SERVER-->', $_SERVER );
 		$cm = __CLASS__ . __METHOD__;
 		// start capture
 		ob_start ();
@@ -88,8 +89,7 @@ class StripeController extends AbstractActionController {
 		return $data = $response->getBody ( true );
 	}
 	public function indexAction() {
-		
-		Mlog::addone(__CLASS__.__METHOD__.'::$_SERVER-->', $_SERVER);
+		Mlog::addone ( __CLASS__ . __METHOD__ . '::$_SERVER-->', $_SERVER );
 		if ($this->fetchSession ()) {
 			$view = new ViewModel ();
 			$view->setTemplate ( 'application/error/500.phtml' );
@@ -129,57 +129,45 @@ class StripeController extends AbstractActionController {
 	public function storeCardAction() {
 		if ($this->fetchSession ()) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::request', $_REQUEST );
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				$jsonArr = json_decode ( $json, true );
-				$message_data = $jsonArr ['json'];
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data', $message_data );
-				
-				// Prepare card data - CVC cannot be stored
-				$card_data = array (
-						'user_id' => $message_data ['user_id'],
-						'number' => $message_data ['credit_card_number'],
-						'type' => $message_data ['credit_card_type'],
-						'exp_month' => $message_data ['expiration_month'],
-						'exp_year' => $message_data ['expiration_year'],
-						'cvc' => '',
-						'name' => $message_data ['first_name'] . ' ' . $message_data ['last_name'],
-						'country' => 'US', // Change this to dynamic form value
-						'address_line1' => $message_data ['address_line_1'],
-						'address_line2' => $message_data ['address_line_2'],
-						'address_city' => $message_data ['city'],
-						'address_state' => $message_data ['state'],
-						'address_zip' => $message_data ['zip_code'],
-						'address_country' => 'US' 
-				); // Change this to dynamic form value
-				
-				Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
-				// echo $callback . "(" . json_encode($MemreasStripe->storeCard($card_data)) . ")";
-				// header('application/json');
-				Mlog::addone ( __CLASS__ . __METHOD__ . '::$result', $result );
-				die ();
-			}
+			$json = $_REQUEST ['json'];
+			$message_data = json_decode ( $json, true );
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data', $message_data );
+			
+			// Prepare card data - CVC cannot be stored
+			$card_data = array (
+					'user_id' => $message_data ['user_id'],
+					'number' => $message_data ['credit_card_number'],
+					'type' => $message_data ['credit_card_type'],
+					'exp_month' => $message_data ['expiration_month'],
+					'exp_year' => $message_data ['expiration_year'],
+					'cvc' => $message_data ['cvc'],
+					'name' => $message_data ['first_name'] . ' ' . $message_data ['last_name'],
+					'country' => 'US', // Change this to dynamic form value
+					'address_line1' => $message_data ['address_line_1'],
+					'address_line2' => $message_data ['address_line_2'],
+					'address_city' => $message_data ['city'],
+					'address_state' => $message_data ['state'],
+					'address_zip' => $message_data ['zip_code'],
+					'address_country' => 'US' 
+			); // Change this to dynamic form value
+			
+			Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
+			// echo $callback . "(" . json_encode($MemreasStripe->storeCard($card_data)) . ")";
+			$this->flushResponse ( json_encode ( $MemreasStripe->storeCard ( $card_data ) ) );
+			die ();
 		}
 	}
 	public function listCardsAction() {
 		if ($this->fetchSession ()) {
 			Mlog::addone ( __CLASS__ . __METHOD__, "::Enter listCardsAction" );
-			if (isset ( $_REQUEST ['callback'] )) {
-				Mlog::addone ( __CLASS__ . __METHOD__, "::has Callback" );
-				$callback = $_REQUEST ['callback'];
-				Mlog::addone ( __CLASS__ . __METHOD__ . '$callback-->', $callback );
-				$json = $_REQUEST ['json'];
-				Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
-				$jsonArr = json_decode ( $json, true );
-				
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$out = $MemreasStripe->listCards ( $_SESSION ['user_id'] );
-				Mlog::addone ( __CLASS__ . __METHOD__ . '$out-->', $callback . "(" . json_encode ( $out ) . ")" );
-				$this->flushResponse ( $callback . "(" . json_encode ( $out ) . ")" );
-				die ();
-			}
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->listCards ( $_SESSION ['user_id'] ) ) );
+			die ();
 		}
 	}
 	public function viewCardAction() {

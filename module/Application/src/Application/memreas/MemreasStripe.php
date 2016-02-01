@@ -1590,13 +1590,14 @@ class StripeInstance {
 		$paymentMethods = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodsByAccountId ( $account->account_id );
 		
 		// Check if account has payment method
-		if (empty ( $paymentMethods ))
+		if (empty ( $paymentMethods )) {
 			Mlog::addone ( "listCards", "empty payment methods" );
-		
-		return array (
-				'status' => 'Failure',
-				'message' => 'No record found.' 
-		);
+			
+			return array (
+					'status' => 'Failure',
+					'message' => 'No record found.' 
+			);
+		}
 		
 		// Fetching results
 		$listPayments = array ();
@@ -1641,7 +1642,7 @@ class StripeInstance {
 			$listPayments [$index] ['city'] = $accountDetail->city;
 			$listPayments [$index] ['state'] = $accountDetail->state;
 			$listPayments [$index] ['zip_code'] = $accountDetail->zip_code;
-			++ $index;
+			$index++ ;
 			Mlog::addone ( "listCards for loop bottom - stripe card does exist ", $listPayments [$index] );
 		}
 		
