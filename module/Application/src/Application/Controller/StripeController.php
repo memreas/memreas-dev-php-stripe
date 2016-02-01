@@ -103,16 +103,6 @@ class StripeController extends AbstractActionController {
 	public function listPlanAction() {
 		if ($this->fetchSession ()) {
 			Mlog::addone ( $cm . '$_REQUEST', $_REQUEST );
-			// if (isset ( $_REQUEST ['callback'] )) {
-			// $callback = $_REQUEST ['callback'];
-			// $json = $_REQUEST ['json'];
-			// Mlog::addone ( __CLASS__ . __METHOD__ . '::$json::', $json );
-			// $message_data = json_decode ( $json, true );
-			// Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data::', $message_data );
-			// $MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-			// $this->flushResponse( $callback . "(" . json_encode ( $MemreasStripe->listPlans () ) . ")");
-			// die ();
-			// }
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$json::', $json );
 			$message_data = json_decode ( $json, true );
@@ -173,155 +163,126 @@ class StripeController extends AbstractActionController {
 	public function viewCardAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				$jsonArr = json_decode ( $json, true );
-				
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$this->flushResponse ( $callback . "(" . json_encode ( $MemreasStripe->listCard ( $jsonArr ['json'] ) ) . ")" );
-				die ();
-			}
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->listCard ( $message_data ) ) );
+			die ();
 		}
 	}
 	public function updateCardAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				$jsonArr = json_decode ( $json, true );
-				
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$this->flushResponse ( $callback . "(" . json_encode ( $MemreasStripe->saveCard ( $jsonArr ['json'] ) ) . ")" );
-				die ();
-			}
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->saveCard ( $message_data ) ) );
+			die ();
 		}
 	}
 	public function deleteCardsAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				$jsonArr = json_decode ( $json, true );
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$this->flushResponse ( $callback . "(" . json_encode ( $MemreasStripe->deleteCards ( $jsonArr ['json'] ) ) . ")" );
-				die ();
-			}
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->deleteCards ( $message_data ) ) );
+			die ();
 		}
 	}
 	public function addSellerAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				$jsonArr = json_decode ( $json, true );
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$addSeller = $MemreasStripe->addSeller ( $jsonArr ['json'] );
-				$this->flushResponse ( $callback . "(" . json_encode ( $addSeller ) . ")" );
-				die ();
-			}
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->addSeller ( $message_data ) ) );
+			die ();
 		}
 	}
 	public function addValueAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				$jsonArr = json_decode ( $json, true );
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$addValue = $MemreasStripe->addValueToAccount ( $jsonArr ['json'] );
-				$this->flushResponse ( $callback . "(" . json_encode ( $addValue ) . ")" );
-				die ();
-			}
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->addValueToAccount ( $message_data ) ) );
+			die ();
 		}
 	}
 	public function decrementAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				$jsonArr = json_decode ( $json, true );
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$decrement = $MemreasStripe->decrementAmount ( $jsonArr ['json'] );
-				$this->flushResponse ( $callback . "(" . json_encode ( $decrement ) . ")" );
-				die ();
-			}
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->decrementAccount ( $message_data ) ) );
+			die ();
 		}
 	}
 	public function accounthistoryAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				$jsonArr = json_decode ( $json, true );
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$accountHistory = $MemreasStripe->AccountHistory ( $jsonArr ['json'] );
-				$this->flushResponse ( $callback . "(" . json_encode ( $accountHistory ) . ")" );
-				die ();
-			}
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->AccountHistory ( $message_data ) ) );
+			die ();
 		}
 	}
 	public function subscribeAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				$jsonArr = json_decode ( $json, true );
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$accountHistory = $MemreasStripe->setSubscription ( $jsonArr ['json'] );
-				$this->flushResponse ( $callback . "(" . json_encode ( $accountHistory ) . ")" );
-				die ();
-			}
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->setSubscription ( $message_data ) ) );
+			die ();
 		}
 	}
 	public function listMassPayeeAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				$jsonArr = json_decode ( $json, true );
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$accountHistory = $MemreasStripe->listMassPayee ( 1, 10 );
-				$this->flushResponse ( $callback . "(" . json_encode ( $accountHistory ) . ")" );
-				die ();
-			}
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->listMassPayee ( 1, 10 ) ) );
+			die ();
 		}
 	}
 	public function getCustomerInfoAction() {
 		if ($this->fetchSession ()) {
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				// $jsonArr = json_decode ( $json, true );
-				// $customer = $MemreasStripe->getCustomer ( $jsonArr ['json'], true );
-				$message_data = json_decode ( $json, true );
-				$customer = $MemreasStripe->getCustomer ( $message_data, true );
-				Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data::', $message_data );
-				Mlog::addone ( __CLASS__ . __METHOD__ . '$customer', $customer );
-				$this->flushResponse ( $callback . "(" . json_encode ( $customer ) . ")" );
-				die ();
-			} else if (isset ( $_REQUEST ['sid'] )) {
-				$user_id = $_POST ['user_id'];
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$customer = $MemreasStripe->getCustomer ( array (
-						'userid' => $user_id 
-				), false );
-				Mlog::addone ( __CLASS__ . __METHOD__ . '$customer', $customer );
-				$this->flushResponse ( json_encode ( $customer ) );
-				die ();
-			}
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$customer = $MemreasStripe->getCustomer ( array (
+					'userid' => $user_id 
+			), false );
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$customer', $customer );
+			$this->flushResponse ( json_encode ( $customer ) );
+			die ();
 		}
 	}
 	public function activeCreditAction() {
+		/**
+		 * TODO: needs debugging...
+		 */
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
@@ -337,43 +298,35 @@ class StripeController extends AbstractActionController {
 	public function getUserBalanceAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				$jsonArr = json_decode ( $json, true );
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$customer = $MemreasStripe->getAccountBalance ( $jsonArr ['json'], true );
-				$this->flushResponse ( $callback . "(" . json_encode ( $customer ) . ")" );
-				die ();
-			}
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->getAccountBalance ( message_data, true ) ) );
+			die ();
 		}
 	}
 	public function buyMediaAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				$jsonArr = json_decode ( $json, true );
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$result = $MemreasStripe->buyMedia ( $jsonArr ['json'], true );
-				$this->flushResponse ( $callback . "(" . json_encode ( $result ) . ")" );
-				die ();
-			}
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->buyMedia ( message_data, true ) ) );
+			die ();
 		}
 	}
 	public function checkOwnEventAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
-			if (isset ( $_REQUEST ['callback'] )) {
-				$callback = $_REQUEST ['callback'];
-				$json = $_REQUEST ['json'];
-				$jsonArr = json_decode ( $json, true );
-				$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-				$result = $MemreasStripe->checkOwnEvent ( $jsonArr ['json'], true );
-				$this->flushResponse ( $callback . "(" . json_encode ( $result ) . ")" );
-				die ();
-			}
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->checkOwnEvent ( message_data, true ) ) );
+			die ();
 		}
 	}
 	public function testAction() {

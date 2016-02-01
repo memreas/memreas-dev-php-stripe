@@ -1576,6 +1576,7 @@ class StripeInstance {
 	 * List card by user_id
 	 */
 	public function listCards($user_id) {
+		Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
 		
 		// Check if exist account
@@ -1603,7 +1604,7 @@ class StripeInstance {
 		$listPayments = array ();
 		$index = 0;
 		foreach ( $paymentMethods as $paymentMethod ) {
-			Mlog::addone ( "listCards for loop ", $paymentMethod, 'p' );
+			// Mlog::addone ( "listCards for loop ", $paymentMethod, 'p' );
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $paymentMethod ['account_id'] );
 			
 			if (empty ( $accountDetail ))
@@ -1615,35 +1616,35 @@ class StripeInstance {
 				// Check if this card has exist at Stripe
 			$stripeCard = $this->stripeCard->getCard ( $accountDetail->stripe_customer_id, $paymentMethod ['stripe_card_reference_id'] );
 			if (! $stripeCard ['exist']) {
-				Mlog::addone ( "listCards for loop - stripe card does not exist ", $stripeCard ['message'] );
+				// Mlog::addone ( "listCards for loop - stripe card does not exist ", $stripeCard ['message'] );
 				$listPayments [$index] ['stripe_card'] = 'Failure';
 				$listPayments [$index] ['stripe_card_respone'] = $stripeCard ['message'];
 			} else {
-				Mlog::addone ( "listCards for loop - stripe card does exist ", $stripeCard ['info'] );
-				$listPayments [$index] ['stripe_card'] = 'Success';
-				$listPayments [$index] ['stripe_card_response'] = $stripeCard ['info'];
+				// Mlog::addone ( "listCards for loop - stripe card does exist ", $stripeCard ['info'] );
+				// $listPayments [$index] ['stripe_card'] = 'Success';
+				// $listPayments [$index] ['stripe_card_response'] = $stripeCard ['info'];
+				
+				// Payment Method Details
+				$listPayments [$index] ['payment_method_id'] = $paymentMethod ['payment_method_id'];
+				$listPayments [$index] ['account_id'] = $paymentMethod ['account_id'];
+				$listPayments [$index] ['user_id'] = $user_id;
+				$listPayments [$index] ['stripe_card_reference_id'] = $paymentMethod ['stripe_card_reference_id'];
+				$listPayments [$index] ['card_type'] = $paymentMethod ['card_type'];
+				$listPayments [$index] ['obfuscated_card_number'] = $paymentMethod ['obfuscated_card_number'];
+				$listPayments [$index] ['exp_month'] = $paymentMethod ['exp_month'];
+				$listPayments [$index] ['valid_until'] = $paymentMethod ['valid_until'];
+				
+				// Address Details
+				$listPayments [$index] ['first_name'] = $accountDetail->first_name;
+				$listPayments [$index] ['last_name'] = $accountDetail->last_name;
+				$listPayments [$index] ['address_line_1'] = $accountDetail->address_line_1;
+				$listPayments [$index] ['address_line_2'] = $accountDetail->address_line_2;
+				$listPayments [$index] ['city'] = $accountDetail->city;
+				$listPayments [$index] ['state'] = $accountDetail->state;
+				$listPayments [$index] ['zip_code'] = $accountDetail->zip_code;
+				Mlog::addone ( "listCards for loop bottom - stripe card does exist ", $listPayments [$index] );
+				$index ++;
 			}
-			
-			// Payment Method Details
-			$listPayments [$index] ['payment_method_id'] = $paymentMethod ['payment_method_id'];
-			$listPayments [$index] ['account_id'] = $paymentMethod ['account_id'];
-			$listPayments [$index] ['user_id'] = $user_id;
-			$listPayments [$index] ['stripe_card_reference_id'] = $paymentMethod ['stripe_card_reference_id'];
-			$listPayments [$index] ['card_type'] = $paymentMethod ['card_type'];
-			$listPayments [$index] ['obfuscated_card_number'] = $paymentMethod ['obfuscated_card_number'];
-			$listPayments [$index] ['exp_month'] = $paymentMethod ['exp_month'];
-			$listPayments [$index] ['valid_until'] = $paymentMethod ['valid_until'];
-			
-			// Address Details
-			$listPayments [$index] ['first_name'] = $accountDetail->first_name;
-			$listPayments [$index] ['last_name'] = $accountDetail->last_name;
-			$listPayments [$index] ['address_line_1'] = $accountDetail->address_line_1;
-			$listPayments [$index] ['address_line_2'] = $accountDetail->address_line_2;
-			$listPayments [$index] ['city'] = $accountDetail->city;
-			$listPayments [$index] ['state'] = $accountDetail->state;
-			$listPayments [$index] ['zip_code'] = $accountDetail->zip_code;
-			$index++ ;
-			Mlog::addone ( "listCards for loop bottom - stripe card does exist ", $listPayments [$index] );
 		}
 		
 		return array (
@@ -1653,6 +1654,7 @@ class StripeInstance {
 		);
 	}
 	public function listCard($data) {
+		Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
 		if (empty ( $data ['user_id'] ))
 			$user_id = $this->session->offsetGet ( 'user_id' );
 		else
