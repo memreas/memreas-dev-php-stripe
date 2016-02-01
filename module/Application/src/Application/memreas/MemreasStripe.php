@@ -2131,7 +2131,7 @@ class StripeCard {
 	 *
 	 */
 	public function getCardValues($outputFormat = 1) {
-		if ($outputFormat)
+		if ($outputFormat) {
 			return array (
 					'id' => $this->id,
 					'number' => $this->number,
@@ -2155,7 +2155,7 @@ class StripeCard {
 					'address_line1_check' => $this->address_line1_check,
 					'address_zip_check' => $this->address_zip_check 
 			);
-		else {
+		} else {
 			$cardObject = new StripeCard ( $this->stripeClient );
 			$cardObject->id = $this->id;
 			$cardObject->number = $this->number;
