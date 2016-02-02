@@ -101,9 +101,4 @@ class IndexController extends AbstractActionController {
 		}
 	}
 	
-	public function indexAction() {
-		if ($this->fetchSession ()) {
-		}
-		
-	}
 } // end class IndexController

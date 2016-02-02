@@ -1720,7 +1720,9 @@ class StripeInstance {
 	/*
 	 * Delete cards
 	 */
-	public function DeleteCards($card_data) {
+	public function DeleteCards($message_data) {
+		
+		$card_data = $message_data['selectedCard'];
 		if (empty ( $card_data ))
 			return array (
 					'status' => 'Failure',
