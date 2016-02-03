@@ -19,11 +19,12 @@ class MemreasConstants {
 	const MEMREASDB = 'memreasdb';
 	const MEMREASPAYMENTSDB = 'memreaspaymentstripe';
 	const S3BUCKET = "memreasdev";
-	const TOPICARN = "arn:aws:sns:us-east-1:004184890641:us-east-upload-transcode-worker-int";
 	const ORIGINAL_URL = "https://memreasdev-pay.memreas.com/";
 	const MEDIA_URL = "https://memreasdev-wsj.memreas.com/?action=addmediaevent";
-	const URL = "/index";
+	const MEMREAS_FE = "https://fe.memreas.com";
 	const MEMREAS_WS = "https://memreasdev-wsj.memreas.com";
+	const MEMREAS_WSPROXYPAY = "https://memreasdev-wsj.memreas.com/index?action=";
+	const URL = "/index";
 	
 	// Key data
 	const SECRET_KEY = 'sk_test_AFU42eViRyXQfXVSxCPPh05Q';

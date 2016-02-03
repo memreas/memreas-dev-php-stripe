@@ -284,13 +284,15 @@ class StripeController extends AbstractActionController {
 		 * TODO: needs debugging...
 		 */
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ()) {
+		if (isset ( $_REQUEST ['token'] )) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-			$token = $_GET ['token'];
+			$token = $_REQUEST ['token'];
 			$activeBalance = $MemreasStripe->activePendingBalanceToAccount ( $token );
-			echo '<h3 style="text-align: center">' . $activeBalance ['message'] . '</h3>';
+			//echo '<h3 style="text-align: center">' . $activeBalance ['message'] . '</h3>';
 			if ($activeBalance ['status'] == 'Success') {
-				$this->flushResponse ( '<script type="text/javascript">document.location.href="http://fe.memreas.com";</script>' );
+				$this->flushResponse ( '<script type="text/javascript">document.location.href="' . MemreasConstants::MEMREAS_FE . '/?credits_activated=1";</script>' );
+			} else {
+				echo '<h3 style="text-align: center">An error has occurred for token:: ' . $token . ' Please email ' . MemreasConstants::ADMIN_EMAIL . ' with your token information.</h3>';
 			}
 			die ();
 		}

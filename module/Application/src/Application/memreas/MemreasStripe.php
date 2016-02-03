@@ -521,10 +521,12 @@ class StripeInstance {
 	 * Add value to account
 	 */
 	public function addValueToAccount($data) {
-		if (isset ( $data ['userid'] ))
+		if (isset ( $data ['userid'] )) {
 			$userid = $data ['userid'];
-		else
-			$userid = $this->session->offsetGet ( 'user_id' );
+		} else {
+			$userid = $_SESSION['user_id'];
+		}
+		
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $userid );
 		$currency = 'USD';
 		if (empty ( $account ))
@@ -600,8 +602,10 @@ class StripeInstance {
 			// Send activation email
 			$viewModel = new ViewModel ( array (
 					'username' => $accountDetail->first_name . ' ' . $accountDetail->last_name,
-					'active_link' => 'https://memreasdev-pay.memreas.com/stripe/activeCredit?token=' . $transactionId,
-					'amount' => $data ['amount'] 
+					
+					'active_link' => MemreasConstants::MEMREAS_WSPROXYPAY . 'stripe_activeCredit&token=' . $transactionId,
+					'amount' => $data ['amount'],
+					'currency' => $currency
 			) );
 			$viewModel->setTemplate ( 'email/buycredit' );
 			$viewRender = $this->serviceLocator->get ( 'ViewRenderer' );

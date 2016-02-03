@@ -99,7 +99,7 @@ use Application\Model\MemreasConstants;
 		<div class="content">
 			<h2>Dear <?=$username?>,</h2>
 			<p>
-				You have successfully activated the subscription plan <b><?=$plan_name?></b>
+				You have successfully activated your subscription plan <b><?=$plan_name?></b>
 			</p>
 			<p>At this time you can login and enjoy powerful plan's features</p>
 
@@ -107,8 +107,10 @@ use Application\Model\MemreasConstants;
 				Best Regards,<br />
 		
 		</div>
-		<div class="footer" style="background: #45484d;">
-			<p>Memreas LLC, P.O Box: 1542 NY. USA</p>
+		<div class="footer" style="background: #45484d;"><img
+					src="<?php echo MemreasConstants::ORIGINAL_URL?>memreas/img/footer_ref.png"
+					width="103" height="20" />
+			<p>memreas llc</p>
 		</div>
 	</div>
 </body>

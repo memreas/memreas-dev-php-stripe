@@ -99,21 +99,28 @@ use Application\Model\MemreasConstants;
 		<div class="content">
 			<h2>Dear <?=$username?>,</h2>
 			<p>
-				You have successfully added <b><?=$amount?></b> credit to your
+				You have successfully added <b><?php echo $amount . ' ' . $currency; ?></b> credit to your
 				account.
 			</p>
 			<p>
-				One last step please use token below to confirm and credit will be
-				added to your account immediately.<br /> <b><a
-					href="<?= $active_link ?>"><?= $active_link ?></a></b>
+				For security purposes, please click the link below to confirm your transcation.<br /> 
 			</p>
 
 			<p>
-				Best Regards,<br />
+					<b><a href="<?= $active_link ?>">activate</a></b>
+			</p>
+
+			<p>
+					We appreciate your business! Thanks, from all of us.
+			</p>
+			<p>
+				Best Regards,<br /><img
+					src="<?php echo MemreasConstants::MEMREAS_WS?>/memreas/img/footer_ref.png"
+					width="103" height="20" />
 		
 		</div>
 		<div class="footer" style="background: #45484d;">
-			<p>Memreas LLC, P.O Box: 1542 NY. USA</p>
+			<p>memreas llc</p>
 		</div>
 	</div>
 </body>
