@@ -11,35 +11,31 @@ namespace Application\memreas;
  * Pre-include App Model
  * *
  */
-use Application\Model\AccountPurchases;
-use Application\Model\MemreasConstants;
-use Zend\View\Model\ViewModel;
-use Application\memreas\AWSManagerSender;
-use Application\Model\User;
+use Application\memreas\AWSStripeManagerSender;
+use Application\memreas\StripePlansConfig;
 use Application\Model\Account;
 use Application\Model\AccountBalances;
 use Application\Model\AccountDetail;
+use Application\Model\AccountPurchases;
+use Application\Model\MemreasConstants;
 use Application\Model\PaymentMethod;
 use Application\Model\Subscription;
 use Application\Model\Transaction as Memreas_Transaction;
-use Application\Model\TransactionReceiver;
-use Application\memreas\StripePlansConfig;
+use Application\Model\User;
 use Aws\Ses\Exception\SesException;
 use Guzzle\Http\Client;
+use Zend\View\Model\ViewModel;
 
 /*
  * Include core Module - Libraries
  */
+use Guzzle\Service\Exception\ValidationException;
 use Zend\Session\Container;
 use ZfrStripe;
-use ZfrStripeModule;
 use ZfrStripe\Client\StripeClient;
-use ZfrStripe\Exception\TransactionErrorException;
-use ZfrStripe\Exception\NotFoundException;
-use ZfrStripe\Exception\CardErrorException;
-use Guzzle\Service\Exception\ValidationException;
-use Zend\Validator\CreditCard as ZendCreditCard;
 use ZfrStripe\Exception\BadRequestException;
+use ZfrStripe\Exception\CardErrorException;
+use ZfrStripe\Exception\NotFoundException;
 
 class MemreasStripe extends StripeInstance {
 	private $stripeClient;
@@ -48,10 +44,12 @@ class MemreasStripe extends StripeInstance {
 	protected $clientSecret;
 	protected $clientPublic;
 	protected $user_id;
+	protected $aws;
+	protected $ses;
 	public function __construct($serviceLocator) {
 		try {
 			$this->serviceLocator = $serviceLocator;
-			$this->aws = MemreasConstants::fetchAWS ();
+			$this->aws = new AWSStripeManagerSender ();
 			$this->retreiveStripeKey ();
 			$this->stripeClient = new StripeClient ( $this->clientSecret, '2014-06-17' );
 			$this->memreasStripeTables = new MemreasStripeTables ( $serviceLocator );
@@ -535,7 +533,7 @@ class StripeInstance {
 			);
 		}
 		
-		Mlog::addone ( 'addValueToAccount($data) - $account -->', $account );
+		// Mlog::addone ( 'addValueToAccount($data) - $account -->', $account );
 		
 		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
 		
@@ -546,7 +544,7 @@ class StripeInstance {
 			);
 		}
 		
-		Mlog::addone ( 'addValueToAccount($data) - $accountDetail -->', $accountDetail );
+		// Mlog::addone ( 'addValueToAccount($data) - $accountDetail -->', $accountDetail );
 		
 		$paymentMethod = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodByStripeReferenceId ( $data ['stripe_card_reference_id'] );
 		
@@ -557,7 +555,7 @@ class StripeInstance {
 			);
 		}
 		
-		Mlog::addone ( 'addValueToAccount($data) - $paymentMethod -->', $paymentMethod );
+		// Mlog::addone ( 'addValueToAccount($data) - $paymentMethod -->', $paymentMethod );
 		
 		try {
 			
@@ -604,9 +602,6 @@ class StripeInstance {
 			) );
 			$activeCreditToken = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 			
-			Mlog::addone ( 'addValueToAccount($data) - store request -->', $memreas_transaction );
-			Mlog::addone ( 'addValueToAccount($data) - $transaction_id -->', $transaction_id );
-			
 			$chargeResult = $this->stripeCard->createCharge ( $stripeChargeParams );
 			if ($chargeResult) {
 				// Check if Charge is successful or not
@@ -617,7 +612,6 @@ class StripeInstance {
 					);
 				}
 				
-				Mlog::addone ( 'addValueToAccount($data) - $chargeResult -->', $chargeResult );
 				/**
 				 * -
 				 * Store response to transaction
@@ -632,7 +626,6 @@ class StripeInstance {
 				);
 				$memreas_transaction->exchangeArray ( $transactionDetail );
 				$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-				Mlog::addone ( 'addValueToAccount($data) - response $memreas_transaction -->', $memreas_transaction );
 				
 				// Update Account Balance
 				$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $account->account_id );
@@ -650,23 +643,19 @@ class StripeInstance {
 						'create_time' => $now 
 				) );
 				$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $accountBalance );
-				Mlog::addone ( 'addValueToAccount($data) - $accountBalance -->', $accountBalance );
 				
 				/**
 				 * -
 				 * Store to memreas_float here
 				 */
 				$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
-				// Mlog::addone ( 'addValueToAccount($data) - $account_memreas_float -->', $account_memreas_float );
 				
 				$current_account_balances_memreas_float = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $account_memreas_float->account_id );
-				// Mlog::addone ( 'addValueToAccount($data) - $current_account_balances_memreas_float -->', $current_account_balances_memreas_float );
 				
 				// Get the last balance
 				// If no account found set the starting balance to zero else use the ending balance.
 				$starting_balance = (isset ( $current_account_balances_memreas_float )) ? $current_account_balances_memreas_float->ending_balance : '0.00';
 				$ending_balance = $starting_balance + $amount;
-				Mlog::addone ( 'addValueToAccount($data) - $ending_balance -->', $ending_balance );
 				
 				// Insert the new account balance
 				$now = date ( 'Y-m-d H:i:s' );
@@ -689,8 +678,7 @@ class StripeInstance {
 						'update_time' => $now 
 				) );
 				$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
-				Mlog::addone ( 'addValueToAccount($data) - $account_memreas_float -->', $account_memreas_float );
-				
+
 				/**
 				 * -
 				 * Send activation email
@@ -705,17 +693,26 @@ class StripeInstance {
 				$viewModel->setTemplate ( 'email/buycredit' );
 				$viewRender = $this->serviceLocator->get ( 'ViewRenderer' );
 				
+				Mlog::addone ( 'addValueToAccount($data) - ', 'past view model' );
+				
 				$html = $viewRender->render ( $viewModel );
-				$subject = 'Your purchased credit is now ready';
+				$subject = 'memreas buy credit - your purchased credit is ready for activation';
 				
 				$user = $this->memreasStripeTables->getUserTable ()->getUser ( $userid );
-				$this->aws->sendSeSMail ( array (
-						$user->email_address 
-				), $subject, $html );
+				
+				Mlog::addone ( 'addValueToAccount($data) - $user->email_address', $user->email_address );
+				
+				// Mlog::addone ( 'addValueToAccount($data) - $this->aws', $this->aws);
+				
+				$this->aws->sendSeSMail ( array ($user->email_address)
+
+				, $subject, $html );
+				
+				Mlog::addone ( 'addValueToAccount($data) - ', 'about to return success' );
 				
 				return array (
 						'status' => 'Success',
-						'message' => 'Order completed! We have sent an activation email to you.' 
+						'message' => 'Order completed! We have sent you activation email.' 
 				);
 			} else {
 				return array (

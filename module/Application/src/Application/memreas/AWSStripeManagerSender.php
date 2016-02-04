@@ -9,21 +9,10 @@ namespace Application\memreas;
 
 use Application\Model\MemreasConstants;
 
-class AWSManagerSender {
+class AWSStripeManagerSender {
 	private $aws = null;
-	private $s3 = null;
-	private $bucket = null;
-	private $sqs = null;
-	private $sns = null;
 	private $ses = null;
-	private $topicArn = null;
-	private $elasticache = null;
-	private $awsTranscode = null;
-	private $service_locator = null;
-	private $dbAdapter = null;
-	public function __construct($service_locator) {
-		$this->service_locator = $service_locator;
-		
+	public function __construct() {
 		// Fetch aws handle
 		$this->aws = MemreasConstants::fetchAWS ();
 		
