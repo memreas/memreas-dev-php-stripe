@@ -20,8 +20,7 @@ use Application\memreas\AWSMemreasRedisCache;
 use Application\memreas\AWSMemreasRedisSessionHandler;
 
 class IndexController extends AbstractActionController {
-	// protected $url = MemreasConstants::ORIGINAL_URL;
-	protected $url = 'http://memreasdev-wsj.memreas.com/';
+	protected $url = MemreasConstants::MEMREAS_WS . '/';
 	protected $user_id;
 	protected $storage;
 	protected $authservice;

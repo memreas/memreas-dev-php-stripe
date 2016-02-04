@@ -1,0 +1,80 @@
+<?php
+
+/**
+ * Copyright (C) 2015 memreas llc. - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ */
+namespace Application\memreas;
+
+use Application\Model\MemreasConstants;
+
+class AWSManagerSender {
+	private $aws = null;
+	private $s3 = null;
+	private $bucket = null;
+	private $sqs = null;
+	private $sns = null;
+	private $ses = null;
+	private $topicArn = null;
+	private $elasticache = null;
+	private $awsTranscode = null;
+	private $service_locator = null;
+	private $dbAdapter = null;
+	public function __construct($service_locator) {
+		$this->service_locator = $service_locator;
+		
+		// Fetch aws handle
+		$this->aws = MemreasConstants::fetchAWS ();
+		
+		// Fetch the Ses class
+		$this->ses = $this->aws->createSes ();
+		
+	}
+
+	public function sendSeSMail($to_array, $subject, $text_or_html) {
+		$from = MemreasConstants::ADMIN_EMAIL;
+		$client = $this->ses;
+		
+		$result = $client->sendEmail ( array (
+				// Source is required
+				'Source' => $from,
+				// Destination is required
+				'Destination' => array (
+						'ToAddresses' => $to_array,
+						'CcAddresses' => array (),
+						'BccAddresses' => array () 
+				),
+				// Message is required
+				'Message' => array (
+						// Subject is required
+						'Subject' => array (
+								// Data is required
+								'Data' => $subject 
+						),
+						// 'Charset' => 'iso-8859-1'
+						// Body is required
+						'Body' => array (
+								'Text' => array (
+										// Data is required
+										'Data' => $text_or_html,
+										'Charset' => 'iso-8859-1' 
+								),
+								'Html' => array (
+										// Data is required
+										'Data' => $text_or_html,
+										'Charset' => 'iso-8859-1' 
+								) 
+						) 
+				),
+				'ReplyToAddresses' => array (
+						$from 
+				),
+				'ReturnPath' => $from 
+		) );
+	}
+}
+
+?>
+
+

@@ -21,6 +21,7 @@ class AccountBalancesTable {
 		return $resultSet;
 	}
 	public function getAccountBalances($account_id) {
+		error_log('getAccountBalances($account_id)'.print_r($account_id, true).PHP_EOL);
 		$this->account_id = $account_id;
 		$rowset = $this->tableGateway->select ( function (Select $select) {
 			$select->where->equalTo ( 'account_id', $this->account_id );
@@ -29,8 +30,10 @@ class AccountBalancesTable {
 		
 		$row = $rowset->current ();
 		if (! $row) {
+		error_log('getAccountBalances($account_id) - returning null'.PHP_EOL);
 			return null; // no entry found ... must be new account :)
 		}
+		error_log('getAccountBalances($account_id) - $row'.print_r($row, true).PHP_EOL);
 		return $row;
 	}
 	public function getAccountBalanceByTransactionId($transaction_id) {

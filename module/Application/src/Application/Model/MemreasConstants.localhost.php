@@ -31,8 +31,9 @@ class MemreasConstants {
 	const PUBLIC_KEY = 'pk_test_nvbjKhLYYUe4iuuPE3PC6BZ8';
 	
 	// Account data
-	const ACCOUNT_MEMREAS_FLOAT = "memreasfloat";
-	const ACCOUNT_MEMREAS_MASTER = "memreasmaster";
+	const ACCOUNT_MEMREAS_FLOAT = "memreas_float";
+	const ACCOUNT_MEMREAS_MASTER = "memreas_master";
+	const MEMREAS_PROCESSING_FEE = 0.2; // 80 / 20 marketplace
 	const PLAN_BILLINGFREQUENCY = "1";
 	const PLAN_BILLINGPERIOD = "Month";
 	const PLAN_BILLINGCYCLES = "36";
@@ -55,4 +56,20 @@ class MemreasConstants {
 	const PLAN_DETAILS_D = "plan d: $9.95 for 100GB monthly";
 	const PLAN_GB_STORAGE_AMOUNT_D = 100;
 	const ADMIN_EMAIL = 'admin@memreas.com';
+	
+	const S3_APPKEY = 'AKIAJMXGGG4BNFS42LZA';
+	const S3_APPSEC = 'xQfYNvfT0Ar+Wm/Gc4m6aacPwdT5Ors9YHE/d38H';
+	public static function fetchAWS() {
+		$sharedConfig = [
+				'region' => 'us-east-1',
+				'version' => 'latest',
+				'credentials' => [
+						'key' => self::S3_APPKEY,
+						'secret' => self::S3_APPSEC
+				]
+		];
+	
+		return new \Aws\Sdk ( $sharedConfig );
+	}
+	
 }
