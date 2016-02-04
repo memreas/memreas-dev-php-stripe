@@ -678,7 +678,7 @@ class StripeInstance {
 						'update_time' => $now 
 				) );
 				$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
-
+				
 				/**
 				 * -
 				 * Send activation email
@@ -704,9 +704,11 @@ class StripeInstance {
 				
 				// Mlog::addone ( 'addValueToAccount($data) - $this->aws', $this->aws);
 				
-				$this->aws->sendSeSMail ( array ($user->email_address)
+				$this->aws->sendSeSMail ( array (
+						$user->email_address 
+				), 
 
-				, $subject, $html );
+				$subject, $html );
 				
 				Mlog::addone ( 'addValueToAccount($data) - ', 'about to return success' );
 				
@@ -1173,6 +1175,7 @@ class StripeInstance {
 		);
 	}
 	public function decrementAmount($data) {
+		$cm = __CLASS__ . __METHOD__;
 		
 		/**
 		 * -
@@ -1181,6 +1184,7 @@ class StripeInstance {
 		$seller = $data ['seller'];
 		$memreas_master = $data ['memreas_master'];
 		$amount = $data ['amount'];
+		Mlog::addone ( $cm, __LINE__ );
 		
 		/**
 		 * -
@@ -1193,6 +1197,7 @@ class StripeInstance {
 					'message' => 'You have no account at this time. Please add card first.' 
 			);
 		$accountId = $account->account_id;
+		Mlog::addone ( $cm, __LINE__ );
 		
 		$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $accountId );
 		
@@ -1202,6 +1207,7 @@ class StripeInstance {
 					"Description" => "Account not found or does not have sufficient funds." 
 			);
 		}
+		Mlog::addone ( $cm, __LINE__ );
 		$now = date ( 'Y-m-d H:i:s' );
 		$memreas_transaction = new Memreas_Transaction ();
 		$memreas_transaction->exchangeArray ( array (
@@ -1217,10 +1223,12 @@ class StripeInstance {
 		) );
 		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 		
+		Mlog::addone ( $cm, __LINE__ );
 		// Starting decrement account balance
 		$startingBalance = $currentAccountBalance->ending_balance;
 		$endingBalance = $startingBalance - $amount;
 		
+		Mlog::addone ( $cm, __LINE__ );
 		// Insert the new account balance
 		$now = date ( 'Y-m-d H:i:s' );
 		$endingAccountBalance = new AccountBalances ();
@@ -1235,6 +1243,7 @@ class StripeInstance {
 		) );
 		$accountBalanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
 		
+		Mlog::addone ( $cm, __LINE__ );
 		// Update the account table
 		$now = date ( 'Y-m-d H:i:s' );
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $accountId );
@@ -1244,6 +1253,7 @@ class StripeInstance {
 		) );
 		$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
 		
+		Mlog::addone ( $cm, __LINE__ );
 		$accountResult = array (
 				'status' => 'Success',
 				'message' => 'Transaction completed',
@@ -1251,6 +1261,7 @@ class StripeInstance {
 				'amount' => $amount,
 				'ending_balance' => $endingBalance 
 		);
+		Mlog::addone ( $cm, __LINE__ );
 		
 		/**
 		 * -
@@ -1260,11 +1271,13 @@ class StripeInstance {
 		$seller_user_id = $sellerUser->user_id;
 		$seller_account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $seller_user_id );
 		
+		Mlog::addone ( $cm, __LINE__ );
 		if (! $seller_account) {
 			$sellerResult = array (
 					'status' => 'Failure',
 					'message' => 'Transaction failed! Seller does not exist' 
 			);
+			Mlog::addone ( $cm, __LINE__ );
 		} else {
 			$seller_account_id = $seller_account->account_id;
 			$currentSellerBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $seller_account_id );
@@ -1322,6 +1335,7 @@ class StripeInstance {
 					'amount' => $amount,
 					'ending_balance' => $endingBalance 
 			);
+			Mlog::addone ( $cm, __LINE__ );
 		}
 		return array (
 				'account' => $accountResult,
