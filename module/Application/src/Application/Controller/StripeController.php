@@ -7,19 +7,14 @@
  */
 namespace Application\Controller;
 
-use Zend\Mvc\Controller\AbstractActionController;
-use Zend\View\Model\ViewModel;
-use Zend\Session\Container;
-use Application\Model;
-use Application\Model\UserTable;
-use Application\Form;
-use Guzzle\Http\Client;
-use Application\Model\MemreasConstants;
 use Application\memreas\AWSMemreasRedisCache;
 use Application\memreas\AWSMemreasRedisSessionHandler;
 use Application\memreas\MemreasStripe;
 use Application\memreas\Mlog;
-use Application\memreas\StripePlansConfig;
+use Application\Model\MemreasConstants;
+use Guzzle\Http\Client;
+use Zend\Mvc\Controller\AbstractActionController;
+use Zend\View\Model\ViewModel;
 
 class StripeController extends AbstractActionController {
 	
@@ -42,7 +37,8 @@ class StripeController extends AbstractActionController {
 		flush ();
 	}
 	public function fetchSession() {
-		Mlog::addone ( __CLASS__ . __METHOD__ . '::$_SERVER-->', $_SERVER );
+		// Mlog::addone ( __CLASS__ . __METHOD__ . '::$_SERVER-->', $_SERVER );
+		Mlog::addone ( __CLASS__ . __METHOD__ . '::$_REQUEST-->', $_REQUEST );
 		$cm = __CLASS__ . __METHOD__;
 		// start capture
 		ob_start ();
@@ -58,6 +54,7 @@ class StripeController extends AbstractActionController {
 				Mlog::addone ( $cm . __LINE__ . '$sid', $sid );
 				$this->sessHandler->startSessionWithSID ( $sid );
 				$hasSession = true;
+				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
 			} else if (! empty ( $_REQUEST ['json'] )) {
 				$json = $_REQUEST ['json'];
 				Mlog::addone ( $cm . __LINE__ . '$json', $json );
@@ -288,7 +285,7 @@ class StripeController extends AbstractActionController {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 			$token = $_REQUEST ['token'];
 			$activeBalance = $MemreasStripe->activePendingBalanceToAccount ( $token );
-			//echo '<h3 style="text-align: center">' . $activeBalance ['message'] . '</h3>';
+			// echo '<h3 style="text-align: center">' . $activeBalance ['message'] . '</h3>';
 			if ($activeBalance ['status'] == 'Success') {
 				$this->flushResponse ( '<script type="text/javascript">document.location.href="' . MemreasConstants::MEMREAS_FE . '/?credits_activated=1";</script>' );
 			} else {
