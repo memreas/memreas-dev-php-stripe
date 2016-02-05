@@ -102,7 +102,6 @@ class StripeInstance {
 		$this->stripeCard = new StripeCard ( $stripeClient );
 		$this->stripePlan = new StripePlansConfig ( $stripeClient );
 		$this->memreasStripeTables = $memreasStripeTables;
-		$this->session = new Container ( 'user' );
 	}
 	public function get($propertyName) {
 		return $this->{$propertyName};
@@ -763,7 +762,7 @@ class StripeInstance {
 		);
 	}
 	public function buyMedia($data) {
-		$user = $this->memreasStripeTables->getUserTable ()->getUser ( $data ['user_id'] );
+		$user = $this->memreasStripeTables->getUserTable ()->getUser ( $_SESSION['user_id'] );
 		$amount = $data ['amount'];
 		$event_id = $data ['event_id'];
 		$seller_id = $data ['seller_id'];
@@ -1398,7 +1397,7 @@ class StripeInstance {
 		if (isset ( $card_data ['user_id'] ))
 			$user_id = $card_data ['user_id'];
 		else
-			$user_id = $this->session->offsetGet ( 'user_id' );
+			$user_id = $_SESSION['user_id'];
 		
 		$user = $this->memreasStripeTables->getUserTable ()->getUser ( $user_id );
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
@@ -1521,7 +1520,7 @@ class StripeInstance {
 		if (isset ( $data ['userid'] ))
 			$userid = $data ['userid'];
 		else
-			$userid = $this->session->offsetGet ( 'user_id' );
+			$userid = $_SESSION['user_id'];
 		
 		if (isset ( $data ['card_id'] ))
 			$card = $data ['card_id'];
@@ -1962,7 +1961,7 @@ class StripeInstance {
 	public function listCard($data) {
 		Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
 		if (empty ( $data ['user_id'] ))
-			$user_id = $this->session->offsetGet ( 'user_id' );
+			$user_id = $_SESSION['user_id'];
 		else
 			$user_id = $data ['user_id'];
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
@@ -2006,7 +2005,7 @@ class StripeInstance {
 	}
 	public function saveCard($card_data) {
 		if (empty ( $card_data ['user_id'] ))
-			$user_id = $this->session->offsetGet ( 'user_id' );
+			$user_id = $_SESSION['user_id'];
 		else
 			$user_id = $card_data ['user_id'];
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );

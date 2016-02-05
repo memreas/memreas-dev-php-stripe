@@ -316,7 +316,7 @@ class StripeController extends AbstractActionController {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-			$this->flushResponse ( json_encode ( $MemreasStripe->buyMedia ( message_data, true ) ) );
+			$this->flushResponse ( json_encode ( $MemreasStripe->buyMedia ( $message_data, true ) ) );
 			die ();
 		}
 	}
