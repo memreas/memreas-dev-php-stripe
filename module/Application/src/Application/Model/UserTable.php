@@ -7,12 +7,12 @@
  */
 namespace Application\Model;
 
+use Application\memreas\Mlog;
 use Zend\Db\TableGateway\TableGateway;
 
 // For join tables
 use Zend\Db\Sql\Sql;
 // For condtion statment
-use Zend\Db\Sql\Where;
 use Zend\Db\ResultSet;
 use Zend\Db\Sql\Select;
 
@@ -75,8 +75,9 @@ class UserTable {
 	}
 	public function getUserByUsername($username) {
 		$rowset = $this->tableGateway->select ( array (
-				'username' => $username 
+				'username' => $username
 		) );
+		
 		$row = $rowset->current ();
 		if (! $row) {
 			return false;

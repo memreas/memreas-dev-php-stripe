@@ -11,6 +11,7 @@ namespace Application\memreas;
  * Pre-include App Model
  * *
  */
+use Application\Entity\User;
 use Application\memreas\AWSStripeManagerSender;
 use Application\memreas\StripePlansConfig;
 use Application\Model\Account;
@@ -21,7 +22,6 @@ use Application\Model\MemreasConstants;
 use Application\Model\PaymentMethod;
 use Application\Model\Subscription;
 use Application\Model\Transaction as Memreas_Transaction;
-use Application\Model\User;
 use Aws\Ses\Exception\SesException;
 use Guzzle\Http\Client;
 use Zend\View\Model\ViewModel;
@@ -30,7 +30,6 @@ use Zend\View\Model\ViewModel;
  * Include core Module - Libraries
  */
 use Guzzle\Service\Exception\ValidationException;
-use Zend\Session\Container;
 use ZfrStripe;
 use ZfrStripe\Client\StripeClient;
 use ZfrStripe\Exception\BadRequestException;
@@ -46,13 +45,15 @@ class MemreasStripe extends StripeInstance {
 	protected $user_id;
 	protected $aws;
 	protected $ses;
-	public function __construct($serviceLocator) {
+	protected $dbDoctrine;
+	public $service_locator;
+	public function __construct($service_locator) {
 		try {
-			$this->serviceLocator = $serviceLocator;
+			$this->service_locator = $service_locator;
 			$this->aws = new AWSStripeManagerSender ();
 			$this->retreiveStripeKey ();
 			$this->stripeClient = new StripeClient ( $this->clientSecret, '2014-06-17' );
-			$this->memreasStripeTables = new MemreasStripeTables ( $serviceLocator );
+			$this->memreasStripeTables = new MemreasStripeTables ( $service_locator );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
 			
 			// Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
@@ -84,7 +85,7 @@ class MemreasStripe extends StripeInstance {
  * Stripe Class
  */
 class StripeInstance {
-	public $serviceLocator;
+	public $service_locator;
 	private $stripeCustomer;
 	private $stripeRecipient;
 	private $stripeCard;
@@ -690,7 +691,7 @@ class StripeInstance {
 						'currency' => $currency 
 				) );
 				$viewModel->setTemplate ( 'email/buycredit' );
-				$viewRender = $this->serviceLocator->get ( 'ViewRenderer' );
+				$viewRender = $this->service_locator->get ( 'ViewRenderer' );
 				
 				Mlog::addone ( 'addValueToAccount($data) - ', 'past view model' );
 				
@@ -762,7 +763,18 @@ class StripeInstance {
 		);
 	}
 	public function buyMedia($data) {
-		$user = $this->memreasStripeTables->getUserTable ()->getUser ( $_SESSION['user_id'] );
+		
+		/**
+		 * -
+		 * This method is responsible for executing a purchase
+		 * - the buyer's credits are debited
+		 * - the seller's credits are credited minus the memreas processing fee
+		 * - the memreas_float account is debited for the full purchase amount
+		 * - the memreas_master account is credit for the processing fee
+		 * - if an error occurs the transaction is rolled back and an email is sent.
+		 */
+		$cm = __CLASS__ . __METHOD__;
+		$user = $this->memreasStripeTables->getUserTable ()->getUser ( $_SESSION ['user_id'] );
 		$amount = $data ['amount'];
 		$event_id = $data ['event_id'];
 		$seller_id = $data ['seller_id'];
@@ -786,7 +798,7 @@ class StripeInstance {
 			 * -
 			 * Start transcation - if an error occurs rollback and send an email to investigate
 			 */
-			$dbAdapter = $this->serviceLocator->get ( MemreasConstants::MEMREASPAYMENTSDB );
+			$dbAdapter = $this->service_locator->get ( MemreasConstants::MEMREASPAYMENTSDB );
 			$connection = $dbAdapter->getDriver ()->getConnection ();
 			$connection->beginTransaction ();
 			
@@ -810,6 +822,7 @@ class StripeInstance {
 						"Description" => "Account not found or does not have sufficient funds." 
 				);
 			}
+			
 			$now = date ( 'Y-m-d H:i:s' );
 			$memreas_transaction = new Memreas_Transaction ();
 			$memreas_transaction->exchangeArray ( array (
@@ -823,7 +836,7 @@ class StripeInstance {
 					'transaction_response' => "N/a",
 					'transaction_receive' => $now 
 			) );
-			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+			$account_purchase_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 			
 			// Starting decrement account balance
 			$startingBalance = $currentAccountBalance->ending_balance;
@@ -870,6 +883,9 @@ class StripeInstance {
 			 * -
 			 * Start credit process for the seller
 			 */
+			$seller_amount = $amount * (1 - MemreasConstants::MEMREAS_PROCESSING_FEE);
+			$memreas_master_amount = $amount - $seller_amount;
+			
 			$seller = $this->memreasStripeTables->getUserTable ()->getUser ( $seller_id );
 			$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $seller->user_id, 'seller' );
 			if (! $account)
@@ -888,11 +904,15 @@ class StripeInstance {
 					'account_id' => $accountId,
 					'transaction_type' => 'sell_media_received',
 					'pass_fail' => 1,
-					'amount' => "+$amount",
+					'amount' => "+$seller_amount",
 					'currency' => 'USD',
-					'transaction_request' => "N/a",
+					'transaction_request' => json_encode ( array (
+							"transaction_id" => $account_purchase_transaction_id 
+					) ),
 					'transaction_sent' => $now,
-					'transaction_response' => "N/a",
+					'transaction_response' => json_encode ( array (
+							"transaction_id" => $account_purchase_transaction_id 
+					) ),
 					'transaction_receive' => $now 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
@@ -909,7 +929,7 @@ class StripeInstance {
 					'transaction_id' => $transaction_id,
 					'transaction_type' => "increase_value_from_account",
 					'starting_balance' => $startingBalance,
-					'amount' => "+$amount",
+					'amount' => "+$seller_amount",
 					'ending_balance' => $endingBalance,
 					'create_time' => $now 
 			) );
@@ -933,9 +953,9 @@ class StripeInstance {
 			// ////////////////////////////////
 			$memreas_master_user = $this->memreasStripeTables->getUserTable ()->getUserByUsername ( MemreasConstants::ACCOUNT_MEMREAS_MASTER );
 			$memreas_master_user_id = $memreas_master_user->user_id;
-			$memreas_master_account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $memreas_master_user_id );
+			
+			$memreas_master_account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $memreas_master_user_id, 'seller' );
 			if (! $memreas_master_account) {
-				error_log ( "Inside decrementValue memreas_master_account getAccountByUserId failed ---> Rolling back" . PHP_EOL );
 				$connection->rollback ();
 				$result = array (
 						"Status" => "Error",
@@ -944,8 +964,6 @@ class StripeInstance {
 				return $result;
 			}
 			$memreas_master_account_id = $memreas_master_account->account_id;
-			
-			error_log ( "Fetched memreas_master account ----> " . $memreas_master_user->username . PHP_EOL );
 			
 			// Increment the memreas_master account for the processing fee - see constants
 			// Fetch Account_Balances
@@ -958,11 +976,15 @@ class StripeInstance {
 					'account_id' => $memreas_master_account_id,
 					'transaction_type' => 'increment_value_to_account',
 					'pass_fail' => 1,
-					'amount' => $memreas_master_amount,
+					'amount' => "+$memreas_master_amount",
 					'currency' => 'USD',
-					'transaction_request' => "N/a",
+					'transaction_request' => json_encode ( array (
+							"transaction_id" => $account_purchase_transaction_id 
+					) ),
 					'transaction_sent' => $now,
-					'transaction_response' => "N/a",
+					'transaction_response' => json_encode ( array (
+							"transaction_id" => $account_purchase_transaction_id 
+					) ),
 					'transaction_receive' => $now 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
@@ -980,7 +1002,7 @@ class StripeInstance {
 					'transaction_id' => $transaction_id,
 					'transaction_type' => "increment_value_to_account",
 					'starting_balance' => $starting_balance,
-					'amount' => "$memreas_master_amount",
+					'amount' => "+$memreas_master_amount",
 					'ending_balance' => $ending_balance,
 					'create_time' => $now 
 			) );
@@ -988,8 +1010,8 @@ class StripeInstance {
 			
 			// Update the account table
 			$now = date ( 'Y-m-d H:i:s' );
-			$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $memreas_master_account_id );
-			$account->exchangeArray ( array (
+			// $account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $memreas_master_account_id );
+			$memreas_master_account->exchangeArray ( array (
 					'balance' => $ending_balance,
 					'update_time' => $now 
 			) );
@@ -1006,9 +1028,9 @@ class StripeInstance {
 			// ////////////////////////////////
 			$memreas_float_user = $this->memreasStripeTables->getUserTable ()->getUserByUsername ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
 			$memreas_float_user_id = $memreas_float_user->user_id;
-			$memreas_float_account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $memreas_float_user_id );
+			
+			$memreas_float_account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $memreas_float_user_id, 'seller' );
 			if (! $memreas_float_account) {
-				error_log ( "Inside decrementValue memreas_float_account getAccountByUserId failed ---> Rolling back" . PHP_EOL );
 				$connection->rollback ();
 				$result = array (
 						"Status" => "Error",
@@ -1017,8 +1039,6 @@ class StripeInstance {
 				return $result;
 			}
 			$memreas_float_account_id = $memreas_float_account->account_id;
-			
-			error_log ( "Fetched memreas_float account ----> " . $memreas_float_user->username . PHP_EOL );
 			
 			// Decrement the memreas_float account by 100% of the purchase
 			// Fetch Account_Balances
@@ -1033,9 +1053,13 @@ class StripeInstance {
 					'pass_fail' => 1,
 					'amount' => "-$amount",
 					'currency' => 'USD',
-					'transaction_request' => "N/a",
+					'transaction_request' => json_encode ( array (
+							"transaction_id" => $account_purchase_transaction_id 
+					) ),
 					'transaction_sent' => $now,
-					'transaction_response' => "N/a",
+					'transaction_response' => json_encode ( array (
+							"transaction_id" => $account_purchase_transaction_id 
+					) ),
 					'transaction_receive' => $now 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
@@ -1053,7 +1077,7 @@ class StripeInstance {
 					'transaction_id' => $transaction_id,
 					'transaction_type' => "decrement_value_to_account",
 					'starting_balance' => $starting_balance,
-					'amount' => - $amount,
+					'amount' => "-$amount",
 					'ending_balance' => $ending_balance,
 					'create_time' => $now 
 			) );
@@ -1061,8 +1085,8 @@ class StripeInstance {
 			
 			// Update the account table
 			$now = date ( 'Y-m-d H:i:s' );
-			$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $memreas_float_account_id );
-			$account->exchangeArray ( array (
+			// $account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $memreas_float_account_id );
+			$memreas_float_account->exchangeArray ( array (
 					'balance' => $ending_balance,
 					'update_time' => $now 
 			) );
@@ -1072,7 +1096,6 @@ class StripeInstance {
 			 * -
 			 * Commit the transaction - chaching :)
 			 */
-			error_log ( "Inside decrementValue Committing the Transaction!" . PHP_EOL );
 			$connection->commit ();
 			
 			return array (
@@ -1085,7 +1108,6 @@ class StripeInstance {
 			 * -
 			 * Exception during purchase
 			 */
-			error_log ( "Inside decrementValue ROLLING BACK THE TRANSACTION! An errror occurred" . $e->getMessage () . PHP_EOL );
 			$connection->rollback ();
 			$error_data = array ();
 			$error_data ['user_id'] = (isset ( $user_id )) ? $user_id : $_SESSION ['user_id'];
@@ -1173,174 +1195,6 @@ class StripeInstance {
 				'message' => 'Amount has been activated' 
 		);
 	}
-	public function decrementAmount($data) {
-		$cm = __CLASS__ . __METHOD__;
-		
-		/**
-		 * -
-		 * Fetch buyer, seller, and amount
-		 */
-		$seller = $data ['seller'];
-		$memreas_master = $data ['memreas_master'];
-		$amount = $data ['amount'];
-		Mlog::addone ( $cm, __LINE__ );
-		
-		/**
-		 * -
-		 * Decrement buyer account
-		 */
-		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $_SESSION ['user_id'] );
-		if (! $account)
-			return array (
-					'status' => 'Failure',
-					'message' => 'You have no account at this time. Please add card first.' 
-			);
-		$accountId = $account->account_id;
-		Mlog::addone ( $cm, __LINE__ );
-		
-		$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $accountId );
-		
-		if (! isset ( $currentAccountBalance ) || ($currentAccountBalance->ending_balance <= 0)) {
-			return array (
-					"status" => "Failure",
-					"Description" => "Account not found or does not have sufficient funds." 
-			);
-		}
-		Mlog::addone ( $cm, __LINE__ );
-		$now = date ( 'Y-m-d H:i:s' );
-		$memreas_transaction = new Memreas_Transaction ();
-		$memreas_transaction->exchangeArray ( array (
-				'account_id' => $accountId,
-				'transaction_type' => 'decrement_value_from_account',
-				'pass_fail' => 1,
-				'amount' => "-$amount",
-				'currency' => 'USD',
-				'transaction_request' => "N/a",
-				'transaction_sent' => $now,
-				'transaction_response' => "N/a",
-				'transaction_receive' => $now 
-		) );
-		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-		
-		Mlog::addone ( $cm, __LINE__ );
-		// Starting decrement account balance
-		$startingBalance = $currentAccountBalance->ending_balance;
-		$endingBalance = $startingBalance - $amount;
-		
-		Mlog::addone ( $cm, __LINE__ );
-		// Insert the new account balance
-		$now = date ( 'Y-m-d H:i:s' );
-		$endingAccountBalance = new AccountBalances ();
-		$endingAccountBalance->exchangeArray ( array (
-				'account_id' => $accountId,
-				'transaction_id' => $transaction_id,
-				'transaction_type' => "decrement_value_from_account",
-				'starting_balance' => $startingBalance,
-				'amount' => - $amount,
-				'ending_balance' => $endingBalance,
-				'create_time' => $now 
-		) );
-		$accountBalanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
-		
-		Mlog::addone ( $cm, __LINE__ );
-		// Update the account table
-		$now = date ( 'Y-m-d H:i:s' );
-		$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $accountId );
-		$account->exchangeArray ( array (
-				'balance' => $endingBalance,
-				'update_time' => $now 
-		) );
-		$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
-		
-		Mlog::addone ( $cm, __LINE__ );
-		$accountResult = array (
-				'status' => 'Success',
-				'message' => 'Transaction completed',
-				'starting_balance' => $startingBalance,
-				'amount' => $amount,
-				'ending_balance' => $endingBalance 
-		);
-		Mlog::addone ( $cm, __LINE__ );
-		
-		/**
-		 * -
-		 * Decrement memreas fess and increment seller account
-		 */
-		$sellerUser = $this->memreasStripeTables->getUserTable ()->getUserByUsername ( $seller );
-		$seller_user_id = $sellerUser->user_id;
-		$seller_account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $seller_user_id );
-		
-		Mlog::addone ( $cm, __LINE__ );
-		if (! $seller_account) {
-			$sellerResult = array (
-					'status' => 'Failure',
-					'message' => 'Transaction failed! Seller does not exist' 
-			);
-			Mlog::addone ( $cm, __LINE__ );
-		} else {
-			$seller_account_id = $seller_account->account_id;
-			$currentSellerBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $seller_account_id );
-			
-			// Log the transaction
-			$now = date ( 'Y-m-d H:i:s' );
-			$memreas_transaction = new Memreas_Transaction ();
-			$seller_amount = $amount * (1 - MemreasConstants::MEMREAS_PROCESSING_FEE);
-			$memreas_master_amount = $amount - $seller_amount;
-			
-			$memreas_transaction->exchangeArray ( array (
-					'account_id' => $seller_account_id,
-					'transaction_type' => 'increment_value_to_account',
-					'pass_fail' => 1,
-					'amount' => $seller_amount,
-					'currency' => 'USD',
-					'transaction_request' => "N/a",
-					'transaction_sent' => $now,
-					'transaction_response' => "N/a",
-					'transaction_receive' => $now 
-			) );
-			
-			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-			
-			$startingBalance = (isset ( $currentSellerBalance )) ? $currentSellerBalance->ending_balance : '0.00';
-			$endingBalance = $startingBalance + $seller_amount;
-			
-			// Insert the new account balance
-			$now = date ( 'Y-m-d H:i:s' );
-			$endingSellerBalance = new AccountBalances ();
-			$endingSellerBalance->exchangeArray ( array (
-					'account_id' => $seller_account_id,
-					'transaction_id' => $transaction_id,
-					'transaction_type' => "increment_value_to_account",
-					'starting_balance' => $startingBalance,
-					'amount' => "$seller_amount",
-					'ending_balance' => $endingBalance,
-					'create_time' => $now 
-			) );
-			$sellerBalanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingSellerBalance );
-			
-			// Update the account table
-			$now = date ( 'Y-m-d H:i:s' );
-			$seller = $this->memreasStripeTables->getAccountTable ()->getAccount ( $seller_account_id );
-			$seller->exchangeArray ( array (
-					'balance' => $endingBalance,
-					'update_time' => $now 
-			) );
-			$seller_account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $seller );
-			
-			$sellerResult = array (
-					'status' => 'Success',
-					'message' => 'Transaction completed.',
-					'starting_balance' => $startingBalance,
-					'amount' => $amount,
-					'ending_balance' => $endingBalance 
-			);
-			Mlog::addone ( $cm, __LINE__ );
-		}
-		return array (
-				'account' => $accountResult,
-				'seller' => $sellerResult 
-		);
-	}
 	public function AccountHistory($data) {
 		$userName = $data ['user_name'];
 		$user = $this->memreasStripeTables->getUserTable ()->getUserByUsername ( $userName );
@@ -1397,7 +1251,7 @@ class StripeInstance {
 		if (isset ( $card_data ['user_id'] ))
 			$user_id = $card_data ['user_id'];
 		else
-			$user_id = $_SESSION['user_id'];
+			$user_id = $_SESSION ['user_id'];
 		
 		$user = $this->memreasStripeTables->getUserTable ()->getUser ( $user_id );
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
@@ -1520,7 +1374,7 @@ class StripeInstance {
 		if (isset ( $data ['userid'] ))
 			$userid = $data ['userid'];
 		else
-			$userid = $_SESSION['user_id'];
+			$userid = $_SESSION ['user_id'];
 		
 		if (isset ( $data ['card_id'] ))
 			$card = $data ['card_id'];
@@ -1682,13 +1536,13 @@ class StripeInstance {
 					'plan_name' => $plan ['plan'] ['name'] 
 			) );
 			$viewModel->setTemplate ( 'email/subscription' );
-			$viewRender = $this->serviceLocator->get ( 'ViewRenderer' );
+			$viewRender = $this->service_locator->get ( 'ViewRenderer' );
 			
 			$html = $viewRender->render ( $viewModel );
 			$subject = 'Your subscription plan has been activated';
 			
 			if (! isset ( $this->aws ) || empty ( $this->aws ))
-				$this->aws = new AWSManagerSender ( $this->serviceLocator );
+				$this->aws = new AWSManagerSender ( $this->service_locator );
 			try {
 				$user = $this->memreasStripeTables->getUserTable ()->getUser ( $userid );
 				$this->aws->sendSeSMail ( array (
@@ -1961,7 +1815,7 @@ class StripeInstance {
 	public function listCard($data) {
 		Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
 		if (empty ( $data ['user_id'] ))
-			$user_id = $_SESSION['user_id'];
+			$user_id = $_SESSION ['user_id'];
 		else
 			$user_id = $data ['user_id'];
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
@@ -2005,7 +1859,7 @@ class StripeInstance {
 	}
 	public function saveCard($card_data) {
 		if (empty ( $card_data ['user_id'] ))
-			$user_id = $_SESSION['user_id'];
+			$user_id = $_SESSION ['user_id'];
 		else
 			$user_id = $card_data ['user_id'];
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
