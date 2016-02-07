@@ -10,10 +10,13 @@ namespace Application\Model;
 use Zend\Db\Sql\Select;
 use Zend\Db\TableGateway\TableGateway;
 use Application\memreas\MUUID;
+use Application\memreas\Mlog;
 
 class TransactionTable {
 	protected $tableGateway;
 	public $account_id;
+	public $date_from;
+	public $date_to;
 	public $account_range;
 	public $offset = 0;
 	public $limit = 0;
@@ -40,6 +43,7 @@ class TransactionTable {
 		return $resultSet;
 	}
 	public function getTransactionByAccountId($account_id, $page = null, $limit = null) {
+		Mlog::addone ( 'Inside getTransactionByAccountId', '...' );
 		$this->account_id = $account_id;
 		if ($page && $limit) {
 			$this->offset = ($page - 1) * $limit;
@@ -55,6 +59,38 @@ class TransactionTable {
 			) );
 		}
 		return $resultSet;
+	}
+	public function getTransactionByAccountIdAndDateFromTo($account_id, $date_from, $date_to, $page = null, $limit = null) {
+		Mlog::addone ( 'Inside getTransactionByAccountIdAndDateFromTo', '...' );
+		
+		$this->account_id = $account_id;
+		$this->date_from = $date_from;
+		$this->date_to = $date_to;
+		
+		if (! empty ( $date_from )) {
+			if ($page && $limit) {
+				$this->offset = ($page - 1) * $limit;
+				$this->limit = $limit;
+				$resultSet = $this->tableGateway->select ( function (Select $select) {
+					$select->where ( array (
+							'account_id' => $this->account_id 
+					) );
+					$select->where->between ( 'transaction_receive', $this->date_from, $this->date_to );
+					$select->order ( 'transaction_receive DESC' )->offset ( $this->offset )->limit ( $this->limit );
+					Mlog::addone ( 'getTransactionByAccountIdAndDateFromTo sql with page and limit --> ', $select );
+				} );
+			} else {
+				$resultSet = $this->tableGateway->select ( function (Select $select) {
+					$select->where ( array (
+							'account_id' => $this->account_id 
+					) );
+					$select->where->between ( 'transaction_receive', $this->date_from, $this->date_to );
+					$select->order ( 'transaction_receive DESC' );
+					Mlog::addone ( 'getTransactionByAccountIdAndDateFromTo sql --> ', $select );
+				} );
+			}
+			return $resultSet;
+		}
 	}
 	public function getTransaction($transaction_id) {
 		$rowset = $this->tableGateway->select ( array (

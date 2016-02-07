@@ -23,15 +23,15 @@ class AccountTable {
 		$resultSet = $this->tableGateway->select ();
 		return $resultSet;
 	}
-	public function listMassPayee($username = '', $page = 1, $limit = 10) {
+	public function listMassPayee($username, $page, $limit) {
 		$this->username = $username;
 		$this->limit = $limit;
 		$this->offset = ($page - 1) * $limit;
 		$rowset = $this->tableGateway->select ( function (Select $select) {
 			$conditions = "account_type = 'seller' AND balance > 0";
-			if ($this->username)
+			if (!empty($this->username)) {
 				$conditions .= " AND username = '" . $this->username . "'";
-			
+			}
 			$select->where ( $conditions )->limit ( $this->limit )->offset ( $this->offset );
 		} );
 		if (! $rowset) {

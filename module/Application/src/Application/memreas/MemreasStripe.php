@@ -14,6 +14,7 @@ namespace Application\memreas;
 use Application\Entity\User;
 use Application\memreas\AWSStripeManagerSender;
 use Application\memreas\StripePlansConfig;
+use Application\memreas\Mlog;
 use Application\Model\Account;
 use Application\Model\AccountBalances;
 use Application\Model\AccountDetail;
@@ -1196,21 +1197,44 @@ class StripeInstance {
 		);
 	}
 	public function AccountHistory($data) {
+		$now = date ( "Y-m-d H:i:s" );
 		$userName = $data ['user_name'];
+		$date_from = isset ( $data ['date_from'] ) ? $data ['date_from'] : '';
+		$date_to = isset ( $data ['date_to'] ) ? $data ['date_to'] : $now;
 		$user = $this->memreasStripeTables->getUserTable ()->getUserByUsername ( $userName );
-		if (! $user)
+		
+		if ($date_from > $date_to) {
+			return array (
+					'status' => 'Failure',
+					'message' => "from date: $date_from is greater than to date: $date_to"
+			);
+		}
+		if (! $user) {
 			return array (
 					'status' => 'Failure',
 					'message' => 'User is not found' 
 			);
+		}
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user->user_id );
-		if (! $account)
+		if (! $account) {
 			return array (
 					'status' => 'Failure',
 					'message' => 'Account associate to this user does not exist' 
 			);
+		}
 		$accountId = $account->account_id;
-		$Transactions = $this->memreasStripeTables->getTransactionTable ()->getTransactionByAccountId ( $accountId );
+		
+		/**
+		 * -
+		 * Fetch the list of transactions by from/to or all for account
+		 */
+		if (! empty ( $date_from )) {
+			//Mlog::addone ( 'AccountHistory:: with dates::', "from::$date_from to::$date_to" );
+			$Transactions = $this->memreasStripeTables->getTransactionTable ()->getTransactionByAccountIdAndDateFromTo ( $accountId, $date_from, $date_to );
+		} else {
+			//Mlog::addone ( 'AccountHistory:: with dates::', "empty dates" );
+			$Transactions = $this->memreasStripeTables->getTransactionTable ()->getTransactionByAccountId ( $accountId );
+		}
 		$TransactionsArray = array ();
 		if ($Transactions) {
 			foreach ( $Transactions as $Transaction ) {
@@ -1346,6 +1370,7 @@ class StripeInstance {
 		$payment_method = new PaymentMethod ();
 		$payment_method->exchangeArray ( array (
 				'account_id' => $account_id,
+				'account_detail_id' => $account_detail_id,
 				'stripe_card_reference_id' => $stripeCard ['id'],
 				'stripe_card_token' => $this->stripeCard->getCardAttribute ( 'card_token' ),
 				'card_type' => $stripeCard ['brand'],
@@ -1618,19 +1643,20 @@ class StripeInstance {
 	public function cancelSubscription($subscriptionId, $customerId) {
 		$this->stripeCustomer->cancelSubscription ( $subscriptionId, $customerId );
 	}
-	public function listMassPayee($username, $page, $limit) {
-		$MassPees = $this->memreasStripeTables->getAccountTable ()->listMassPayee ( $username, $page, $limit );
+	public function listMassPayee($username='', $page=1, $limit=1000) {
+		$massPayees = $this->memreasStripeTables->getAccountTable ()->listMassPayee ( $username, $page, $limit );
+		$countRow = count ( $massPayees );
 		
-		$countRow = count ( $MassPees );
-		
-		if (! $countRow)
+		if (! $countRow) {
 			return array (
 					'status' => 'Failure',
 					'message' => 'No record found' 
 			);
-		$massPeesArray = array ();
-		foreach ( $MassPees as $MassPee ) {
-			$massPeesArray [] = array (
+		} 
+		
+		$massPayeesArray = array ();
+		foreach ( $massPayees as $MassPee ) {
+			$massPayeesArray [] = array (
 					'account_id' => $MassPee->account_id,
 					'user_id' => $MassPee->user_id,
 					'username' => $MassPee->username,
@@ -1642,7 +1668,7 @@ class StripeInstance {
 		return array (
 				'status' => 'Success',
 				'Numrows' => $countRow,
-				'accounts' => $massPeesArray 
+				'accounts' => $massPayeesArray 
 		);
 	}
 	public function MakePayout($data) {
