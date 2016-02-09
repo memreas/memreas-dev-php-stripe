@@ -482,8 +482,10 @@ class StripeInstance {
 		$transaction->exchangeArray ( array (
 				'account_id' => $account_id,
 				'transaction_type' => 'add_seller',
-				'transaction_request' => "N/a",
+				'transaction_request' => json_encode($recipientParams),
+				'transaction_request' => json_encode($recipientResponse),
 				'pass_fail' => 1,
+				'transaction_status' => 'add_seller_passed',
 				'transaction_sent' => $now,
 				'transaction_receive' => $now 
 		) );
@@ -621,17 +623,20 @@ class StripeInstance {
 				$transactionDetail = array (
 						'transaction_id' => $transaction_id,
 						'account_id' => $account->account_id,
+						'pass_fail' => 1,
 						'transaction_response' => json_encode ( $chargeResult ),
 						'transaction_receive' => $now,
 						'transaction_status' => 'buy_credit_email' 
 				);
 				$memreas_transaction->exchangeArray ( $transactionDetail );
 				$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+
 				
 				// Update Account Balance
+				$amount = $data ['amount'];
 				$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $account->account_id );
 				$startingAccountBalance = (isset ( $currentAccountBalance )) ? $currentAccountBalance->ending_balance : '0.00';
-				$endingAccountBalance = $startingAccountBalance + $data ['amount'];
+				$endingAccountBalance = $startingAccountBalance + $amount;
 				
 				$accountBalance = new AccountBalances ();
 				$accountBalance->exchangeArray ( array (
@@ -639,7 +644,7 @@ class StripeInstance {
 						'transaction_id' => $transaction_id,
 						'transaction_type' => "add_value_to_account",
 						'starting_balance' => $startingAccountBalance,
-						'amount' => $data ['amount'],
+						'amount' => $amount,
 						'ending_balance' => $endingAccountBalance,
 						'create_time' => $now 
 				) );
@@ -647,7 +652,7 @@ class StripeInstance {
 				
 				/**
 				 * -
-				 * Store to memreas_float here
+				 * Store to memreas_float here (add transaction entries to deduct fee and store remainder as float)
 				 */
 				$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
 				
@@ -664,7 +669,7 @@ class StripeInstance {
 				$endingAccountBalance->exchangeArray ( array (
 						'account_id' => $account_memreas_float->account_id,
 						'transaction_id' => $transaction_id,
-						'transaction_type' => "add_value_to_account",
+						'transaction_type' => "add_value_to_memreas_float_account",
 						'starting_balance' => $starting_balance,
 						'amount' => $amount,
 						'ending_balance' => $ending_balance,
@@ -677,6 +682,84 @@ class StripeInstance {
 				$account_memreas_float->exchangeArray ( array (
 						'balance' => $ending_balance,
 						'update_time' => $now 
+				) );
+				$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
+				
+				
+				/**
+				 * -
+				 * Deduct the fees from float
+				 */
+				$stripeBalanceTransactionParams = array (
+						'id' => $chargeResult ['balance_transaction']
+				);
+				
+				/**
+				 * -
+				 * Store balance transaction fee request prior to sending to stripe
+				 */
+				$now = date ( 'Y-m-d H:i:s' );
+				$memreas_transaction = new Memreas_Transaction ();
+				$memreas_transaction->exchangeArray ( array (
+						'account_id' => $account_id,
+						'transaction_type' => 'add_value_to_account_memreas_float_account_fees',
+						'transaction_request' => json_encode ( $stripeBalanceTransactionParams ),
+						'transaction_sent' => $now
+				) );
+				$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+				
+				/**
+				 * -
+				 * Make call to Stripe
+				 */
+				$balance_transaction = $this->stripeCard->getBalanceTransaction ( $stripeBalanceTransactionParams );
+				Mlog::addone($cm.'addValueToAccount()->$balance_transaction::',$balance_transaction);
+				$fees = $balance_transaction['fee'] / 100; // stripe stores in cents
+				
+				/**
+				 * -
+				 * Store balance transaction fee response from stripe
+				 */
+				$now = date ( 'Y-m-d H:i:s' );
+				$memreas_transaction = new Memreas_Transaction ();
+				$memreas_transaction->exchangeArray ( array (
+						'transaction_id' => $transaction_id,
+						'amount' => $fees,
+						'currency' => $currency,
+						'pass_fail' => 1,
+						'transaction_response' => json_encode($balance_transaction),
+						'transaction_receive' => $now
+				) );
+				$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+				
+				/**
+				 * -
+				 * Deduct fee from float account
+				 */
+				// Get the last balance
+				// If no account found set the starting balance to zero else use the ending balance.
+				$starting_balance = $ending_balance;
+				$ending_balance = $starting_balance - $fees;
+				
+				// Insert the new account balance
+				$now = date ( 'Y-m-d H:i:s' );
+				$endingAccountBalance = new AccountBalances ();
+				$endingAccountBalance->exchangeArray ( array (
+						'account_id' => $account_memreas_float->account_id,
+						'transaction_id' => $transaction_id,
+						'transaction_type' => "add_value_to_memreas_float_account_fees",
+						'starting_balance' => $starting_balance,
+						'amount' => "-$fees",
+						'ending_balance' => $ending_balance,
+						'create_time' => $now
+				) );
+				$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
+				
+				// Update the account table
+				$now = date ( 'Y-m-d H:i:s' );
+				$account_memreas_float->exchangeArray ( array (
+						'balance' => $ending_balance,
+						'update_time' => $now
 				) );
 				$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
 				
@@ -1206,7 +1289,7 @@ class StripeInstance {
 		if ($date_from > $date_to) {
 			return array (
 					'status' => 'Failure',
-					'message' => "from date: $date_from is greater than to date: $date_to"
+					'message' => "from date: $date_from is greater than to date: $date_to" 
 			);
 		}
 		if (! $user) {
@@ -1229,10 +1312,10 @@ class StripeInstance {
 		 * Fetch the list of transactions by from/to or all for account
 		 */
 		if (! empty ( $date_from )) {
-			//Mlog::addone ( 'AccountHistory:: with dates::', "from::$date_from to::$date_to" );
+			// Mlog::addone ( 'AccountHistory:: with dates::', "from::$date_from to::$date_to" );
 			$Transactions = $this->memreasStripeTables->getTransactionTable ()->getTransactionByAccountIdAndDateFromTo ( $accountId, $date_from, $date_to );
 		} else {
-			//Mlog::addone ( 'AccountHistory:: with dates::', "empty dates" );
+			// Mlog::addone ( 'AccountHistory:: with dates::', "empty dates" );
 			$Transactions = $this->memreasStripeTables->getTransactionTable ()->getTransactionByAccountId ( $accountId );
 		}
 		$TransactionsArray = array ();
@@ -1361,6 +1444,7 @@ class StripeInstance {
 		$transaction->exchangeArray ( array (
 				'transaction_id' => $transaction_id,
 				'pass_fail' => 1,
+				'transaction_status' => 'store_credit_card_passed',
 				'transaction_response' => json_encode ( $stripeCard ),
 				'transaction_receive' => $now 
 		) );
@@ -1643,7 +1727,7 @@ class StripeInstance {
 	public function cancelSubscription($subscriptionId, $customerId) {
 		$this->stripeCustomer->cancelSubscription ( $subscriptionId, $customerId );
 	}
-	public function listMassPayee($username='', $page=1, $limit=1000) {
+	public function listMassPayee($username = '', $page = 1, $limit = 1000) {
 		$massPayees = $this->memreasStripeTables->getAccountTable ()->listMassPayee ( $username, $page, $limit );
 		$countRow = count ( $massPayees );
 		
@@ -1652,7 +1736,7 @@ class StripeInstance {
 					'status' => 'Failure',
 					'message' => 'No record found' 
 			);
-		} 
+		}
 		
 		$massPayeesArray = array ();
 		foreach ( $massPayees as $MassPee ) {
@@ -2298,6 +2382,13 @@ class StripeCard {
 	 */
 	public function createCharge($data) {
 		return $this->stripeClient->createCharge ( $data );
+	}
+	
+	/*
+	 * Get Balance Transaction (for charge fees)
+	 */
+	public function getBalanceTransaction($data) {
+		return $this->stripeClient->getBalanceTransaction ( $data );
 	}
 	
 	/*
