@@ -288,8 +288,10 @@ class StripeController extends AbstractActionController {
 			// echo '<h3 style="text-align: center">' . $activeBalance ['message'] . '</h3>';
 			if ($activeBalance ['status'] == 'Success') {
 				$this->flushResponse ( '<script type="text/javascript">document.location.href="' . MemreasConstants::MEMREAS_FE . '/?credits_activated=1";</script>' );
-			} else {
-				echo '<h3 style="text-align: center">An error has occurred for token:: ' . $token . ' Please email ' . MemreasConstants::ADMIN_EMAIL . ' with your token information.</h3>';
+			} else if ($activeBalance ['status'] == 'activated') {
+				$this->flushResponse ( '<h3 style="text-align: center">'.$activeBalance ['message'].'</h3><script type="text/javascript">document.location.href="' . MemreasConstants::MEMREAS_FE . '/?credits_already_activated=1";</script>');
+			} else if ($activeBalance ['status'] == 'Failure') {
+				$this->flushResponse ( '<h3 style="text-align: center">An error has occurred for token:: ' . $token . ' Please email ' . MemreasConstants::ADMIN_EMAIL . ' with your token information.</h3>' );
 			}
 			die ();
 		}

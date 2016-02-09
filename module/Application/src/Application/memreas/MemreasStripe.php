@@ -482,8 +482,8 @@ class StripeInstance {
 		$transaction->exchangeArray ( array (
 				'account_id' => $account_id,
 				'transaction_type' => 'add_seller',
-				'transaction_request' => json_encode($recipientParams),
-				'transaction_request' => json_encode($recipientResponse),
+				'transaction_request' => json_encode ( $recipientParams ),
+				'transaction_request' => json_encode ( $recipientResponse ),
 				'pass_fail' => 1,
 				'transaction_status' => 'add_seller_passed',
 				'transaction_sent' => $now,
@@ -617,7 +617,10 @@ class StripeInstance {
 				
 				/**
 				 * -
-				 * Store response to transaction
+				 * Buyer Section
+				 * - Store response to transaction
+				 * - Store the account balance
+				 * - Update the account
 				 */
 				$now = date ( 'Y-m-d H:i:s' );
 				$transactionDetail = array (
@@ -630,9 +633,11 @@ class StripeInstance {
 				);
 				$memreas_transaction->exchangeArray ( $transactionDetail );
 				$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-
 				
-				// Update Account Balance
+				/**
+				 * -
+				 * Store Account Balance
+				 */
 				$amount = $data ['amount'];
 				$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $account->account_id );
 				$startingAccountBalance = (isset ( $currentAccountBalance )) ? $currentAccountBalance->ending_balance : '0.00';
@@ -652,46 +657,84 @@ class StripeInstance {
 				
 				/**
 				 * -
+				 * Update Account to reflect the latest balance
+				 */
+				// Update the account table
+				$now = date ( 'Y-m-d H:i:s' );
+				$account->exchangeArray ( array (
+						'balance' => $endingAccountBalance,
+						'update_time' => $now 
+				) );
+				$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
+				
+				/**
+				 * -
+				 * memreas_float section
 				 * Store to memreas_float here (add transaction entries to deduct fee and store remainder as float)
+				 * - store the transaction
+				 * - store the account balance
+				 * - update account
+				 * - store the fee as a transaction
+				 * - store the fees deducted account balance
+				 * - update the account to reflect the fee
 				 */
 				$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
-				
-				$current_account_balances_memreas_float = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $account_memreas_float->account_id );
-				
-				// Get the last balance
-				// If no account found set the starting balance to zero else use the ending balance.
-				$starting_balance = (isset ( $current_account_balances_memreas_float )) ? $current_account_balances_memreas_float->ending_balance : '0.00';
-				$ending_balance = $starting_balance + $amount;
-				
-				// Insert the new account balance
+				$memreas_transaction = new Memreas_Transaction ();
+				// Get the last balance - Insert the new account balance
 				$now = date ( 'Y-m-d H:i:s' );
-				$endingAccountBalance = new AccountBalances ();
-				$endingAccountBalance->exchangeArray ( array (
+				
+				$memreas_transaction = new Memreas_Transaction ();
+				$memreas_transaction->exchangeArray ( array (
 						'account_id' => $account_memreas_float->account_id,
-						'transaction_id' => $transaction_id,
 						'transaction_type' => "add_value_to_memreas_float_account",
 						'starting_balance' => $starting_balance,
 						'amount' => $amount,
+						'currency' => $currency,
 						'ending_balance' => $ending_balance,
+						'pass_fail' => 1,
+						'transaction_status' => "success",
+						'transaction_request' => json_encode ( array (
+								'correlated_transaction_id' => $transaction_id 
+						) ),
+						'transaction_response' => json_encode ( array (
+								'correlated_transaction_id' => $transaction_id 
+						) ),
+						'transaction_sent' => $now,
+						'transaction_receive' => $now 
+				) );
+				$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+				
+				// If no account found set the starting balance to zero else use the ending balance.
+				$starting_balance = (isset ( $account_memreas_float )) ? $account_memreas_float->ending_balance : '0.00';
+				$ending_balance = $starting_balance + $amount;
+				$memreasFloatAccountBalance = new AccountBalances ();
+				$memreasFloatAccountBalance->exchangeArray ( array (
+						'account_id' => $account_memreas_float->account_id,
+						'transaction_id' => $transaction_id,
+						'transaction_type' => "add_value_to_memreas_float_account",
+						'starting_balance' => $startingAccountBalance,
+						'amount' => $amount,
+						'ending_balance' => $endingAccountBalance,
 						'create_time' => $now 
 				) );
-				$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
+				$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $memreasFloatAccountBalance );
+				Mlog::addone($cm, __LINE__);
 				
 				// Update the account table
 				$now = date ( 'Y-m-d H:i:s' );
 				$account_memreas_float->exchangeArray ( array (
-						'balance' => $ending_balance,
+						'balance' => $endingAccountBalance,
 						'update_time' => $now 
 				) );
 				$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
-				
+				Mlog::addone($cm, __LINE__);
 				
 				/**
 				 * -
 				 * Deduct the fees from float
 				 */
 				$stripeBalanceTransactionParams = array (
-						'id' => $chargeResult ['balance_transaction']
+						'id' => $chargeResult ['balance_transaction'] 
 				);
 				
 				/**
@@ -704,33 +747,36 @@ class StripeInstance {
 						'account_id' => $account_id,
 						'transaction_type' => 'add_value_to_account_memreas_float_account_fees',
 						'transaction_request' => json_encode ( $stripeBalanceTransactionParams ),
-						'transaction_sent' => $now
+						'transaction_sent' => $now 
 				) );
 				$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+				Mlog::addone($cm, __LINE__);
 				
 				/**
 				 * -
 				 * Make call to Stripe
 				 */
 				$balance_transaction = $this->stripeCard->getBalanceTransaction ( $stripeBalanceTransactionParams );
-				Mlog::addone($cm.'addValueToAccount()->$balance_transaction::',$balance_transaction);
-				$fees = $balance_transaction['fee'] / 100; // stripe stores in cents
+				Mlog::addone ( $cm . 'addValueToAccount()->$balance_transaction::', $balance_transaction );
+				$fees = $balance_transaction ['fee'] / 100; // stripe stores in cents
 				
 				/**
 				 * -
 				 * Store balance transaction fee response from stripe
 				 */
+				
 				$now = date ( 'Y-m-d H:i:s' );
-				$memreas_transaction = new Memreas_Transaction ();
 				$memreas_transaction->exchangeArray ( array (
 						'transaction_id' => $transaction_id,
-						'amount' => $fees,
+						'amount' => "-$fees",
 						'currency' => $currency,
 						'pass_fail' => 1,
-						'transaction_response' => json_encode($balance_transaction),
-						'transaction_receive' => $now
+						'transaction_status' => 'success',
+						'transaction_response' => json_encode ( $balance_transaction ),
+						'transaction_receive' => $now 
 				) );
 				$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+				Mlog::addone($cm, __LINE__);
 				
 				/**
 				 * -
@@ -751,17 +797,19 @@ class StripeInstance {
 						'starting_balance' => $starting_balance,
 						'amount' => "-$fees",
 						'ending_balance' => $ending_balance,
-						'create_time' => $now
+						'create_time' => $now 
 				) );
 				$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
+				Mlog::addone($cm, __LINE__);
 				
 				// Update the account table
 				$now = date ( 'Y-m-d H:i:s' );
 				$account_memreas_float->exchangeArray ( array (
 						'balance' => $ending_balance,
-						'update_time' => $now
+						'update_time' => $now 
 				) );
 				$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
+				Mlog::addone($cm, __LINE__);
 				
 				/**
 				 * -
@@ -911,10 +959,11 @@ class StripeInstance {
 			$memreas_transaction = new Memreas_Transaction ();
 			$memreas_transaction->exchangeArray ( array (
 					'account_id' => $accountId,
-					'transaction_type' => 'buy_media_spending',
+					'transaction_type' => 'buy_media_purchase',
 					'pass_fail' => 1,
 					'amount' => "-$amount",
 					'currency' => 'USD',
+					'transaction_status' => 'success',
 					'transaction_request' => "N/a",
 					'transaction_sent' => $now,
 					'transaction_response' => "N/a",
@@ -932,7 +981,7 @@ class StripeInstance {
 			$endingAccountBalance->exchangeArray ( array (
 					'account_id' => $accountId,
 					'transaction_id' => $transaction_id,
-					'transaction_type' => "decrement_value_from_account",
+					'transaction_type' => "buy_media_purchase",
 					'starting_balance' => $startingBalance,
 					'amount' => "-$amount",
 					'ending_balance' => $endingBalance,
@@ -956,7 +1005,7 @@ class StripeInstance {
 					'event_id' => $event_id,
 					'amount' => $amount,
 					'transaction_id' => $transaction_id,
-					'transaction_type' => 'buy_media_complete',
+					'transaction_type' => 'buy_media_purchase',
 					'create_time' => $now,
 					'start_date' => $duration_from,
 					'end_date' => $duration_to 
@@ -986,13 +1035,14 @@ class StripeInstance {
 			$memreas_transaction = new Memreas_Transaction ();
 			$memreas_transaction->exchangeArray ( array (
 					'account_id' => $accountId,
-					'transaction_type' => 'sell_media_received',
+					'transaction_type' => 'buy_media_purchase',
 					'pass_fail' => 1,
 					'amount' => "+$seller_amount",
 					'currency' => 'USD',
 					'transaction_request' => json_encode ( array (
 							"transaction_id" => $account_purchase_transaction_id 
 					) ),
+					'transaction_status' => 'success',
 					'transaction_sent' => $now,
 					'transaction_response' => json_encode ( array (
 							"transaction_id" => $account_purchase_transaction_id 
@@ -1011,7 +1061,7 @@ class StripeInstance {
 			$endingAccountBalance->exchangeArray ( array (
 					'account_id' => $accountId,
 					'transaction_id' => $transaction_id,
-					'transaction_type' => "increase_value_from_account",
+					'transaction_type' => "buy_media_purchase",
 					'starting_balance' => $startingBalance,
 					'amount' => "+$seller_amount",
 					'ending_balance' => $endingBalance,
@@ -1058,10 +1108,11 @@ class StripeInstance {
 			
 			$memreas_transaction->exchangeArray ( array (
 					'account_id' => $memreas_master_account_id,
-					'transaction_type' => 'increment_value_to_account',
+					'transaction_type' => 'buy_media_purchase_memreas_master',
 					'pass_fail' => 1,
 					'amount' => "+$memreas_master_amount",
 					'currency' => 'USD',
+					'transaction_status' => 'success',
 					'transaction_request' => json_encode ( array (
 							"transaction_id" => $account_purchase_transaction_id 
 					) ),
@@ -1084,7 +1135,7 @@ class StripeInstance {
 			$endingAccountBalance->exchangeArray ( array (
 					'account_id' => $memreas_master_account_id,
 					'transaction_id' => $transaction_id,
-					'transaction_type' => "increment_value_to_account",
+					'transaction_type' => "buy_media_purchase_memreas_master",
 					'starting_balance' => $starting_balance,
 					'amount' => "+$memreas_master_amount",
 					'ending_balance' => $ending_balance,
@@ -1133,10 +1184,11 @@ class StripeInstance {
 			
 			$memreas_transaction->exchangeArray ( array (
 					'account_id' => $memreas_float_account_id,
-					'transaction_type' => 'decrement_value_to_account',
+					'transaction_type' => 'buy_media_purchase_memreas_float',
 					'pass_fail' => 1,
 					'amount' => "-$amount",
 					'currency' => 'USD',
+					'transaction_status' => "success",
 					'transaction_request' => json_encode ( array (
 							"transaction_id" => $account_purchase_transaction_id 
 					) ),
@@ -1159,7 +1211,7 @@ class StripeInstance {
 			$endingAccountBalance->exchangeArray ( array (
 					'account_id' => $memreas_float_account_id,
 					'transaction_id' => $transaction_id,
-					'transaction_type' => "decrement_value_to_account",
+					'transaction_type' => "buy_media_purchase_memreas_float",
 					'starting_balance' => $starting_balance,
 					'amount' => "-$amount",
 					'ending_balance' => $ending_balance,
@@ -1246,8 +1298,8 @@ class StripeInstance {
 		
 		if (strpos ( $Transaction->transaction_status, 'activated' ))
 			return array (
-					'status' => 'Failure',
-					'message' => 'Expired transaction' 
+					'status' => 'activated',
+					'message' => 'These credits were applied in a prior activation.' 
 			);
 		
 		$now = date ( 'Y-m-d H:i:s' );
