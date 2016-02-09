@@ -330,16 +330,14 @@ class StripeController extends AbstractActionController {
 			die ();
 		}
 	}
-	public function testAction() {
+	public function payeePayoutAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-			$result = $MemreasStripe->MakePayout ( array (
-					'account_id' => 'fda56136-c589-43f5-bad3-28ff45d4631a',
-					'amount' => 1,
-					'description' => 'explain something' 
-			) );
-			$this->flushResponse ( '<pre>' . print_r ( $result ) );
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			$this->flushResponse ( json_encode ( $MemreasStripe->MakePayout ( $message_data) ) );
 			die ();
 		}
 	}
