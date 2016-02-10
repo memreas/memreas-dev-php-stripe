@@ -93,6 +93,21 @@ class StripeController extends AbstractActionController {
 			return $view;
 		}
 	}
+
+	
+	
+	/*
+	 * List stripe plan
+	 */
+	public function webHookReceiverAction() {
+		/**
+		 * -
+		 * Session is not required for webhooks
+		 */
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
+		$MemreasStripe->webHookReceiver ();
+		die ();
+	}
 	
 	/*
 	 * List stripe plan

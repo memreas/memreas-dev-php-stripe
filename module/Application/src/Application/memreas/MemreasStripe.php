@@ -102,6 +102,28 @@ class StripeInstance {
 	}
 	
 	/*
+	 * List stripe plan
+	 */
+	public function webHookReceiver() {
+		$cm = __CLASS__ . __METHOD__;
+		/**
+		 * -
+		 * Session is not required for webhooks
+		 */
+		Mlog::addone ( $cm.__LINE__, 'enter webHookReceiver()' );
+		// Retrieve the request's body and parse it as JSON
+		$input = @file_get_contents ( "php://input" );
+		$event_json = json_decode ( $input );
+		Mlog::addone ( $cm.__LINE__.'::$event_json::', $event_json );
+		
+		// Do something with $event_json
+		
+		http_response_code ( 200 ); // PHP 5.4 or greater
+		Mlog::addone ( $cm.__LINE__, 'exit webHookReceiver()' );
+		die ();
+	}
+	
+	/*
 	 * -
 	 * get stripe customer data from stripe
 	 */
@@ -2230,6 +2252,12 @@ class StripeCustomer {
 	public function setSubscription($data) {
 		try {
 			$result = $this->stripeClient->createSubscription ( $data );
+			
+			/**
+			 * -
+			 * need to store to subscriptions table here...
+			 */
+			
 			return array (
 					'status' => 'Success',
 					'result' => $result 
