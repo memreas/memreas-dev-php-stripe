@@ -264,7 +264,10 @@ class StripeInstance {
 	 * Retrieve Stripe plans
 	 */
 	public function listPlans() {
-		return $this->stripePlan->getAllPlans ();
+		return array (
+				'status' => 'Success',
+				'plans' => $this->stripePlan->getAllPlans()
+		);
 	}
 	public function getTotalPlanUser($planId) {
 		$countUserPlan = $this->memreasStripeTables->getSubscriptionTable ()->countUser ( $planId );

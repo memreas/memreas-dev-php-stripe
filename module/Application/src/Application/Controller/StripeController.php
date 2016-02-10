@@ -97,7 +97,7 @@ class StripeController extends AbstractActionController {
 	
 	
 	/*
-	 * List stripe plan
+	 * Stripe webhook receiver
 	 */
 	public function webHookReceiverAction() {
 		/**
