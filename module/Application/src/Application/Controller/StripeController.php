@@ -105,6 +105,7 @@ class StripeController extends AbstractActionController {
 		 * Session is not required for webhooks
 		 */
 		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
+		$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 		$MemreasStripe->webHookReceiver ();
 		die ();
 	}
@@ -294,9 +295,6 @@ class StripeController extends AbstractActionController {
 		}
 	}
 	public function activeCreditAction() {
-		/**
-		 * TODO: needs debugging...
-		 */
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if (isset ( $_REQUEST ['token'] )) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );

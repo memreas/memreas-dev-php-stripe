@@ -247,7 +247,7 @@ class StripeInstance {
 		if (empty ( $account ))
 			return array (
 					'status' => 'Failure',
-					'message' => 'You have no any payment method at this time. please try to add card first' 
+					'message' => 'Please add a payment method for your account' 
 			);
 		
 		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
@@ -1567,20 +1567,22 @@ class StripeInstance {
 			);
 		
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $userid );
-		if (! $account)
+		if (! $account) {
 			return array (
 					'status' => 'Failure',
 					'message' => 'You have no any payment method at this time. please try to add card first' 
 			);
+		}
 		
 		$account_id = $account->account_id;
 		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account_id );
 		
-		if (! $accountDetail)
+		if (! $accountDetail) {
 			return array (
 					'status' => 'Failure',
 					'message' => 'Please update account detail first' 
 			);
+		}
 		
 		$stripeCustomerId = $accountDetail->stripe_customer_id;
 		
