@@ -10,6 +10,8 @@ namespace Application\Model;
 use Zend\Db\Sql\Select;
 use Zend\Db\TableGateway\TableGateway;
 use Application\memreas\MUUID;
+use Application\memreas\Mlog;
+use Zend\Db\Adapter\Platform\PlatformInterface;
 
 class AccountTable {
 	protected $tableGateway;
@@ -24,16 +26,21 @@ class AccountTable {
 		return $resultSet;
 	}
 	public function listMassPayee($username, $page, $limit) {
+		$cm = __CLASS__ . __METHOD__;
+		Mlog::addone ( $cm, '::enter listMassPayee' );
 		$this->username = $username;
 		$this->limit = $limit;
 		$this->offset = ($page - 1) * $limit;
 		$rowset = $this->tableGateway->select ( function (Select $select) {
+			Mlog::addone ( $cm, 'Inside select for listMassPayee' );
 			$conditions = "account_type = 'seller' AND balance > 0";
-			if (!empty($this->username)) {
+			if (! empty ( $this->username )) {
 				$conditions .= " AND username = '" . $this->username . "'";
 			}
 			$select->where ( $conditions )->limit ( $this->limit )->offset ( $this->offset );
+			Mlog::addone ( '$select->getSqlString($this->tableGateway->adapter->platform)-->', $select->getSqlString ( $this->tableGateway->adapter->platform ) );
 		} );
+		
 		if (! $rowset) {
 			return null;
 		}

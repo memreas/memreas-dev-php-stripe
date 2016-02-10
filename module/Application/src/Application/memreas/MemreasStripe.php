@@ -7,14 +7,10 @@
  */
 namespace Application\memreas;
 
-/*
- * Pre-include App Model
- * *
- */
 use Application\Entity\User;
 use Application\memreas\AWSStripeManagerSender;
-use Application\memreas\StripePlansConfig;
 use Application\memreas\Mlog;
+use Application\memreas\StripePlansConfig;
 use Application\Model\Account;
 use Application\Model\AccountBalances;
 use Application\Model\AccountDetail;
@@ -26,10 +22,6 @@ use Application\Model\Transaction as Memreas_Transaction;
 use Aws\Ses\Exception\SesException;
 use Guzzle\Http\Client;
 use Zend\View\Model\ViewModel;
-
-/*
- * Include core Module - Libraries
- */
 use Guzzle\Service\Exception\ValidationException;
 use ZfrStripe;
 use ZfrStripe\Client\StripeClient;
@@ -59,7 +51,7 @@ class MemreasStripe extends StripeInstance {
 			
 			// Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
 			
-			/*
+			/**
 			 * -
 			 * Retrieve memreas user_id from session
 			 */
@@ -70,10 +62,10 @@ class MemreasStripe extends StripeInstance {
 		}
 	}
 	
-	/*
+	/**
 	 * -
 	 * Retreive Stripe account configuration SECRET and PUBLIC key
-	 * Refer file : Application/Config/Autoload/Local.php
+	 * ** Refer file : Application/Config/Autoload/Local.php ** temp moved to constants
 	 */
 	private function retreiveStripeKey() {
 		$this->clientSecret = MemreasConstants::SECRET_KEY;
@@ -81,7 +73,7 @@ class MemreasStripe extends StripeInstance {
 	}
 }
 
-/*
+/**
  * -
  * Stripe Class
  */
@@ -718,7 +710,7 @@ class StripeInstance {
 						'create_time' => $now 
 				) );
 				$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $memreasFloatAccountBalance );
-				Mlog::addone($cm, __LINE__);
+				Mlog::addone ( $cm, __LINE__ );
 				
 				// Update the account table
 				$now = date ( 'Y-m-d H:i:s' );
@@ -727,7 +719,7 @@ class StripeInstance {
 						'update_time' => $now 
 				) );
 				$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
-				Mlog::addone($cm, __LINE__);
+				Mlog::addone ( $cm, __LINE__ );
 				
 				/**
 				 * -
@@ -750,7 +742,7 @@ class StripeInstance {
 						'transaction_sent' => $now 
 				) );
 				$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-				Mlog::addone($cm, __LINE__);
+				Mlog::addone ( $cm, __LINE__ );
 				
 				/**
 				 * -
@@ -776,7 +768,7 @@ class StripeInstance {
 						'transaction_receive' => $now 
 				) );
 				$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-				Mlog::addone($cm, __LINE__);
+				Mlog::addone ( $cm, __LINE__ );
 				
 				/**
 				 * -
@@ -800,7 +792,7 @@ class StripeInstance {
 						'create_time' => $now 
 				) );
 				$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
-				Mlog::addone($cm, __LINE__);
+				Mlog::addone ( $cm, __LINE__ );
 				
 				// Update the account table
 				$now = date ( 'Y-m-d H:i:s' );
@@ -809,7 +801,7 @@ class StripeInstance {
 						'update_time' => $now 
 				) );
 				$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
-				Mlog::addone($cm, __LINE__);
+				Mlog::addone ( $cm, __LINE__ );
 				
 				/**
 				 * -
@@ -1780,8 +1772,11 @@ class StripeInstance {
 		$this->stripeCustomer->cancelSubscription ( $subscriptionId, $customerId );
 	}
 	public function listMassPayee($username = '', $page = 1, $limit = 1000) {
+		$cm = __CLASS__ . __METHOD__;
+		Mlog::addone ( $cm, __LINE__ );
 		$massPayees = $this->memreasStripeTables->getAccountTable ()->listMassPayee ( $username, $page, $limit );
 		$countRow = count ( $massPayees );
+		Mlog::addone ( $cm, $massPayees );
 		
 		if (! $countRow) {
 			return array (

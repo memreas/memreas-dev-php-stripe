@@ -259,9 +259,11 @@ class StripeController extends AbstractActionController {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$message_data-->', $message_data );
 			
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-			$this->flushResponse ( json_encode ( $MemreasStripe->listMassPayee ( 1, 10 ) ) );
+			Mlog::addone ( __CLASS__ . __METHOD__, 'About to enter listMassPayee...' );
+			$this->flushResponse ( json_encode ( $MemreasStripe->listMassPayee () ) );
 			die ();
 		}
 	}
@@ -289,7 +291,7 @@ class StripeController extends AbstractActionController {
 			if ($activeBalance ['status'] == 'Success') {
 				$this->flushResponse ( '<script type="text/javascript">document.location.href="' . MemreasConstants::MEMREAS_FE . '/?credits_activated=1";</script>' );
 			} else if ($activeBalance ['status'] == 'activated') {
-				$this->flushResponse ( '<h3 style="text-align: center">'.$activeBalance ['message'].'</h3><script type="text/javascript">document.location.href="' . MemreasConstants::MEMREAS_FE . '/?credits_already_activated=1";</script>');
+				$this->flushResponse ( '<h3 style="text-align: center">' . $activeBalance ['message'] . '</h3><script type="text/javascript">document.location.href="' . MemreasConstants::MEMREAS_FE . '/?credits_already_activated=1";</script>' );
 			} else if ($activeBalance ['status'] == 'Failure') {
 				$this->flushResponse ( '<h3 style="text-align: center">An error has occurred for token:: ' . $token . ' Please email ' . MemreasConstants::ADMIN_EMAIL . ' with your token information.</h3>' );
 			}
@@ -337,7 +339,7 @@ class StripeController extends AbstractActionController {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-			$this->flushResponse ( json_encode ( $MemreasStripe->MakePayout ( $message_data) ) );
+			$this->flushResponse ( json_encode ( $MemreasStripe->MakePayout ( $message_data ) ) );
 			die ();
 		}
 	}
