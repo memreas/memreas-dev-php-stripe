@@ -110,16 +110,19 @@ class StripeInstance {
 		 * -
 		 * Session is not required for webhooks
 		 */
-		Mlog::addone ( $cm.__LINE__, 'enter webHookReceiver()' );
+		\Stripe\Stripe::setApiKey(MemreasConstants::SECRET_KEY);
+		
+		Mlog::addone ( $cm . __LINE__, 'enter webHookReceiver()' );
 		// Retrieve the request's body and parse it as JSON
 		$input = @file_get_contents ( "php://input" );
+		Mlog::addone ( $cm . __LINE__, 'webHookReceiver() received php://input' );
 		$event_json = json_decode ( $input );
-		Mlog::addone ( $cm.__LINE__.'::$event_json::', $event_json );
+		Mlog::addone ( $cm . __LINE__ . '::$event_json::', $event_json );
 		
 		// Do something with $event_json
 		
 		http_response_code ( 200 ); // PHP 5.4 or greater
-		Mlog::addone ( $cm.__LINE__, 'exit webHookReceiver()' );
+		Mlog::addone ( $cm . __LINE__, 'exit webHookReceiver()' );
 		die ();
 	}
 	
@@ -266,7 +269,7 @@ class StripeInstance {
 	public function listPlans() {
 		return array (
 				'status' => 'Success',
-				'plans' => $this->stripePlan->getAllPlans()
+				'plans' => $this->stripePlan->getAllPlans () 
 		);
 	}
 	public function getTotalPlanUser($planId) {
@@ -1549,22 +1552,30 @@ class StripeInstance {
 		return $result;
 	}
 	public function setSubscription($data) {
-		if (isset ( $data ['userid'] ))
+		$cm = __CLASS__ . __METHOD__;
+		if (isset ( $data ['userid'] )) {
 			$userid = $data ['userid'];
-		else
+		} else {
 			$userid = $_SESSION ['user_id'];
+		}
+		Mlog::addone ( $cm, __LINE__ );
 		
-		if (isset ( $data ['card_id'] ))
+		if (isset ( $data ['card_id'] )) {
 			$card = $data ['card_id'];
-		else
+		} else {
 			$card = null;
-		
+		}
+		Mlog::addone ( $cm, __LINE__ );
 		$checkExistStripePlan = $this->stripePlan->getPlan ( $data ['plan'] );
-		if (empty ( $checkExistStripePlan ['plan'] ))
+		if (empty ( $checkExistStripePlan ['plan'] )) {
 			return array (
 					'status' => 'Failure',
 					'message' => 'Subscription plan was not found' 
 			);
+		}
+		Mlog::addone ( $cm, __LINE__ );
+		Mlog::addone ( $cm . ':: $checkExistStripePlan -->', $checkExistStripePlan );
+		$data ['amount'] = $checkExistStripePlan ['plan'] ['amount'] / 100; // stripe stores in cents
 		
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $userid );
 		if (! $account) {
@@ -1573,9 +1584,11 @@ class StripeInstance {
 					'message' => 'You have no any payment method at this time. please try to add card first' 
 			);
 		}
+		Mlog::addone ( $cm, __LINE__ );
 		
 		$account_id = $account->account_id;
 		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account_id );
+		Mlog::addone ( $cm, __LINE__ );
 		
 		if (! $accountDetail) {
 			return array (
@@ -1583,22 +1596,22 @@ class StripeInstance {
 					'message' => 'Please update account detail first' 
 			);
 		}
+		Mlog::addone ( $cm, __LINE__ );
 		
 		$stripeCustomerId = $accountDetail->stripe_customer_id;
 		
 		// Create a charge for this subscription
 		$paymentMethod = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodByStripeReferenceId ( $card );
-		
 		if (empty ( $paymentMethod )) {
 			return array (
 					'status' => 'Failure',
-					'message' => 'This card not relate to your account' 
+					'message' => 'Invalid card' 
 			);
 		}
+		Mlog::addone ( $cm, __LINE__ );
 		
 		// Check if user has activated subscription or not
 		$stripeCustomerInfo = $this->stripeCustomer->getCustomer ( $stripeCustomerId );
-		
 		$upgrade = true;
 		if ($stripeCustomerInfo ['info'] ['subscriptions'] ['total_count'] > 0) {
 			$subscriptions = $stripeCustomerInfo ['info'] ['subscriptions'] ['data'];
@@ -1608,8 +1621,9 @@ class StripeInstance {
 				if ($subscription ['plan'] ['id'] == $data ['plan']) {
 					return array (
 							'status' => 'Failure',
-							'message' => 'You have activated this plan before.' 
+							'message' => 'This plan is active currently.' 
 					);
+					Mlog::addone ( $cm, __LINE__ );
 				}
 			}
 			
@@ -1619,23 +1633,26 @@ class StripeInstance {
 			// Checking for upgrade plan
 			if ($planLevel > $customerPlanLevel) {
 				$result = $this->stripeCustomer->cancelSubscription ( $subscriptions [0] ['id'], $stripeCustomerId );
-				if ($result ['status'] == 'Failure')
+				if ($result ['status'] == 'Failure') {
+					Mlog::addone ( $cm, __LINE__ );
 					return $result;
+				}
 			} else {
 				
+				Mlog::addone ( $cm, __LINE__ );
 				// Downgrade plan
 				$planDetail = $this->stripePlan->getPlanConfig ( $data ['plan'] );
 				
 				// Get user used detail
 				$guzzle = new Client ();
 				$xml = "<xml><getdiskusage><user_id>{$userid}</user_id></getdiskusage></xml>";
+				Mlog::addone ( $cm, __LINE__ );
 				$request = $guzzle->post ( MemreasConstants::MEMREAS_WS, null, array (
 						'action' => 'getdiskusage',
-						// 'cache_me' => true,
 						'xml' => $xml,
-						'sid' => '',
-						'user_id' => '' 
+						'sid' => $_SESSION['sid']
 				) );
+				Mlog::addone ( $cm, __LINE__ );
 				
 				$response = $request->send ();
 				$data_usage = $response->getBody ( true );
@@ -1647,7 +1664,9 @@ class StripeInstance {
 				$plan = json_decode ( $data_usage );
 				$plan = $plan->getdiskusageresponse;
 				$dataUsage = str_replace ( " GB", "", $plan->total_used );
+				Mlog::addone ( $cm, __LINE__ );
 				if ($dataUsage > $planDetail ['storage']) {
+					Mlog::addone ( $cm, __LINE__ );
 					return array (
 							'status' => 'Failure',
 							'message' => 'In order to downgrade your plan you must be within the required usage limits. Please remove media as needed before downgrading your plan' 
@@ -1655,15 +1674,19 @@ class StripeInstance {
 				} else {
 					// Cancel current plan
 					$result = $this->stripeCustomer->cancelSubscription ( $subscriptions [0] ['id'], $stripeCustomerId );
-					if ($result ['status'] == 'Failure')
+					Mlog::addone ( $cm, __LINE__ );
+					if ($result ['status'] == 'Failure') {
 						return $result;
+					}
 					$upgrade = false;
 				}
 			}
 		}
 		
 		// Charge only if user upgrade or register as a new
+		Mlog::addone ( $cm, __LINE__ );
 		if ($upgrade) {
+			Mlog::addone ( $cm, __LINE__ );
 			// Begin going to charge on Stripe
 			$cardId = $paymentMethod->stripe_card_reference_id;
 			$customerId = $accountDetail->stripe_customer_id;
@@ -1677,62 +1700,75 @@ class StripeInstance {
 					'description' => 'Charge for subscription : ' . $data ['plan'] 
 			); // Set description more details later
 			
-			if ($transactionAmount > 0)
+			if ($transactionAmount > 0) {
 				$chargeResult = $this->stripeCard->createCharge ( $stripeChargeParams );
-			else
+			} else {
 				$chargeResult = false;
-		} else
+			}
+		} else {
 			$chargeResult = true;
+		}
 		
+		Mlog::addone ( $cm, __LINE__ );
 		if ($chargeResult) {
 			// Check if Charge is successful or not
-			if (! $chargeResult ['paid'] && $upgrade)
+			if (! $chargeResult ['paid'] && $upgrade) {
 				return array (
 						'status' => 'Failure',
 						'message' => 'Transaction declined! Please check your Stripe account and cards' 
 				);
+			}
 		}
 		
+		Mlog::addone ( $cm, __LINE__ );
 		// Set stripe subscription
 		$subscriptionParams = array (
 				'plan' => $data ['plan'],
 				'customer' => $stripeCustomerId 
 		);
 		
+		Mlog::addone ( $cm, __LINE__ );
 		// Set customer card for charging
-		if (! empty ( $card ))
+		if (! empty ( $card )) {
 			$this->stripeCustomer->setCustomerCardDefault ( $stripeCustomerId, $card );
+		}
 		$createSubscribe = $this->stripeCustomer->setSubscription ( $subscriptionParams );
 		
-		if ($createSubscribe ['status'] == 'Failure')
+		if ($createSubscribe ['status'] == 'Failure') {
 			return $createSubscribe;
+		}
 		
 		$createSubscribe = $createSubscribe ['result'];
 		
 		if (isset ( $createSubscribe ['id'] )) {
+			Mlog::addone ( $cm, __LINE__ );
 			$plan = $this->stripePlan->getPlan ( $data ['plan'] );
 			$viewModel = new ViewModel ( array (
 					'username' => $accountDetail->first_name . ' ' . $accountDetail->last_name,
 					'plan_name' => $plan ['plan'] ['name'] 
 			) );
+			Mlog::addone ( $cm, __LINE__ );
 			$viewModel->setTemplate ( 'email/subscription' );
 			$viewRender = $this->service_locator->get ( 'ViewRenderer' );
 			
 			$html = $viewRender->render ( $viewModel );
 			$subject = 'Your subscription plan has been activated';
 			
-			if (! isset ( $this->aws ) || empty ( $this->aws ))
+			if (! isset ( $this->aws ) || empty ( $this->aws )) {
 				$this->aws = new AWSManagerSender ( $this->service_locator );
+			}
 			try {
+				Mlog::addone ( $cm, __LINE__ );
 				$user = $this->memreasStripeTables->getUserTable ()->getUser ( $userid );
 				$this->aws->sendSeSMail ( array (
 						$user->email_address 
 				), $subject, $html );
 			} catch ( SesException $e ) {
+				Mlog::addone ( $cm . __LINE__, $e->getMessage () );
 			}
 			
+			Mlog::addone ( $cm, __LINE__ );
 			$now = date ( 'Y-m-d H:i:s' );
-			
 			// Save transaction table
 			$transaction = new Memreas_Transaction ();
 			
@@ -1745,6 +1781,7 @@ class StripeInstance {
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 			
+			Mlog::addone ( $cm, __LINE__ );
 			$transaction->exchangeArray ( array (
 					'transaction_id' => $transaction_id,
 					'pass_fail' => 1,
@@ -1753,6 +1790,7 @@ class StripeInstance {
 			) );
 			$this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 			
+			Mlog::addone ( $cm, __LINE__ );
 			// Save subscription table
 			$memreasSubscription = new Subscription ();
 			$memreasSubscription->exchangeArray ( array (
@@ -1772,6 +1810,7 @@ class StripeInstance {
 			) );
 			$this->memreasStripeTables->getSubscriptionTable ()->saveSubscription ( $memreasSubscription );
 			
+			Mlog::addone ( $cm, __LINE__ );
 			// Update user plan table
 			$user = $this->memreasStripeTables->getUserTable ()->getUser ( $userid );
 			$metadata = json_decode ( $user->metadata, true );
@@ -1789,11 +1828,13 @@ class StripeInstance {
 			return array (
 					'status' => 'Success' 
 			);
-		} else
+		} else {
+			Mlog::addone ( $cm, __LINE__ );
 			return array (
 					'status' => 'Failure',
 					'message' => 'Subscription registering failed.' 
 			);
+		}
 	}
 	public function cancelSubscription($subscriptionId, $customerId) {
 		$this->stripeCustomer->cancelSubscription ( $subscriptionId, $customerId );

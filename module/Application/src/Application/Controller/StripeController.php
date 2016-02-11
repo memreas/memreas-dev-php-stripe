@@ -106,6 +106,7 @@ class StripeController extends AbstractActionController {
 		 */
 		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
 		$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'initialized' );
 		$MemreasStripe->webHookReceiver ();
 		die ();
 	}
