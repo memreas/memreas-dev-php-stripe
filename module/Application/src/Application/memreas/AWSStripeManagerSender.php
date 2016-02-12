@@ -14,20 +14,15 @@ class AWSStripeManagerSender {
 	private $ses = null;
 	public function __construct() {
 		try {
-		// Fetch aws handle
-			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-		$this->aws = MemreasConstants::fetchAWS ();
-		
-		// Fetch the Ses class
-			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-		$this->ses = $this->aws->createSes ();
-		Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-		} catch (Exception $e) {
-			Mlog::addone ( __CLASS__ . __METHOD__ .'::$e->getMessage()--->', $e->getMessage() );
+			// Fetch aws handle
+			$this->aws = MemreasConstants::fetchAWS ();
+			
+			// Fetch the Ses class
+			$this->ses = $this->aws->createSes ();
+		} catch ( Exception $e ) {
+			Mlog::addone ( __CLASS__ . __METHOD__ . '::$e->getMessage()--->', $e->getMessage () );
 		}
-		
 	}
-
 	public function sendSeSMail($to_array, $subject, $text_or_html) {
 		$from = MemreasConstants::ADMIN_EMAIL;
 		$client = $this->ses;
