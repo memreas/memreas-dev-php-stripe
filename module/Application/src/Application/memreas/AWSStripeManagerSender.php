@@ -14,10 +14,13 @@ class AWSStripeManagerSender {
 	private $ses = null;
 	public function __construct() {
 		// Fetch aws handle
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 		$this->aws = MemreasConstants::fetchAWS ();
 		
 		// Fetch the Ses class
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 		$this->ses = $this->aws->createSes ();
+		Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 		
 	}
 
