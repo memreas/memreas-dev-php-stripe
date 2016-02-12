@@ -55,7 +55,9 @@ class MemreasStripe extends StripeInstance {
 			 * -
 			 * Retrieve memreas user_id from session
 			 */
-			$this->user_id = $_SESSION ['user_id'];
+			if (isset ( $_SESSION ['user_id'] )) {
+				$this->user_id = $_SESSION ['user_id'];
+			}
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$e->getMessage()', $e->getMessage () );
 			throw new \Exception ( $e->getMessage () );
@@ -111,7 +113,7 @@ class StripeInstance {
 		 * Session is not required for webhooks
 		 */
 		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
-		\Stripe\Stripe::setApiKey(MemreasConstants::SECRET_KEY);
+		\Stripe\Stripe::setApiKey ( MemreasConstants::SECRET_KEY );
 		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, '\Stripe\Stripe::setApiKey(MemreasConstants::SECRET_KEY) initialized' );
 		
 		Mlog::addone ( $cm . __LINE__, 'enter webHookReceiver()' );
@@ -547,7 +549,7 @@ class StripeInstance {
 		} else {
 			$userid = $_SESSION ['user_id'];
 		}
-		Mlog::addone($cm,__LINE__);
+		Mlog::addone ( $cm, __LINE__ );
 		
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $userid );
 		$currency = 'USD';
@@ -557,7 +559,7 @@ class StripeInstance {
 					'message' => 'You have no account at this time. Please add card first.' 
 			);
 		}
-		Mlog::addone($cm,__LINE__);
+		Mlog::addone ( $cm, __LINE__ );
 		
 		// Mlog::addone ( 'addValueToAccount($data) - $account -->', $account );
 		
@@ -569,11 +571,11 @@ class StripeInstance {
 					'message' => 'There is no data with your account.' 
 			);
 		}
-		Mlog::addone($cm,__LINE__);
+		Mlog::addone ( $cm, __LINE__ );
 		
 		// Mlog::addone ( 'addValueToAccount($data) - $accountDetail -->', $accountDetail );
 		
-		Mlog::addone($cm.__LINE__.'::$data [stripe_card_reference_id]---->',$data [stripe_card_reference_id]);
+		Mlog::addone ( $cm . __LINE__ . '::$data [stripe_card_reference_id]---->', $data [stripe_card_reference_id] );
 		$paymentMethod = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodByStripeReferenceId ( $data ['stripe_card_reference_id'] );
 		
 		if (empty ( $paymentMethod )) {
@@ -582,7 +584,7 @@ class StripeInstance {
 					'message' => 'This card not relate to your account' 
 			);
 		}
-		Mlog::addone($cm,__LINE__);
+		Mlog::addone ( $cm, __LINE__ );
 		
 		// Mlog::addone ( 'addValueToAccount($data) - $paymentMethod -->', $paymentMethod );
 		
@@ -1656,7 +1658,7 @@ class StripeInstance {
 				$request = $guzzle->post ( MemreasConstants::MEMREAS_WS, null, array (
 						'action' => 'getdiskusage',
 						'xml' => $xml,
-						'sid' => $_SESSION['sid']
+						'sid' => $_SESSION ['sid'] 
 				) );
 				Mlog::addone ( $cm, __LINE__ );
 				

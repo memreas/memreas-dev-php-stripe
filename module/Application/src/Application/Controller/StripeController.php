@@ -64,9 +64,6 @@ class StripeController extends AbstractActionController {
 				$this->sessHandler->startSessionWithMemreasCookie ( $memreascookie );
 				$hasSession = true;
 				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
-			} else if (! empty ( $_REQUEST ['id'] )) {
-				$this->sessHandler->startSessionWithUID ( $_REQUEST ['id'] );
-				$hasSession = true;
 			}
 		} catch ( \Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session lookup error->', $e->getMessage () );
@@ -106,15 +103,18 @@ class StripeController extends AbstractActionController {
 		 * Session is not required for webhooks
 		 */
 		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
-		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__.'::$_SERVER', $_SERVER );
-		//$url = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
-		//Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__.'referrer host ---->', $url );
-		if (empty ($this)) {
-			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, '::$this is empty...' );
+		//Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$_SERVER', $_SERVER );
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$_SERVER [HTTP_USER_AGENT]', $_SERVER ['HTTP_USER_AGENT'] );
+		if (stripos ( $_SERVER ['HTTP_USER_AGENT'], 'stripe.com' )) {
+			// $url = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
+			// Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__.'referrer host ---->', $url );
+			if (empty ( $this )) {
+				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, '::$this is empty...' );
+			}
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'initialized' );
+			$MemreasStripe->webHookReceiver ();
 		}
-		$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'initialized' );
-		$MemreasStripe->webHookReceiver ();
 		die ();
 	}
 	
