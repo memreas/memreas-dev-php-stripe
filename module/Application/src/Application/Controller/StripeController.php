@@ -106,6 +106,7 @@ class StripeController extends AbstractActionController {
 		// Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$_SERVER', $_SERVER );
 		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$_SERVER [HTTP_USER_AGENT]', $_SERVER ['HTTP_USER_AGENT'] );
 		if (stripos ( $_SERVER ['HTTP_USER_AGENT'], 'stripe' ) !== false) {
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'inside if...' );
 			// $url = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
 			// Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__.'referrer host ---->', $url );
 			if (! $this) {
