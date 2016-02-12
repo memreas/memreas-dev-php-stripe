@@ -42,13 +42,20 @@ class MemreasStripe extends StripeInstance {
 	public $service_locator;
 	public function __construct($service_locator) {
 		try {
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->service_locator = $service_locator;
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->aws = new AWSStripeManagerSender ();
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->retreiveStripeKey ();
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->stripeClient = new StripeClient ( $this->clientSecret, '2014-06-17' );
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->memreasStripeTables = new MemreasStripeTables ( $service_locator );
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
-			
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+				
 			// Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
 			
 			/**
@@ -58,6 +65,7 @@ class MemreasStripe extends StripeInstance {
 			if (isset ( $_SESSION ['user_id'] )) {
 				$this->user_id = $_SESSION ['user_id'];
 			}
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$e->getMessage()', $e->getMessage () );
 			throw new \Exception ( $e->getMessage () );

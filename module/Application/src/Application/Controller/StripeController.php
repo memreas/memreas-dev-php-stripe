@@ -109,12 +109,7 @@ class StripeController extends AbstractActionController {
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'inside if...' );
 			// $url = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
 			// Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__.'referrer host ---->', $url );
-			if (! $this) {
-				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, '::$this is empty...' );
-			}
-			if (! $this->getServiceLocator ()) {
-				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, '::$this->getServiceLocator () is empty...' );
-			}
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'about to create new MemreasStripe ( $this->getServiceLocator () )' );
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'initialized' );
 			$MemreasStripe->webHookReceiver ();
