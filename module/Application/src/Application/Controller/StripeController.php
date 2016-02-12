@@ -64,6 +64,9 @@ class StripeController extends AbstractActionController {
 				$this->sessHandler->startSessionWithMemreasCookie ( $memreascookie );
 				$hasSession = true;
 				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
+			} else if (! empty ( $_REQUEST ['id'] )) {
+				$this->sessHandler->startSessionWithUID($_REQUEST ['id']);
+				$hasSession = true;
 			}
 		} catch ( \Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session lookup error->', $e->getMessage () );
