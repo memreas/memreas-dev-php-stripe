@@ -101,17 +101,20 @@ class StripeController extends AbstractActionController {
 	 * Stripe webhook receiver
 	 */
 	public function webHookReceiverAction() {
-		if ($this->fetchSession ()) {
-			/**
-			 * -
-			 * Session is not required for webhooks
-			 */
-			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
-			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'initialized' );
-			$MemreasStripe->webHookReceiver ();
-			die ();
+		/**
+		 * -
+		 * Session is not required for webhooks
+		 */
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
+		$parse = parse_url($url);
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__.'$parse[host]---->', $parse['host'] );
+		if (empty ($this)) {
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, '::$this is empty...' );
 		}
+		$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'initialized' );
+		$MemreasStripe->webHookReceiver ();
+		die ();
 	}
 	
 	/*
