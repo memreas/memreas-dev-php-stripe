@@ -65,7 +65,7 @@ class StripeController extends AbstractActionController {
 				$hasSession = true;
 				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
 			} else if (! empty ( $_REQUEST ['id'] )) {
-				$this->sessHandler->startSessionWithUID($_REQUEST ['id']);
+				$this->sessHandler->startSessionWithUID ( $_REQUEST ['id'] );
 				$hasSession = true;
 			}
 		} catch ( \Exception $e ) {
@@ -96,22 +96,22 @@ class StripeController extends AbstractActionController {
 			return $view;
 		}
 	}
-
-	
 	
 	/*
 	 * Stripe webhook receiver
 	 */
 	public function webHookReceiverAction() {
-		/**
-		 * -
-		 * Session is not required for webhooks
-		 */
-		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
-		$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'initialized' );
-		$MemreasStripe->webHookReceiver ();
-		die ();
+		if ($this->fetchSession ()) {
+			/**
+			 * -
+			 * Session is not required for webhooks
+			 */
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'initialized' );
+			$MemreasStripe->webHookReceiver ();
+			die ();
+		}
 	}
 	
 	/*
