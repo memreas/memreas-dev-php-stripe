@@ -103,13 +103,16 @@ class StripeController extends AbstractActionController {
 		 * Session is not required for webhooks
 		 */
 		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
-		//Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$_SERVER', $_SERVER );
+		// Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$_SERVER', $_SERVER );
 		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$_SERVER [HTTP_USER_AGENT]', $_SERVER ['HTTP_USER_AGENT'] );
-		if (stripos ( $_SERVER ['HTTP_USER_AGENT'], 'stripe.com' )) {
+		if (stripos ( $_SERVER ['HTTP_USER_AGENT'], 'stripe' ) !== false) {
 			// $url = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
 			// Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__.'referrer host ---->', $url );
-			if (empty ( $this )) {
+			if (! $this) {
 				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, '::$this is empty...' );
+			}
+			if (! $this->getServiceLocator ()) {
+				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, '::$this->getServiceLocator () is empty...' );
 			}
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'initialized' );
