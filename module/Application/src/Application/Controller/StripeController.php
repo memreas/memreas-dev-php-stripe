@@ -106,8 +106,9 @@ class StripeController extends AbstractActionController {
 		 * Session is not required for webhooks
 		 */
 		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
-		$url = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
-		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__.'referrer host ---->', $url );
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__.'::$_SERVER', $_SERVER );
+		//$url = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
+		//Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__.'referrer host ---->', $url );
 		if (empty ($this)) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, '::$this is empty...' );
 		}
