@@ -110,7 +110,9 @@ class StripeInstance {
 		 * -
 		 * Session is not required for webhooks
 		 */
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
 		\Stripe\Stripe::setApiKey(MemreasConstants::SECRET_KEY);
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, '\Stripe\Stripe::setApiKey(MemreasConstants::SECRET_KEY) initialized' );
 		
 		Mlog::addone ( $cm . __LINE__, 'enter webHookReceiver()' );
 		// Retrieve the request's body and parse it as JSON
@@ -120,7 +122,6 @@ class StripeInstance {
 		Mlog::addone ( $cm . __LINE__ . '::$event_json::', $event_json );
 		
 		// Do something with $event_json
-		
 		http_response_code ( 200 ); // PHP 5.4 or greater
 		Mlog::addone ( $cm . __LINE__, 'exit webHookReceiver()' );
 		die ();
