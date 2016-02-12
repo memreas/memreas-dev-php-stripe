@@ -546,6 +546,7 @@ class StripeInstance {
 		} else {
 			$userid = $_SESSION ['user_id'];
 		}
+		Mlog::addone($cm,__LINE__);
 		
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $userid );
 		$currency = 'USD';
@@ -555,6 +556,7 @@ class StripeInstance {
 					'message' => 'You have no account at this time. Please add card first.' 
 			);
 		}
+		Mlog::addone($cm,__LINE__);
 		
 		// Mlog::addone ( 'addValueToAccount($data) - $account -->', $account );
 		
@@ -566,9 +568,11 @@ class StripeInstance {
 					'message' => 'There is no data with your account.' 
 			);
 		}
+		Mlog::addone($cm,__LINE__);
 		
 		// Mlog::addone ( 'addValueToAccount($data) - $accountDetail -->', $accountDetail );
 		
+		Mlog::addone($cm.__LINE__.'::$data [stripe_card_reference_id]---->',$data [stripe_card_reference_id]);
 		$paymentMethod = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodByStripeReferenceId ( $data ['stripe_card_reference_id'] );
 		
 		if (empty ( $paymentMethod )) {
@@ -577,6 +581,7 @@ class StripeInstance {
 					'message' => 'This card not relate to your account' 
 			);
 		}
+		Mlog::addone($cm,__LINE__);
 		
 		// Mlog::addone ( 'addValueToAccount($data) - $paymentMethod -->', $paymentMethod );
 		
