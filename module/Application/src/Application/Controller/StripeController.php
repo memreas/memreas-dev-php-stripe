@@ -102,35 +102,38 @@ class StripeController extends AbstractActionController {
 		 * -
 		 * Session is not required for webhooks
 		 */
-		
-		\Stripe\Stripe::setApiKey ( MemreasConstants::SECRET_KEY );
-		
-		// Retrieve the request's body and parse it as JSON
-		$input = @file_get_contents ( "php://input" );
-		Mlog::addone ( $cm . __LINE__, 'webHookReceiver() received php://input' );
-		$event_json = json_decode ( $input );
-		Mlog::addone ( $cm . __LINE__ . '::$event_json::', $event_json );
-		
-		// Do something with $event_json
-		http_response_code ( 200 ); // PHP 5.4 or greater
-		Mlog::addone ( $cm . __LINE__, 'exit webHookReceiver()' );
+		$cm = __CLASS__ . __METHOD__;
+		if (stripos ( $_SERVER ['HTTP_USER_AGENT'], 'stripe' ) !== false) {
+			
+			\Stripe\Stripe::setApiKey ( MemreasConstants::SECRET_KEY );
+			
+			// Retrieve the request's body and parse it as JSON
+			$input = @file_get_contents ( "php://input" );
+			Mlog::addone ( $cm . __LINE__, 'webHookReceiver() received php://input' );
+			$event_json = json_decode ( $input );
+			Mlog::addone ( $cm . __LINE__ . '::$event_json::', $event_json );
+			
+			// Do something with $event_json
+			http_response_code ( 200 ); // PHP 5.4 or greater
+			Mlog::addone ( $cm . __LINE__, 'exit webHookReceiver()' );
+		}
 		
 		/*
-		Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-		
-		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
-		// Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$_SERVER', $_SERVER );
-		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$_SERVER [HTTP_USER_AGENT]', $_SERVER ['HTTP_USER_AGENT'] );
-		if (stripos ( $_SERVER ['HTTP_USER_AGENT'], 'stripe' ) !== false) {
-			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'inside if...' );
-			// $url = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
-			// Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__.'referrer host ---->', $url );
-			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'about to create new MemreasStripe ( $this->getServiceLocator () )' );
-			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
-			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'initialized' );
-			$MemreasStripe->webHookReceiver ();
-		}
-		*/
+		 * Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+		 *
+		 * Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
+		 * // Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$_SERVER', $_SERVER );
+		 * Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$_SERVER [HTTP_USER_AGENT]', $_SERVER ['HTTP_USER_AGENT'] );
+		 * if (stripos ( $_SERVER ['HTTP_USER_AGENT'], 'stripe' ) !== false) {
+		 * Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'inside if...' );
+		 * // $url = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
+		 * // Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__.'referrer host ---->', $url );
+		 * Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'about to create new MemreasStripe ( $this->getServiceLocator () )' );
+		 * $MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
+		 * Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'initialized' );
+		 * $MemreasStripe->webHookReceiver ();
+		 * }
+		 */
 		die ();
 	}
 	

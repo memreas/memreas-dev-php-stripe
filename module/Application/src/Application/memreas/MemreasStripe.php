@@ -114,11 +114,8 @@ class StripeInstance {
 		 * -
 		 * Session is not required for webhooks
 		 */
-		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'enter' );
 		\Stripe\Stripe::setApiKey ( MemreasConstants::SECRET_KEY );
-		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, '\Stripe\Stripe::setApiKey(MemreasConstants::SECRET_KEY) initialized' );
 		
-		Mlog::addone ( $cm . __LINE__, 'enter webHookReceiver()' );
 		// Retrieve the request's body and parse it as JSON
 		$input = @file_get_contents ( "php://input" );
 		Mlog::addone ( $cm . __LINE__, 'webHookReceiver() received php://input' );
