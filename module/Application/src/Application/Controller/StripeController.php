@@ -49,7 +49,11 @@ class StripeController extends AbstractActionController {
 		header ( 'Access-Control-Allow-Origin: *' );
 		$this->setupSaveHandler ();
 		try {
-			if (! empty ( $_REQUEST ['sid'] )) {
+			if (! empty ( $_REQUEST ['memreascookie'] )) {
+				$sid = $_REQUEST ['memreascookie'];
+				$this->sessHandler->startSessionWithMemreasCookie($_REQUEST ['memreascookie'] );
+				$hasSession = true;
+			} else if (! empty ( $_REQUEST ['sid'] )) {
 				$sid = $_REQUEST ['sid'];
 				Mlog::addone ( $cm . __LINE__ . '$sid', $sid );
 				$this->sessHandler->startSessionWithSID ( $sid );
