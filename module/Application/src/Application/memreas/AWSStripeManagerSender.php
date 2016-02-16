@@ -18,7 +18,7 @@ class AWSStripeManagerSender {
 			$this->aws = MemreasConstants::fetchAWS ();
 			
 			// Fetch the Ses class
-			$this->ses = $this->aws->createSes ();
+			//$this->ses = $this->aws->createSes ();
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$e->getMessage()--->', $e->getMessage () );
 		}
