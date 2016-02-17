@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 2.5.4 - 2016-02-17
+
+### Added
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- [#44](https://github.com/zendframework/zend-validator/pull/44) corrects the
+  grammar on the `NOT_GREATER_INCLUSIVE` validation error message.
+- [#45](https://github.com/zendframework/zend-validator/pull/45) adds normalized
+  aliases for the i18n isfloat/isint validators.
+- Updates the hostname validator regexes per the canonical service on which they
+  are based.
+- [#52](https://github.com/zendframework/zend-validator/pull/52) updates the
+  `Barcode` validator to cast empty options passed to the constructor to an
+  empty array, fixing type mismatch errors.
+- [#54](https://github.com/zendframework/zend-validator/pull/54) fixes the IP
+  address detection in the `Hostname` validator to ensure that IPv6 is detected
+  correctly.
+- [#56](https://github.com/zendframework/zend-validator/pull/56) updates the
+  regexes used by the `IP` validator when comparing ipv4 addresses to ensure a
+  literal `.` is tested between network segments.
+
 ## 2.5.3 - 2015-09-03
 
 ### Added
