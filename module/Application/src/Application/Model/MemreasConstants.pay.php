@@ -63,6 +63,7 @@ class MemreasConstants {
 		$sharedConfig = [
 				'region' => 'us-east-1',
 				'version' => 'latest',
+				'debug' => 'true',
 				'credentials' => [
 						'key' => self::S3_APPKEY,
 						'secret' => self::S3_APPSEC
