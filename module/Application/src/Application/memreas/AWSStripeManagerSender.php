@@ -19,7 +19,7 @@ class AWSStripeManagerSender {
 			
 			// Fetch the Ses class
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-			$this->ses = $this->aws->createSes ();
+			//$this->ses = $this->aws->createSes ();
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$e->getMessage()--->', $e->getMessage () );
