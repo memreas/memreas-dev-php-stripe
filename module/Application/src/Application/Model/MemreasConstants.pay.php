@@ -57,8 +57,8 @@ class MemreasConstants {
 	const PLAN_GB_STORAGE_AMOUNT_D = 100;
 	const ADMIN_EMAIL = 'admin@memreas.com';
 	
-	const S3_APPKEY = 'AKIAJMXGGG4BNFS42LZA';
-	const S3_APPSEC = 'xQfYNvfT0Ar+Wm/Gc4m6aacPwdT5Ors9YHE/d38H';
+	const S3_APPKEY = 'AKIAIXDH3Q23AP4KPZRA';
+	const S3_APPSEC = 'TM+p8s9hlJwnKECCEKSVVhEOBjVhTWDG4ijIhJdk';
 	public static function fetchAWS() {
 		$sharedConfig = [
 				'region' => 'us-east-1',
