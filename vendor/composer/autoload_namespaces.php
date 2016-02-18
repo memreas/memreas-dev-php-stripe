@@ -9,6 +9,7 @@ return array(
     'phpDocumentor' => array($vendorDir . '/phpdocumentor/reflection-docblock/src'),
     'ZfrStripeModule\\' => array($vendorDir . '/zfr/zfr-stripe-module/src'),
     'ZendXml\\' => array($vendorDir . '/zendframework/zendxml/library'),
+    'Psr\\Log\\' => array($vendorDir . '/psr/log'),
     'Prophecy\\' => array($vendorDir . '/phpspec/prophecy/src'),
     'Guzzle\\Tests' => array($vendorDir . '/guzzle/guzzle/tests'),
     'Guzzle' => array($vendorDir . '/guzzle/guzzle/src'),

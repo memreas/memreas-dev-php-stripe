@@ -8,13 +8,34 @@
 namespace Application\memreas;
 
 use Application\Model\MemreasConstants;
+use Guzzle\Log\MonologLogAdapter;
 use Guzzle\Plugin\Log\LogPlugin;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
 
 class AWSStripeManagerSender {
 	//private $aws = null;
 	private $ses = null;
 	public function __construct() {
 		try {
+			
+			// Create a log channel
+			$log = new Logger('aws');
+			$log->pushHandler(new StreamHandler('/ses_logger.log', Logger::DEBUG));
+			
+			// Create a log adapter for Monolog
+			$logger = new MonologLogAdapter($log);
+			
+			// Create the LogPlugin
+			$logPlugin = new LogPlugin($logger);
+			
+			// Create an Amazon S3 client
+			//$s3Client = S3Client::factory();
+			
+			// Add the LogPlugin to the client
+			//$s3Client->addSubscriber($logPlugin);
+				
+			
 			
 			// Fetch aws handle
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
@@ -36,7 +57,7 @@ class AWSStripeManagerSender {
 			$this->ses = $this->aws->createSes ();
 			//Can't get past code above..
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-			//$this->ses->addSubscriber(LogPlugin::getDebugPlugin());
+			$this->ses->addSubscriber($logPlugin);
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$e->getMessage()--->', $e->getMessage () );
