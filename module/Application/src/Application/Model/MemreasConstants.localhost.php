@@ -61,13 +61,12 @@ class MemreasConstants {
 	//const AWS_APPKEY = 'AKIAIXDH3Q23AP4KPZRA';
 	//const AWS_APPSEC = 'TM+p8s9hlJwnKECCEKSVVhEOBjVhTWDG4ijIhJdk';
 	//SES
-	const AWS_APPKEY = 'AKIAJ67QJ5UNPE5QIGKA';
-	const AWS_APPSEC = 'D4xqQYQU+fPu4n/cmvMPkDl2JtEXSX47xu+NjjIl';
+	const AWS_APPKEY = 'AKIAJXSV2QLTZP7UKX4Q';
+	const AWS_APPSEC = 'GOTlfqOBhS7uTrIWCIz05lCcwSoFLF5JjDWQxF7v';
 	public static function fetchAWS() {
 		$sharedConfig = [
 				'region' => 'us-east-1',
 				'version' => 'latest',
-				'debug' => 'true',
 				'credentials' => [
 						'key' => self::AWS_APPKEY,
 						'secret' => self::AWS_APPSEC
