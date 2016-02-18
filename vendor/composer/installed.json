@@ -307,55 +307,6 @@
         ]
     },
     {
-        "name": "zendframework/zend-uri",
-        "version": "2.5.1",
-        "version_normalized": "2.5.1.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/zendframework/zend-uri.git",
-            "reference": "fe6c7f4c8d9037fe551898a538a2b6d39483f572"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/zendframework/zend-uri/zipball/fe6c7f4c8d9037fe551898a538a2b6d39483f572",
-            "reference": "fe6c7f4c8d9037fe551898a538a2b6d39483f572",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.23",
-            "zendframework/zend-escaper": "~2.5",
-            "zendframework/zend-validator": "~2.5"
-        },
-        "require-dev": {
-            "fabpot/php-cs-fixer": "1.7.*",
-            "phpunit/phpunit": "~4.0"
-        },
-        "time": "2015-06-03 15:32:03",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "2.5-dev",
-                "dev-develop": "2.6-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "Zend\\Uri\\": "src/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "description": "a component that aids in manipulating and validating » Uniform Resource Identifiers (URIs)",
-        "homepage": "https://github.com/zendframework/zend-uri",
-        "keywords": [
-            "uri",
-            "zf2"
-        ]
-    },
-    {
         "name": "zendframework/zend-loader",
         "version": "2.5.1",
         "version_normalized": "2.5.1.0",
@@ -5627,6 +5578,55 @@
             "glacier",
             "s3",
             "sdk"
+        ]
+    },
+    {
+        "name": "zendframework/zend-uri",
+        "version": "2.5.2",
+        "version_normalized": "2.5.2.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/zendframework/zend-uri.git",
+            "reference": "0bf717a239432b1a1675ae314f7c4acd742749ed"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/zendframework/zend-uri/zipball/0bf717a239432b1a1675ae314f7c4acd742749ed",
+            "reference": "0bf717a239432b1a1675ae314f7c4acd742749ed",
+            "shasum": ""
+        },
+        "require": {
+            "php": "^5.5 || ^7.0",
+            "zendframework/zend-escaper": "^2.5",
+            "zendframework/zend-validator": "^2.5"
+        },
+        "require-dev": {
+            "fabpot/php-cs-fixer": "1.7.*",
+            "phpunit/phpunit": "~4.0"
+        },
+        "time": "2016-02-17 22:38:51",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.5-dev",
+                "dev-develop": "2.6-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Zend\\Uri\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "description": "a component that aids in manipulating and validating » Uniform Resource Identifiers (URIs)",
+        "homepage": "https://github.com/zendframework/zend-uri",
+        "keywords": [
+            "uri",
+            "zf2"
         ]
     }
 ]

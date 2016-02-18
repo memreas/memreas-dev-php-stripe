@@ -10,7 +10,7 @@ namespace Application\memreas;
 use Application\Model\MemreasConstants;
 
 class AWSStripeManagerSender {
-	private $aws = null;
+	//private $aws = null;
 	private $ses = null;
 	public function __construct() {
 		try {
@@ -18,7 +18,8 @@ class AWSStripeManagerSender {
 			//$this->aws = MemreasConstants::fetchAWS ();
 			
 			$this->ses = new \Aws\Ses\SesClient([
-					'region'      => 'us-west-1',
+					'version'	=> 'latest',
+					'region'      => 'us-east-1',
 					'credentials' => [
 							'key'    => MemreasConstants::AWS_APPKEY,
 							'secret' => MemreasConstants::AWS_APPSEC
