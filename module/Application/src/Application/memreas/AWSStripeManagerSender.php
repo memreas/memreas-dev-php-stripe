@@ -8,61 +8,17 @@
 namespace Application\memreas;
 
 use Application\Model\MemreasConstants;
-use Guzzle\Log\MonologLogAdapter;
-use Guzzle\Plugin\Log\LogPlugin;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
 
 class AWSStripeManagerSender {
 	//private $aws = null;
 	private $ses = null;
 	public function __construct() {
 		try {
-			/*
-			// Create a log channel
-			$log = new Logger('aws');
-			$log->pushHandler(new StreamHandler('/ses_logger.log', Logger::DEBUG));
-			
-			// Create a log adapter for Monolog
-			$logger = new MonologLogAdapter($log);
-			
-			// Create the LogPlugin
-			$logPlugin = new LogPlugin($logger);
-			
-			// Create an Amazon S3 client
-			//$s3Client = S3Client::factory();
-			
-			// Add the LogPlugin to the client
-			//$s3Client->addSubscriber($logPlugin);
-				
-			
-			
-			
-			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-			$this->ses = new \Aws\Ses\SesClient([
-					'version'	=> 'latest',
-					'region'      => 'us-east-1',
-					'credentials' => [
-							'key'    => MemreasConstants::AWS_APPKEY,
-							'secret' => MemreasConstants::AWS_APPSEC
-					]
-			]);
-			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-			*/
-				
 			// Fetch aws handle
-			//Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-			//$this->aws = MemreasConstants::fetchAWS ();
-			//$this->ses = $this->aws->createSes ();
-			//Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-			//$this->ses->addSubscriber($logPlugin);
-			
-			$this->ses = \Aws\Ses\SesClient::factory(array(
-					'key'    => MemreasConstants::AWS_APPKEY,
-					'secret' => MemreasConstants::AWS_APPSEC,
-					'region' => Region::US_EAST_1
-			));
-			
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+			$this->aws = MemreasConstants::fetchAWS ();
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+			$this->ses = $this->aws->createSes ();
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$e->getMessage()--->', $e->getMessage () );

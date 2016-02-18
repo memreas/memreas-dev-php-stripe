@@ -10,33 +10,6 @@ class Validator
 {
     private $path = [];
     private $errors = [];
-    private $constraints = [];
-
-    private static $defaultConstraints = [
-        'required' => true,
-        'min'      => true,
-        'max'      => false,
-        'pattern'  => false
-    ];
-
-    /**
-     * @param array $constraints Associative array of constraints to enforce.
-     *                           Accepts the following keys: "required", "min",
-     *                           "max", and "pattern". If a key is not
-     *                           provided, the constraint will assume false.
-     */
-    public function __construct(array $constraints = null)
-    {
-        static $assumedFalseValues = [
-            'required' => false,
-            'min'      => false,
-            'max'      => false,
-            'pattern'  => false
-        ];
-        $this->constraints = empty($constraints)
-            ? self::$defaultConstraints
-            : $constraints + $assumedFalseValues;
-    }
 
     /**
      * Validates the given input against the schema.
@@ -94,7 +67,7 @@ class Validator
             return;
         }
 
-        if ($this->constraints['required'] && $shape['required']) {
+        if ($shape['required']) {
             foreach ($shape['required'] as $req) {
                 if (!isset($value[$req])) {
                     $this->path[] = $req;
@@ -124,7 +97,17 @@ class Validator
             return;
         }
 
-        $this->validateRange($shape, count($value), "list element count");
+        list($min, $max, $count) = [$shape['min'], $shape['max'], count($value)];
+
+        if ($min && $count < $min) {
+            $this->addError("must have at least $min members."
+                . " Value provided has $count.");
+        }
+
+        if ($max && $count > $max) {
+            $this->addError("must have no more than $max members."
+                . " Value provided has $count.");
+        }
 
         $items = $shape->getMember();
         foreach ($value as $index => $v) {
@@ -176,7 +159,16 @@ class Validator
             return;
         }
 
-        $this->validateRange($shape, $value, "numeric value");
+        list($min, $max) = [$shape['min'], $shape['max']];
+
+        if ($min && $value < $min) {
+            $this->addError("must be at least $min. Value provided is $value.");
+        }
+
+        if ($max && $value > $max) {
+            $this->addError("must be no more than $max."
+                . " Value provided is $value.");
+        }
     }
 
     private function check_boolean(Shape $shape, $value)
@@ -195,32 +187,16 @@ class Validator
             return;
         }
 
-        $this->validateRange($shape, strlen($value), "string length");
+        list($min, $max, $len) = [$shape['min'], $shape['max'], strlen($value)];
 
-        if ($this->constraints['pattern']) {
-            $pattern = $shape['pattern'];
-            if ($pattern && !preg_match("/$pattern/", $value)) {
-                $this->addError("Pattern /$pattern/ failed to match '$value'");
-            }
-        }
-    }
-
-    private function validateRange(Shape $shape, $length, $descriptor)
-    {
-        if ($this->constraints['min']) {
-            $min = $shape['min'];
-            if ($min && $length < $min) {
-                $this->addError("expected $descriptor to be >= $min, but "
-                    . "found $descriptor of $length");
-            }
+        if ($min && $len < $min) {
+            $this->addError("must be at least $min characters long."
+                . " Value provided is $len characters long.");
         }
 
-        if ($this->constraints['max']) {
-            $max = $shape['max'];
-            if ($max && $length > $max) {
-                $this->addError("expected $descriptor to be <= $max, but "
-                    . "found $descriptor of $length");
-            }
+        if ($max && $len > $max) {
+            $this->addError("must be no more than $max characters long."
+                . " Value provided is $len characters long.");
         }
     }
 

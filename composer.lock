@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "3f5f22d8fa99a110fe9c9eadff3b5b0f",
-    "content-hash": "57a165bc769682e0d261283ee52c15b2",
+    "hash": "623821abebc0b51320be02784c51063d",
+    "content-hash": "f6061ecaa9c35d6f33cb699feea2cc1d",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.15.2",
+            "version": "3.12.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "ead3e25640df96705e6fb7d9137653dc75b191e0"
+                "reference": "07e01f31ebfe283f24d06544c0cd615b5758486c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ead3e25640df96705e6fb7d9137653dc75b191e0",
-                "reference": "ead3e25640df96705e6fb7d9137653dc75b191e0",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/07e01f31ebfe283f24d06544c0cd615b5758486c",
+                "reference": "07e01f31ebfe283f24d06544c0cd615b5758486c",
                 "shasum": ""
             },
             "require": {
@@ -40,8 +40,7 @@
                 "ext-simplexml": "*",
                 "ext-spl": "*",
                 "nette/neon": "^2.3",
-                "phpunit/phpunit": "~4.0|~5.0",
-                "psr/cache": "^1.0"
+                "phpunit/phpunit": "~4.0"
             },
             "suggest": {
                 "aws/aws-php-sns-message-validator": "To validate incoming SNS notifications",
@@ -85,7 +84,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2016-02-17 00:04:30"
+            "time": "2016-01-13 02:19:36"
         },
         {
             "name": "doctrine/annotations",
@@ -1060,16 +1059,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "1.2.2",
+            "version": "1.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "f5d04bdd2881ac89abde1fb78cc234bce24327bb"
+                "reference": "2e89629ff057ebb49492ba08e6995d3a6a80021b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/f5d04bdd2881ac89abde1fb78cc234bce24327bb",
-                "reference": "f5d04bdd2881ac89abde1fb78cc234bce24327bb",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/2e89629ff057ebb49492ba08e6995d3a6a80021b",
+                "reference": "2e89629ff057ebb49492ba08e6995d3a6a80021b",
                 "shasum": ""
             },
             "require": {
@@ -1114,7 +1113,7 @@
                 "stream",
                 "uri"
             ],
-            "time": "2016-01-23 01:23:02"
+            "time": "2016-02-18 21:54:00"
         },
         {
             "name": "monolog/monolog",
