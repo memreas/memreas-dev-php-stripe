@@ -29,8 +29,8 @@ class AWSStripeManagerSender {
 			// Fetch the Ses class
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$cmd = 'aws ses send-email --from admin@memreas.com --to johnmeah0@gmail.com --subject "Hello World" --text "Hellow world"';
-			$result = shell_exec($cmd);
-			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__.'$result--->', $result );
+			exec($cmd, $output, $return);
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__.'$output--->', $output );
 			$this->ses = $this->aws->createSes ();
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 		} catch ( Exception $e ) {
