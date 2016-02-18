@@ -17,6 +17,7 @@ class AWSStripeManagerSender {
 			// Fetch aws handle
 			//$this->aws = MemreasConstants::fetchAWS ();
 			
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->ses = new \Aws\Ses\SesClient([
 					'version'	=> 'latest',
 					'region'      => 'us-east-1',
@@ -25,7 +26,8 @@ class AWSStripeManagerSender {
 							'secret' => MemreasConstants::AWS_APPSEC
 					]
 			]);
-			
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+				
 			// Fetch the Ses class
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			//$this->ses = $this->aws->createSes ();
