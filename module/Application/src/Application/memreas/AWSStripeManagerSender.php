@@ -18,7 +18,7 @@ class AWSStripeManagerSender {
 	private $ses = null;
 	public function __construct() {
 		try {
-			
+			/*
 			// Create a log channel
 			$log = new Logger('aws');
 			$log->pushHandler(new StreamHandler('/ses_logger.log', Logger::DEBUG));
@@ -37,27 +37,25 @@ class AWSStripeManagerSender {
 				
 			
 			
-			// Fetch aws handle
-			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-			$this->aws = MemreasConstants::fetchAWS ();
 			
-			//Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-			//$this->ses = new \Aws\Ses\SesClient([
-			//		'version'	=> 'latest',
-			//		'region'      => 'us-east-1',
-			//		'credentials' => [
-			//				'key'    => MemreasConstants::AWS_APPKEY,
-			//				'secret' => MemreasConstants::AWS_APPSEC
-			//		]
-			//]);
-			//Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+			$this->ses = new \Aws\Ses\SesClient([
+					'version'	=> 'latest',
+					'region'      => 'us-east-1',
+					'credentials' => [
+							'key'    => MemreasConstants::AWS_APPKEY,
+							'secret' => MemreasConstants::AWS_APPSEC
+					]
+			]);
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+			*/
 				
-			// Fetch the Ses class
-			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+			// Fetch aws handle
+			//Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+			$this->aws = MemreasConstants::fetchAWS ();
 			$this->ses = $this->aws->createSes ();
-			//Can't get past code above..
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-			$this->ses->addSubscriber($logPlugin);
+			//$this->ses->addSubscriber($logPlugin);
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$e->getMessage()--->', $e->getMessage () );
