@@ -52,10 +52,17 @@ class AWSStripeManagerSender {
 				
 			// Fetch aws handle
 			//Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-			$this->aws = MemreasConstants::fetchAWS ();
-			$this->ses = $this->aws->createSes ();
-			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+			//$this->aws = MemreasConstants::fetchAWS ();
+			//$this->ses = $this->aws->createSes ();
+			//Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			//$this->ses->addSubscriber($logPlugin);
+			
+			$this->ses = \Aws\Ses\SesClient::factory(array(
+					'key'    => MemreasConstants::AWS_APPKEY,
+					'secret' => MemreasConstants::AWS_APPSEC,
+					'region' => Region::US_EAST_1
+			));
+			
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$e->getMessage()--->', $e->getMessage () );
