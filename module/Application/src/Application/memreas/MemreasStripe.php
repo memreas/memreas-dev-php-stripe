@@ -43,7 +43,7 @@ class MemreasStripe extends StripeInstance {
 	public function __construct($service_locator) {
 		try {
 			$this->service_locator = $service_locator;
-			$this->aws = new AWSStripeManagerSender ();
+			$this->aws = new AWSStripeManagerSender ();			
 			$this->retreiveStripeKey ();
 			$this->stripeClient = new StripeClient ( $this->clientSecret, '2014-06-17' );
 			$this->memreasStripeTables = new MemreasStripeTables ( $service_locator );
