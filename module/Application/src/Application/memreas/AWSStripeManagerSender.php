@@ -8,12 +8,14 @@
 namespace Application\memreas;
 
 use Application\Model\MemreasConstants;
+use Guzzle\Plugin\Log\LogPlugin;
 
 class AWSStripeManagerSender {
 	//private $aws = null;
 	private $ses = null;
 	public function __construct() {
 		try {
+			
 			// Fetch aws handle
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->aws = MemreasConstants::fetchAWS ();
@@ -32,6 +34,9 @@ class AWSStripeManagerSender {
 			// Fetch the Ses class
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->ses = $this->aws->createSes ();
+			//Can't get past code above..
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+			//$this->ses->addSubscriber(LogPlugin::getDebugPlugin());
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$e->getMessage()--->', $e->getMessage () );
