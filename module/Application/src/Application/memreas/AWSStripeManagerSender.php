@@ -17,7 +17,7 @@ class AWSStripeManagerSender {
 			// Fetch aws handle
 			//$this->aws = MemreasConstants::fetchAWS ();
 			
-			$this->ses = new Aws\Ses\SesClient([
+			$this->ses = new \Aws\Ses\SesClient([
 					'region'      => 'us-west-1',
 					'credentials' => [
 							'key'    => MemreasConstants::AWS_APPKEY,
