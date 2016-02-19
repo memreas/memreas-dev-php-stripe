@@ -8,12 +8,14 @@
 namespace Application\memreas;
 
 use Application\Model\MemreasConstants;
+use Aws\Ses\SesClient;
 
 class AWSStripeManagerSender {
 	private $aws = null;
-	private $ses = null;
+	private $ses = null;	
 	public function __construct() {
 		try {
+			/*
 			// Fetch aws handle
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			//$this->aws = MemreasConstants::fetchAWS ();
@@ -21,6 +23,15 @@ class AWSStripeManagerSender {
 			//$this->ses = $this->aws->createSes ();
 			$this->ses = MemreasConstants::fetchAWS ()->createSes();
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+			*/
+			$this->ses = new SesClient([
+					'version'     => 'latest',
+					'region'      => 'us-east-1',
+					'credentials' => [
+							'key'    => MemreasConstants::AWS_APPKEY,
+							'secret' => MemreasConstants::AWS_APPSEC
+					]
+			]);
 			
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$e->getMessage()--->', $e->getMessage () );
