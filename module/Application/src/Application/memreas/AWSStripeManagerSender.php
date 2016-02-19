@@ -10,7 +10,7 @@ namespace Application\memreas;
 use Application\Model\MemreasConstants;
 
 class AWSStripeManagerSender {
-	//private $aws = null;
+	private $aws = null;
 	private $ses = null;
 	public function __construct() {
 		try {
