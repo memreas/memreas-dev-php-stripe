@@ -24,6 +24,7 @@ class AWSStripeManagerSender {
 			$this->ses = MemreasConstants::fetchAWS ()->createSes();
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			*/
+			/*
 			$this->ses = new SesClient([
 					'version'     => 'latest',
 					'region'      => 'us-east-1',
@@ -33,6 +34,7 @@ class AWSStripeManagerSender {
 					],
 					'debug' => true
 			]);
+			*/
 			
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$e->getMessage()--->', $e->getMessage () );
