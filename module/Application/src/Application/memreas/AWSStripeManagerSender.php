@@ -16,9 +16,10 @@ class AWSStripeManagerSender {
 		try {
 			// Fetch aws handle
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-			$this->aws = MemreasConstants::fetchAWS ();
+			//$this->aws = MemreasConstants::fetchAWS ();
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-			$this->ses = $this->aws->createSes ();
+			//$this->ses = $this->aws->createSes ();
+			$this->ses = MemreasConstants::fetchAWS ()->createSes();
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			
 		} catch ( Exception $e ) {
