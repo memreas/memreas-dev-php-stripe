@@ -30,7 +30,8 @@ class AWSStripeManagerSender {
 					'credentials' => [
 							'key'    => MemreasConstants::AWS_APPKEY,
 							'secret' => MemreasConstants::AWS_APPSEC
-					]
+					],
+					'debug' => true
 			]);
 			
 		} catch ( Exception $e ) {
