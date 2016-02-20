@@ -40,6 +40,7 @@ class AWSStripeManagerSender {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$e->getMessage()--->', $e->getMessage () );
 		}
 	}
+	
 	public function sendSeSMail($to_array, $subject, $text_or_html) {
 		$from = MemreasConstants::ADMIN_EMAIL;
 		$client = $this->ses;
