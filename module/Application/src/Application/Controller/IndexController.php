@@ -17,7 +17,6 @@ class IndexController extends AbstractActionController {
 	private $aws;
 	public function indexAction() {
 		$cm = __CLASS__.__METHOD__;
-		ob_start ();
 		$actionname = isset ( $_REQUEST ["action"] ) ? $_REQUEST ["action"] : '';
 		if ($actionname == "gitpull") {
 			Mlog::addone ( $cm . __LINE__, "Creating CheckGitPull " );
@@ -32,14 +31,12 @@ class IndexController extends AbstractActionController {
 			Mlog::addone ( $cm . __LINE__, "Log has been cleared!" );
 			echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
 			// End buffering and flush
-			ob_end_clean ();
 			exit ();
 		} else if ($actionname == "showlog") {
 			Mlog::addone ( $cm . __LINE__ . "showlog-->", "called..." );
 			$result = '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
 			echo $result;
 			// End buffering and flush
-			ob_end_flush ();
 			exit ();
 		} else if ($actionname == "email") {
 			$to = $_REQUEST ["to"];
