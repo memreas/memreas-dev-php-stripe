@@ -58,11 +58,11 @@ class MemreasConstants {
 	const ADMIN_EMAIL = 'admin@memreas.com';
 	
 	//S3_AccessUser
-	//const AWS_APPKEY = 'AKIAIXDH3Q23AP4KPZRA';
-	//const AWS_APPSEC = 'TM+p8s9hlJwnKECCEKSVVhEOBjVhTWDG4ijIhJdk';
+	const AWS_APPKEY = 'AKIAIXDH3Q23AP4KPZRA';
+	const AWS_APPSEC = 'TM+p8s9hlJwnKECCEKSVVhEOBjVhTWDG4ijIhJdk';
 	//SES
-	const AWS_APPKEY = 'AKIAJXSV2QLTZP7UKX4Q';
-	const AWS_APPSEC = 'GOTlfqOBhS7uTrIWCIz05lCcwSoFLF5JjDWQxF7v';
+	//const AWS_APPKEY = 'AKIAJXSV2QLTZP7UKX4Q';
+	//const AWS_APPSEC = 'GOTlfqOBhS7uTrIWCIz05lCcwSoFLF5JjDWQxF7v';
 	public static function fetchAWS() {
 		$sharedConfig = [
 				'region' => 'us-east-1',
