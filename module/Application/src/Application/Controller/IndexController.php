@@ -30,6 +30,7 @@ class IndexController extends AbstractActionController {
 			exit ();
 		} else if ($actionname == "hello") {
 			echo "hello";
+			exit();
 		} else if ($actionname == "clearlog") {
 			unlink ( getcwd () . '/php_errors.log' );
 			Mlog::addone ( $cm . __LINE__, "Log has been cleared!" );
