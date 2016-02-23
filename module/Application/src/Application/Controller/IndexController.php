@@ -7,17 +7,10 @@
  */
 namespace Application\Controller;
 
+use Application\memreas\Mlog;
+use Application\Model\MemreasConstants;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
-use Application\Model;
-use Application\Model\UserTable;
-use Application\Form;
-use Guzzle\Http\Client;
-use Application\Model\MemreasConstants;
-use Application\memreas\Mlog;
-use Application\memreas\MemreasStripe;
-use Application\memreas\AWSMemreasRedisCache;
-use Application\memreas\AWSMemreasRedisSessionHandler;
 
 class IndexController extends AbstractActionController {
 	private $aws;
