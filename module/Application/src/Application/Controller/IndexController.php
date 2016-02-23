@@ -15,6 +15,7 @@ use Zend\View\Model\ViewModel;
 class IndexController extends AbstractActionController {
 	private $aws;
 	public function indexAction() {
+/*
 		$cm = __CLASS__.__METHOD__;
 		ob_start ();
 		$actionname = isset ( $_REQUEST ["action"] ) ? $_REQUEST ["action"] : '';
@@ -54,5 +55,9 @@ class IndexController extends AbstractActionController {
 			$view->setTemplate ( 'application/error/500.phtml' );
 			return $view;
 		}
+*/
+		$view = new ViewModel ();
+		$view->setTemplate ( 'application/error/500.phtml' );
+		return $view;
 	}
 } // end class IndexController
