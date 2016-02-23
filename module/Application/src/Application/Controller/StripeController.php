@@ -323,7 +323,7 @@ class StripeController extends AbstractActionController {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 			$customer = $MemreasStripe->getCustomer ( array (
 					'userid' => $_SESSION['user_id'] 
-			), false );
+			), true );
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$customer', $customer );
 			$this->flushResponse ( json_encode ( $customer ) );
 			die ();
