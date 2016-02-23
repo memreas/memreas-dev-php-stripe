@@ -1622,14 +1622,15 @@ class StripeInstance {
 		$stripeCustomerInfo = $this->stripeCustomer->getCustomer ( $stripeCustomerId );
 		$upgrade = true;
 
-		echo '<pre>';
-		print_r ($data);
-		echo '====';
-		print_r ($subscriptions);
-		die();
-
 		if ($stripeCustomerInfo ['info'] ['subscriptions'] ['total_count'] > 0) {
 			$subscriptions = $stripeCustomerInfo ['info'] ['subscriptions'] ['data'];
+
+			echo '<pre>';
+			print_r ($data);
+			echo '====';
+			print_r ($subscriptions);
+			die();
+
 			foreach ( $subscriptions as $subscription ) {
 				
 				// User has activated plan
