@@ -49,7 +49,7 @@ class IndexController extends AbstractActionController {
 			$subject = $_REQUEST ["subject"];
 			Mlog::addone ( $cm . __LINE__.'::$subject-->', $subject );
 			$content = $_REQUEST ["content"];
-			Mlog::addone ( $cm . __LINE__.'::$subject-->', $subject );
+			Mlog::addone ( $cm . __LINE__.'::$content-->', $content );
 			
 			Mlog::addone ( $cm . __LINE__,"about to fetchAWS()" );
 			$this->aws = MemreasConstants::fetchAWS();
