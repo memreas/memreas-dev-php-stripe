@@ -40,13 +40,21 @@ class IndexController extends AbstractActionController {
 			exit ();
 		} else if ($actionname == "email") {
 			$to = $_REQUEST ["to"];
+			Mlog::addone ( __CLASS__ . __METHOD . __LINE__.'::$to-->', $to );
 			$subject = $_REQUEST ["subject"];
+			Mlog::addone ( __CLASS__ . __METHOD . __LINE__.'::$subject-->', $subject );
 			$content = $_REQUEST ["content"];
+			Mlog::addone ( __CLASS__ . __METHOD . __LINE__.'::$subject-->', $subject );
 			
+			Mlog::addone ( __CLASS__ . __METHOD . __LINE__,"about to fetchAWS()" );
 			$this->aws = MemreasConstants::fetchAWS();
+			Mlog::addone ( __CLASS__ . __METHOD . __LINE__,"about to fetchAWS()" );
+			Mlog::addone ( __CLASS__ . __METHOD . __LINE__,"about to sendSeSMail(...)" );
 			$this->aws->sendSeSMail ( array (
 					$to 
 			), $subject, $content );
+			Mlog::addone ( __CLASS__ . __METHOD . __LINE__,"completed sendSeSMail(...)" );
+			
 		} else {
 			$view = new ViewModel ();
 			$view->setTemplate ( 'application/error/500.phtml' );
