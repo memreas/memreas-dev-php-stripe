@@ -575,7 +575,7 @@ class StripeInstance {
 		
 		// Mlog::addone ( 'addValueToAccount($data) - $accountDetail -->', $accountDetail );
 		
-		Mlog::addone ( $cm . __LINE__ . '::$data [stripe_card_reference_id]---->', $data ['stripe_card_reference_id'] );
+		//Mlog::addone ( $cm . __LINE__ . '::$data [stripe_card_reference_id]---->', $data ['stripe_card_reference_id'] );
 		$paymentMethod = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodByStripeReferenceId ( $data ['stripe_card_reference_id'] );
 		
 		if (empty ( $paymentMethod )) {
