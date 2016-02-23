@@ -22,7 +22,7 @@ use Application\memreas\AWSMemreasRedisSessionHandler;
 class IndexController extends AbstractActionController {
 	private $aws;
 	public function indexAction() {
-		$cm = $cm__;
+		$cm = __CLASS__.__METHOD__;
 		ob_start ();
 		$actionname = isset ( $_REQUEST ["action"] ) ? $_REQUEST ["action"] : '';
 		if ($actionname == "clearlog") {
