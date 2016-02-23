@@ -144,7 +144,7 @@ class StripeInstance {
 		if (! empty ( $account )) {
 			$account_found = true;
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-			$accounts ['buyer_account'] ['customer'] = ($stripe) ? $this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
+			$accounts ['account'] ['customer'] = ($stripe) ? $this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
 			$accounts ['buyer_account'] ['accountHeader'] = $account;
 			$accounts ['buyer_account'] ['accountDetail'] = $accountDetail;
 		}
@@ -156,7 +156,7 @@ class StripeInstance {
 		if (! empty ( $account )) {
 			$account_found = true;
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-			$accounts ['seller_account'] ['customer'] = ($stripe) ? $this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
+			$accounts ['account'] ['customer'] = ($stripe) ? $this->stripeCustomer->getCustomer ( $accountDetail->stripe_customer_id ) : null;
 			$accounts ['seller_account'] ['accountHeader'] = $account;
 			$accounts ['seller_account'] ['accountDetail'] = $accountDetail;
 		}
@@ -1624,6 +1624,7 @@ class StripeInstance {
 
 		if ($stripeCustomerInfo ['info'] ['subscriptions'] ['total_count'] > 0) {
 			$subscriptions = $stripeCustomerInfo ['info'] ['subscriptions'] ['data'];
+
 			foreach ( $subscriptions as $subscription ) {
 				
 				// User has activated plan
@@ -1669,10 +1670,14 @@ class StripeInstance {
 						"\r",
 						"\n" 
 				), "", $data_usage );
+				/*Disbled disk usage checking
+				* Will turn on later
 				$data_usage = json_encode ( simplexml_load_string ( $data_usage ) );
 				$plan = json_decode ( $data_usage );
-				$plan = $plan->getdiskusageresponse;
+				//$plan = $plan->getdiskusageresponse;
 				$dataUsage = str_replace ( " GB", "", $plan->total_used );
+				*/
+				$dataUsage = 0;
 				Mlog::addone ( $cm, __LINE__ );
 				if ($dataUsage > $planDetail ['storage']) {
 					Mlog::addone ( $cm, __LINE__ );
@@ -1759,10 +1764,12 @@ class StripeInstance {
 			Mlog::addone ( $cm, __LINE__ );
 			$viewModel->setTemplate ( 'email/subscription' );
 			$viewRender = $this->service_locator->get ( 'ViewRenderer' );
-			
+
+			/*
+			 * Disable email feature, will turn on later
 			$html = $viewRender->render ( $viewModel );
 			$subject = 'Your subscription plan has been activated';
-			
+
 			if (! isset ( $this->aws ) || empty ( $this->aws )) {
 				$this->aws = new AWSManagerSender ( $this->service_locator );
 			}
@@ -1775,6 +1782,7 @@ class StripeInstance {
 			} catch ( SesException $e ) {
 				Mlog::addone ( $cm . __LINE__, $e->getMessage () );
 			}
+			*/
 			
 			Mlog::addone ( $cm, __LINE__ );
 			$now = date ( 'Y-m-d H:i:s' );
