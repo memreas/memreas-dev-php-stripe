@@ -22,17 +22,18 @@ use Application\memreas\AWSMemreasRedisSessionHandler;
 class IndexController extends AbstractActionController {
 	private $aws;
 	public function indexAction() {
+		$cm = $cm__;
 		ob_start ();
 		$actionname = isset ( $_REQUEST ["action"] ) ? $_REQUEST ["action"] : '';
 		if ($actionname == "clearlog") {
 			unlink ( getcwd () . '/php_errors.log' );
-			Mlog::addone ( __CLASS__ . __METHOD . __LINE__, "Log has been cleared!" );
+			Mlog::addone ( $cm . __LINE__, "Log has been cleared!" );
 			echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
 			// End buffering and flush
 			ob_end_clean ();
 			exit ();
 		} else if ($actionname == "showlog") {
-			Mlog::addone ( __CLASS__ . __METHOD . __LINE__ . "showlog-->", "called..." );
+			Mlog::addone ( $cm . __LINE__ . "showlog-->", "called..." );
 			$result = '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
 			echo $result;
 			// End buffering and flush
@@ -40,20 +41,20 @@ class IndexController extends AbstractActionController {
 			exit ();
 		} else if ($actionname == "email") {
 			$to = $_REQUEST ["to"];
-			Mlog::addone ( __CLASS__ . __METHOD . __LINE__.'::$to-->', $to );
+			Mlog::addone ( $cm . __LINE__.'::$to-->', $to );
 			$subject = $_REQUEST ["subject"];
-			Mlog::addone ( __CLASS__ . __METHOD . __LINE__.'::$subject-->', $subject );
+			Mlog::addone ( $cm . __LINE__.'::$subject-->', $subject );
 			$content = $_REQUEST ["content"];
-			Mlog::addone ( __CLASS__ . __METHOD . __LINE__.'::$subject-->', $subject );
+			Mlog::addone ( $cm . __LINE__.'::$subject-->', $subject );
 			
-			Mlog::addone ( __CLASS__ . __METHOD . __LINE__,"about to fetchAWS()" );
+			Mlog::addone ( $cm . __LINE__,"about to fetchAWS()" );
 			$this->aws = MemreasConstants::fetchAWS();
-			Mlog::addone ( __CLASS__ . __METHOD . __LINE__,"about to fetchAWS()" );
-			Mlog::addone ( __CLASS__ . __METHOD . __LINE__,"about to sendSeSMail(...)" );
+			Mlog::addone ( $cm . __LINE__,"about to fetchAWS()" );
+			Mlog::addone ( $cm . __LINE__,"about to sendSeSMail(...)" );
 			$this->aws->sendSeSMail ( array (
 					$to 
 			), $subject, $content );
-			Mlog::addone ( __CLASS__ . __METHOD . __LINE__,"completed sendSeSMail(...)" );
+			Mlog::addone ( $cm . __LINE__,"completed sendSeSMail(...)" );
 			
 		} else {
 			$view = new ViewModel ();
