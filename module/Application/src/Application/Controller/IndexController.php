@@ -18,7 +18,14 @@ class IndexController extends AbstractActionController {
 		$cm = __CLASS__.__METHOD__;
 		ob_start ();
 		$actionname = isset ( $_REQUEST ["action"] ) ? $_REQUEST ["action"] : '';
-		if ($actionname == "clearlog") {
+		if ($actionname == "gitpull") {
+			$this->checkGitPull = new CheckGitPull ();
+			$this->checkGitPull->exec ();
+			Mlog::addone ( __CLASS__ . __METHOD__, '::entered gitpull processing' );
+			$gitpull = true;
+			echo $this->checkGitPull->exec ( $gitpull );
+			exit ();
+		}else if ($actionname == "clearlog") {
 			unlink ( getcwd () . '/php_errors.log' );
 			Mlog::addone ( $cm . __LINE__, "Log has been cleared!" );
 			echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
