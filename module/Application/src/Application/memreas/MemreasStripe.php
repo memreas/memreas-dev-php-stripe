@@ -1760,10 +1760,12 @@ class StripeInstance {
 			Mlog::addone ( $cm, __LINE__ );
 			$viewModel->setTemplate ( 'email/subscription' );
 			$viewRender = $this->service_locator->get ( 'ViewRenderer' );
-			
+
+			/*
+			 * Disable email feature, will turn on later
 			$html = $viewRender->render ( $viewModel );
 			$subject = 'Your subscription plan has been activated';
-			
+
 			if (! isset ( $this->aws ) || empty ( $this->aws )) {
 				$this->aws = new AWSManagerSender ( $this->service_locator );
 			}
@@ -1776,6 +1778,7 @@ class StripeInstance {
 			} catch ( SesException $e ) {
 				Mlog::addone ( $cm . __LINE__, $e->getMessage () );
 			}
+			*/
 			
 			Mlog::addone ( $cm, __LINE__ );
 			$now = date ( 'Y-m-d H:i:s' );
