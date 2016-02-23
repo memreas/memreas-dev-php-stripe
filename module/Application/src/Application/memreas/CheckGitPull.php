@@ -10,7 +10,7 @@ namespace Application\memreas;
 use Application\memreas\Mlog;
 
 class CheckGitPull {
-	//protected $gitlock = "/var/www/ephemeral0/gitpull.lock";
+	protected $gitlock = "/var/www/ephemeral0/gitpull.lock";
 	protected $github_basedir = "/var/www/memreas-dev-php-stripe/";
 	function execOps($op) {
 		$outarr = array ();
@@ -49,20 +49,16 @@ class CheckGitPull {
 			$output .= $this->execOps ( "git pull" );
 			
 			// write lock file
-			//if (file_exists ( $this->gitlock )) {
-			//	$output .= $this->execOps ( "rm " . $this->gitlock );
-			//}
-			//$file = fopen ( $this->gitlock, "w" );
-			//echo fwrite ( $file, $output );
-			//fclose ( $file );
+			if (file_exists ( $this->gitlock )) {
+				$output .= $this->execOps ( "rm " . $this->gitlock );
+			}
+			$file = fopen ( $this->gitlock, "w" );
+			echo fwrite ( $file, $output );
+			fclose ( $file );
 			
 			// set permissions
-			// $output .= $this->execOps ( "git pull" );
 			$pulled_latest = true;
 			
-			//putenv ( "COMPOSER_HOME=" . $this->github_basedir );
-			//$output .= $this->execOps ( "php composer.phar self-update" );
-			//$output .= $this->execOps ( "php composer.phar update" );
 			$output .= "\nCompleted git pull op...";
 			
 			Mlog::addone ( 'output::', $output );
