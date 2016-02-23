@@ -8,6 +8,7 @@
 namespace Application\Controller;
 
 use Application\memreas\Mlog;
+use Application\memreas\CheckGitPull;
 use Application\Model\MemreasConstants;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
@@ -19,6 +20,7 @@ class IndexController extends AbstractActionController {
 		ob_start ();
 		$actionname = isset ( $_REQUEST ["action"] ) ? $_REQUEST ["action"] : '';
 		if ($actionname == "gitpull") {
+			Mlog::addone ( $cm . __LINE__, "Creating CheckGitPull " );
 			$this->checkGitPull = new CheckGitPull ();
 			$this->checkGitPull->exec ();
 			Mlog::addone ( __CLASS__ . __METHOD__, '::entered gitpull processing' );
