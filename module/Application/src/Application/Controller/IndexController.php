@@ -26,12 +26,13 @@ class IndexController extends AbstractActionController {
 		$actionname = isset ( $_REQUEST ["action"] ) ? $_REQUEST ["action"] : '';
 		if ($actionname == "clearlog") {
 			unlink ( getcwd () . '/php_errors.log' );
-			error_log ( "Log has been cleared!" );
+			Mlog::addone ( __CLASS__ . __METHOD . __LINE__, "Log has been cleared!" );
 			echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
 			// End buffering and flush
 			ob_end_clean ();
 			exit ();
 		} else if ($actionname == "showlog") {
+			Mlog::addone ( __CLASS__ . __METHOD . __LINE__ . "showlog-->", "called..." );
 			$result = '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
 			echo $result;
 			// End buffering and flush
