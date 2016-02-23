@@ -1673,7 +1673,11 @@ class StripeInstance {
 				$data_usage = json_encode ( simplexml_load_string ( $data_usage ) );
 				$plan = json_decode ( $data_usage );
 				$plan = $plan->getdiskusageresponse;
+				/*Disbled disk usage checking
+				* Will turn on later
 				$dataUsage = str_replace ( " GB", "", $plan->total_used );
+				*/
+				$dataUsage = 0;
 				Mlog::addone ( $cm, __LINE__ );
 				if ($dataUsage > $planDetail ['storage']) {
 					Mlog::addone ( $cm, __LINE__ );
