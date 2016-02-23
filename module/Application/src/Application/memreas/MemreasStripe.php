@@ -1670,11 +1670,11 @@ class StripeInstance {
 						"\r",
 						"\n" 
 				), "", $data_usage );
-				$data_usage = json_encode ( simplexml_load_string ( $data_usage ) );
-				$plan = json_decode ( $data_usage );
-				$plan = $plan->getdiskusageresponse;
 				/*Disbled disk usage checking
 				* Will turn on later
+				$data_usage = json_encode ( simplexml_load_string ( $data_usage ) );
+				$plan = json_decode ( $data_usage );
+				//$plan = $plan->getdiskusageresponse;
 				$dataUsage = str_replace ( " GB", "", $plan->total_used );
 				*/
 				$dataUsage = 0;
