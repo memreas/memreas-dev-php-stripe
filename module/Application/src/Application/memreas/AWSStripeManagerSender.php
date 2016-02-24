@@ -26,7 +26,7 @@ class AWSStripeManagerSender {
 			// Fetch the Ses class
 			$this->sqs = $this->aws->createSqs ();
 			// Fetch the Ses class
-			$this->ses = $this->aws->createSes ();
+			//$this->ses = $this->aws->createSes ();
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			/*
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
