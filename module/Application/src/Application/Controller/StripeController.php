@@ -17,7 +17,6 @@ use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 
 class StripeController extends AbstractActionController {
-	
 	private $redis;
 	private $sessHandler;
 	//
@@ -52,12 +51,12 @@ class StripeController extends AbstractActionController {
 		$this->setupSaveHandler ();
 		try {
 			if (! empty ( $_REQUEST ['admin_key'] )) {
-				$username = $this->redis->getCache('admin_key');
-				$this->sessHandler->startSessionWithUID('', $username );
+				$username = $this->redis->getCache ( 'admin_key' );
+				$this->sessHandler->startSessionWithUID ( '', $username );
 				$hasSession = true;
 			} else if (! empty ( $_REQUEST ['memreascookie'] )) {
 				$sid = $_REQUEST ['memreascookie'];
-				$this->sessHandler->startSessionWithMemreasCookie($_REQUEST ['memreascookie'] );
+				$this->sessHandler->startSessionWithMemreasCookie ( $_REQUEST ['memreascookie'] );
 				$hasSession = true;
 			} else if (! empty ( $_REQUEST ['sid'] )) {
 				$sid = $_REQUEST ['sid'];
@@ -102,6 +101,25 @@ class StripeController extends AbstractActionController {
 			$view->setTemplate ( 'application/error/500.phtml' );
 			return $view;
 		}
+	}
+	public function emailAction() {
+		$to = $_REQUEST ["to"];
+		Mlog::addone ( $cm . __LINE__ . '::$to-->', $to );
+		$subject = $_REQUEST ["subject"];
+		Mlog::addone ( $cm . __LINE__ . '::$subject-->', $subject );
+		$content = $_REQUEST ["content"];
+		Mlog::addone ( $cm . __LINE__ . '::$content-->', $content );
+		
+		Mlog::addone ( $cm . __LINE__, "about to fetchAWS()" );
+		$this->aws = new AWSStripeManagerSender ();
+		// $this->aws = MemreasConstants::fetchAWS();
+		Mlog::addone ( $cm . __LINE__, "about to fetchAWS()" );
+		Mlog::addone ( $cm . __LINE__, "about to sendSeSMail(...)" );
+		$this->aws->sendSeSMail ( array (
+				$to 
+		), $subject, $content );
+		Mlog::addone ( $cm . __LINE__, "completed sendSeSMail(...)" );
+		die();
 	}
 	
 	/*
@@ -324,7 +342,7 @@ class StripeController extends AbstractActionController {
 		if ($this->fetchSession ()) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator () );
 			$customer = $MemreasStripe->getCustomer ( array (
-					'userid' => $_SESSION['user_id'] 
+					'userid' => $_SESSION ['user_id'] 
 			), true );
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$customer', $customer );
 			$this->flushResponse ( json_encode ( $customer ) );
