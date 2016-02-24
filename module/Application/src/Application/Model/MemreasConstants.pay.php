@@ -7,7 +7,7 @@
  */
 namespace Application\Model;
 
-use Application\memreas\Mlog;
+
 
 class MemreasConstants {
 	
@@ -68,7 +68,6 @@ class MemreasConstants {
 	//const AWS_APPKEY = 'AKIAJXSV2QLTZP7UKX4Q';
 	//const AWS_APPSEC = 'GOTlfqOBhS7uTrIWCIz05lCcwSoFLF5JjDWQxF7v';
 	public static function fetchAWS() {
-		Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 		$sharedConfig = [
 				'region' => 'us-east-1',
 				'version' => 'latest',
@@ -78,7 +77,6 @@ class MemreasConstants {
 				],
 				'debug' => true
 		];
-		Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 		
 		return new \Aws\Sdk ( $sharedConfig );
 	}
