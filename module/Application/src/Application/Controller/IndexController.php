@@ -19,7 +19,6 @@ class IndexController extends AbstractActionController {
 	public function indexAction() {
 		$cm = __CLASS__.__METHOD__;
 		$actionname = isset ( $_REQUEST ["action"] ) ? $_REQUEST ["action"] : '';
-		Mlog::addone ( $cm . __LINE__, "Enter index action " . $_REQUEST ["action"] );
 		if ($actionname == "gitpull") {
 			$this->checkGitPull = new CheckGitPull ();
 			$this->checkGitPull->exec ();

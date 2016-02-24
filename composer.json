@@ -15,6 +15,7 @@
         "zendframework/zendframework": "2.5.2",
         "ext-curl": "*",
         "ext-json": "*",
+        "ext-mbstring": "*",
 	"ramsey/uuid": "2.8.0",
 	"predis/predis": "1.*",
 	"doctrine/doctrine-orm-module": "0.8.0",		

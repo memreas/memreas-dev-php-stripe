@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "2b561653cb80053d5ed3eea07a0afd08",
-    "content-hash": "6e6e4b05c3e1bd6c384e89e87e0c2d21",
+    "hash": "ec55d815063ae0eee5f808c7fda10681",
+    "content-hash": "4be1056e515c988cc2be379c93a9bfbb",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -2187,16 +2187,16 @@
         },
         {
             "name": "stripe/stripe-php",
-            "version": "v3.9.0",
+            "version": "v3.9.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/stripe/stripe-php.git",
-                "reference": "81bea2927de98045b7f1b660d274e17deda713c2"
+                "reference": "e4946ace944fe68cdb0501f8b605373888b22d69"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/81bea2927de98045b7f1b660d274e17deda713c2",
-                "reference": "81bea2927de98045b7f1b660d274e17deda713c2",
+                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/e4946ace944fe68cdb0501f8b605373888b22d69",
+                "reference": "e4946ace944fe68cdb0501f8b605373888b22d69",
                 "shasum": ""
             },
             "require": {
@@ -2238,7 +2238,7 @@
                 "payment processing",
                 "stripe"
             ],
-            "time": "2016-02-10 02:19:11"
+            "time": "2016-02-24 22:27:32"
         },
         {
             "name": "symfony/console",
@@ -5456,7 +5456,8 @@
     "platform": {
         "php": ">=5.3.3",
         "ext-curl": "*",
-        "ext-json": "*"
+        "ext-json": "*",
+        "ext-mbstring": "*"
     },
     "platform-dev": []
 }
