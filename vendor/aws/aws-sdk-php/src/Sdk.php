@@ -121,6 +121,7 @@ class Sdk
         // Get information about the service from the manifest file.
         $service = manifest($name);
     	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
+    	error_log(__CLASS__.__METHOD__.__LINE__.'$service[namespace]--->'.$service['namespace'].PHP_EOL);
         $namespace = $service['namespace'];
 
         // Merge provided args with stored, service-specific args.
@@ -134,13 +135,17 @@ class Sdk
     	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
         if (!isset($args['service'])) {
     	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
+    	error_log(__CLASS__.__METHOD__.__LINE__.'$service[endpoint]--->'.$service['endpoint'].PHP_EOL);
             $args['service'] = $service['endpoint'];
         }
 
         // Instantiate the client class.
     	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
+    	error_log(__CLASS__.__METHOD__.__LINE__.'$namespace--->'.$namespace.PHP_EOL);
         $client = "Aws\\{$namespace}\\{$namespace}Client";
     	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
+    	error_log(__CLASS__.__METHOD__.__LINE__.'$args--->'.print_r($args, true).PHP_EOL);
+    	error_log(__CLASS__.__METHOD__.__LINE__.'$this->args--->'.print_r($this->args, true).PHP_EOL);
         return new $client($args + $this->args);
     }
 
