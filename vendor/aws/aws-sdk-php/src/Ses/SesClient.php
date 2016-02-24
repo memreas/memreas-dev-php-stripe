@@ -100,11 +100,16 @@ class SesClient extends \Aws\AwsClient
      */
     public static function generateSmtpPassword(CredentialsInterface $creds)
     {
+    	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
         static $version = "\x02";
+    	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
         static $algo = 'sha256';
+    	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
         static $message = 'SendRawEmail';
+    	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
         $signature = hash_hmac($algo, $message, $creds->getSecretKey(), true);
 
+    	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
         return base64_encode($version . $signature);
     }
 }
