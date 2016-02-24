@@ -17,13 +17,11 @@ class AWSStripeManagerSender {
 		try {
 			
 			// Fetch aws handle
-			/*
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->aws = MemreasConstants::fetchAWS ();
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->ses = $this->aws->createSes ();
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-			*/
 			/*
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->ses = new SesClient([

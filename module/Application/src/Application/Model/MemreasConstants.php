@@ -62,6 +62,8 @@ class MemreasConstants {
 	//S3_AccessUser
 	const AWS_APPKEY = 'AKIAIXDH3Q23AP4KPZRA';
 	const AWS_APPSEC = 'TM+p8s9hlJwnKECCEKSVVhEOBjVhTWDG4ijIhJdk';
+	const SES_SMTP_KEY = 'AKIAJZNY5YHUCYUP2U4A';
+	const SES_SMTP_KEY = 'Ashp1eCvbvKuL5uTpw/TSipW/O7CkewRoTl/N+NXUAGr';
 	//SES
 	//const AWS_APPKEY = 'AKIAJXSV2QLTZP7UKX4Q';
 	//const AWS_APPSEC = 'GOTlfqOBhS7uTrIWCIz05lCcwSoFLF5JjDWQxF7v';
@@ -71,8 +73,8 @@ class MemreasConstants {
 				'region' => 'us-east-1',
 				'version' => 'latest',
 				'credentials' => [
-						'key' => self::AWS_APPKEY,
-						'secret' => self::AWS_APPSEC
+						'key' => self::SES_SMTP_KEY,
+						'secret' => self::SES_SMTP_KEY
 				],
 				'debug' => true
 		];
