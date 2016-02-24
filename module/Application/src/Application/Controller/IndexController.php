@@ -57,7 +57,7 @@ class IndexController extends AbstractActionController {
 					$to 
 			), $subject, $content );
 			Mlog::addone ( $cm . __LINE__,"completed sendSeSMail(...)" );
-			
+			exit();
 		} else {
 			$view = new ViewModel ();
 			$view->setTemplate ( 'application/error/500.phtml' );

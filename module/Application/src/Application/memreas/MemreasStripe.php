@@ -43,12 +43,12 @@ class MemreasStripe extends StripeInstance {
 	public function __construct($service_locator) {
 		try {
 			$this->service_locator = $service_locator;
-			$this->aws = new AWSStripeManagerSender ();			
+			$this->aws = new AWSStripeManagerSender ();
 			$this->retreiveStripeKey ();
 			$this->stripeClient = new StripeClient ( $this->clientSecret, '2014-06-17' );
 			$this->memreasStripeTables = new MemreasStripeTables ( $service_locator );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
-				
+			
 			// Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
 			
 			/**
@@ -56,11 +56,11 @@ class MemreasStripe extends StripeInstance {
 			 * Retrieve memreas user_id from session
 			 */
 			if (isset ( $_SESSION ['user_id'] )) {
-		Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
-					$this->user_id = $_SESSION ['user_id'];
-			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+				Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
+				$this->user_id = $_SESSION ['user_id'];
+				Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
 			}
-			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+			Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$e->getMessage()', $e->getMessage () );
 			throw new \Exception ( $e->getMessage () );
@@ -575,7 +575,7 @@ class StripeInstance {
 		
 		// Mlog::addone ( 'addValueToAccount($data) - $accountDetail -->', $accountDetail );
 		
-		//Mlog::addone ( $cm . __LINE__ . '::$data [stripe_card_reference_id]---->', $data ['stripe_card_reference_id'] );
+		// Mlog::addone ( $cm . __LINE__ . '::$data [stripe_card_reference_id]---->', $data ['stripe_card_reference_id'] );
 		$paymentMethod = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodByStripeReferenceId ( $data ['stripe_card_reference_id'] );
 		
 		if (empty ( $paymentMethod )) {
@@ -1618,10 +1618,10 @@ class StripeInstance {
 		// Check if user has activated subscription or not
 		$stripeCustomerInfo = $this->stripeCustomer->getCustomer ( $stripeCustomerId );
 		$upgrade = true;
-
+		
 		if ($stripeCustomerInfo ['info'] ['subscriptions'] ['total_count'] > 0) {
 			$subscriptions = $stripeCustomerInfo ['info'] ['subscriptions'] ['data'];
-
+			
 			foreach ( $subscriptions as $subscription ) {
 				
 				// User has activated plan
@@ -1667,13 +1667,14 @@ class StripeInstance {
 						"\r",
 						"\n" 
 				), "", $data_usage );
-				/*Disbled disk usage checking
-				* Will turn on later
-				$data_usage = json_encode ( simplexml_load_string ( $data_usage ) );
-				$plan = json_decode ( $data_usage );
-				//$plan = $plan->getdiskusageresponse;
-				$dataUsage = str_replace ( " GB", "", $plan->total_used );
-				*/
+				/*
+				 * Disbled disk usage checking
+				 * Will turn on later
+				 * $data_usage = json_encode ( simplexml_load_string ( $data_usage ) );
+				 * $plan = json_decode ( $data_usage );
+				 * //$plan = $plan->getdiskusageresponse;
+				 * $dataUsage = str_replace ( " GB", "", $plan->total_used );
+				 */
 				$dataUsage = 0;
 				Mlog::addone ( $cm, __LINE__ );
 				if ($dataUsage > $planDetail ['storage']) {
@@ -1761,25 +1762,25 @@ class StripeInstance {
 			Mlog::addone ( $cm, __LINE__ );
 			$viewModel->setTemplate ( 'email/subscription' );
 			$viewRender = $this->service_locator->get ( 'ViewRenderer' );
-
+			
 			/*
 			 * Disable email feature, will turn on later
-			$html = $viewRender->render ( $viewModel );
-			$subject = 'Your subscription plan has been activated';
-
-			if (! isset ( $this->aws ) || empty ( $this->aws )) {
-				$this->aws = new AWSManagerSender ( $this->service_locator );
-			}
-			try {
-				Mlog::addone ( $cm, __LINE__ );
-				$user = $this->memreasStripeTables->getUserTable ()->getUser ( $userid );
-				$this->aws->sendSeSMail ( array (
-						$user->email_address 
-				), $subject, $html );
-			} catch ( SesException $e ) {
-				Mlog::addone ( $cm . __LINE__, $e->getMessage () );
-			}
-			*/
+			 * $html = $viewRender->render ( $viewModel );
+			 * $subject = 'Your subscription plan has been activated';
+			 *
+			 * if (! isset ( $this->aws ) || empty ( $this->aws )) {
+			 * $this->aws = new AWSManagerSender ( $this->service_locator );
+			 * }
+			 * try {
+			 * Mlog::addone ( $cm, __LINE__ );
+			 * $user = $this->memreasStripeTables->getUserTable ()->getUser ( $userid );
+			 * $this->aws->sendSeSMail ( array (
+			 * $user->email_address
+			 * ), $subject, $html );
+			 * } catch ( SesException $e ) {
+			 * Mlog::addone ( $cm . __LINE__, $e->getMessage () );
+			 * }
+			 */
 			
 			Mlog::addone ( $cm, __LINE__ );
 			$now = date ( 'Y-m-d H:i:s' );
