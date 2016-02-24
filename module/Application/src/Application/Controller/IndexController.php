@@ -53,7 +53,8 @@ class IndexController extends AbstractActionController {
 			Mlog::addone ( $cm . __LINE__.'::$content-->', $content );
 			
 			Mlog::addone ( $cm . __LINE__,"about to fetchAWS()" );
-			$this->aws = MemreasConstants::fetchAWS();
+			$this->aws = new AWSStripeManagerSender();
+			//$this->aws = MemreasConstants::fetchAWS();
 			Mlog::addone ( $cm . __LINE__,"about to fetchAWS()" );
 			Mlog::addone ( $cm . __LINE__,"about to sendSeSMail(...)" );
 			$this->aws->sendSeSMail ( array (
