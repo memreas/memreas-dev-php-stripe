@@ -25,6 +25,7 @@ class AWSStripeManagerSender {
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			*/
 			
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->ses = new SesClient([
 					'version'     => 'latest',
 					'region'      => 'us-east-1',
@@ -34,7 +35,8 @@ class AWSStripeManagerSender {
 					],
 					'debug' => true
 			]);
-			
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+				
 			
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$e->getMessage()--->', $e->getMessage () );
