@@ -10,6 +10,7 @@ namespace Application\Controller;
 use Application\memreas\AWSMemreasRedisCache;
 use Application\memreas\AWSMemreasRedisSessionHandler;
 use Application\memreas\MemreasStripe;
+use Application\memreas\AWSStripeManagerSender;
 use Application\memreas\Mlog;
 use Application\Model\MemreasConstants;
 use Guzzle\Http\Client;
