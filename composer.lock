@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "2b561653cb80053d5ed3eea07a0afd08",
-    "content-hash": "6e6e4b05c3e1bd6c384e89e87e0c2d21",
+    "hash": "d59b47b35f4222d51a1f64d8f0e77403",
+    "content-hash": "2168d4fe66aff864cd8451567b48720d",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.12.2",
+            "version": "3.15.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "07e01f31ebfe283f24d06544c0cd615b5758486c"
+                "reference": "b1e854697f57b8376cf27a150fb452c45d495411"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/07e01f31ebfe283f24d06544c0cd615b5758486c",
-                "reference": "07e01f31ebfe283f24d06544c0cd615b5758486c",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/b1e854697f57b8376cf27a150fb452c45d495411",
+                "reference": "b1e854697f57b8376cf27a150fb452c45d495411",
                 "shasum": ""
             },
             "require": {
@@ -40,7 +40,8 @@
                 "ext-simplexml": "*",
                 "ext-spl": "*",
                 "nette/neon": "^2.3",
-                "phpunit/phpunit": "~4.0"
+                "phpunit/phpunit": "~4.0|~5.0",
+                "psr/cache": "^1.0"
             },
             "suggest": {
                 "aws/aws-php-sns-message-validator": "To validate incoming SNS notifications",
@@ -84,7 +85,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2016-01-13 02:19:36"
+            "time": "2016-02-23 21:45:03"
         },
         {
             "name": "doctrine/annotations",
