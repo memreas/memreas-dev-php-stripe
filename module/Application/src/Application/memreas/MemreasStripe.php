@@ -707,10 +707,8 @@ class StripeInstance {
 				 * - update the account to reflect the fee
 				 */
 				$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
-				$memreas_transaction = new Memreas_Transaction ();
 				// Get the last balance - Insert the new account balance
 				$now = date ( 'Y-m-d H:i:s' );
-				
 				// If no account found set the starting balance to zero else use the ending balance.
 				$starting_balance = (isset ( $account_memreas_float )) ? $account_memreas_float->ending_balance : '0.00';
 				$ending_balance = $starting_balance + $amount;
