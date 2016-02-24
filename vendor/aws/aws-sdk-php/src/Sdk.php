@@ -114,35 +114,22 @@ class Sdk
      */
     public function createClient($name, array $args = [])
     {
-    	//debugging
-    	error_log(__CLASS__.__METHOD__.__LINE);
         // Get information about the service from the manifest file.
         $service = manifest($name);
-    	error_log(__CLASS__.__METHOD__.__LINE);
         $namespace = $service['namespace'];
-    	error_log(__CLASS__.__METHOD__.__LINE);
 
         // Merge provided args with stored, service-specific args.
         if (isset($this->args[$namespace])) {
-    	error_log(__CLASS__.__METHOD__.__LINE);
             $args += $this->args[$namespace];
-    	error_log(__CLASS__.__METHOD__.__LINE);
         }
-    	error_log(__CLASS__.__METHOD__.__LINE);
 
         // Provide the endpoint prefix in the args.
         if (!isset($args['service'])) {
-    	error_log(__CLASS__.__METHOD__.__LINE);
             $args['service'] = $service['endpoint'];
-    	error_log(__CLASS__.__METHOD__.__LINE);
         }
-    	error_log(__CLASS__.__METHOD__.__LINE);
 
         // Instantiate the client class.
         $client = "Aws\\{$namespace}\\{$namespace}Client";
-    	error_log(__CLASS__.__METHOD__.__LINE);
-    	//debugging
-    	error_log("Entered aws sdk create client");
         return new $client($args + $this->args);
     }
 
