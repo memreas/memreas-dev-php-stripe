@@ -43,7 +43,7 @@ class MemreasStripe extends StripeInstance {
 	public function __construct($service_locator) {
 		try {
 			$this->service_locator = $service_locator;
-			$this->aws = new AWSStripeManagerSender ();			
+			//$this->aws = new AWSStripeManagerSender ();			
 			$this->retreiveStripeKey ();
 			$this->stripeClient = new StripeClient ( $this->clientSecret, '2014-06-17' );
 			$this->memreasStripeTables = new MemreasStripeTables ( $service_locator );
@@ -862,11 +862,9 @@ class StripeInstance {
 				
 				Mlog::addone ( 'addValueToAccount($data) - $user->email_address', $user->email_address );
 				
-				// Mlog::addone ( 'addValueToAccount($data) - $this->aws', $this->aws);
-				
-				$this->aws->sendSeSMail ( array (
-						$user->email_address 
-				), 
+				//$this->aws->sendSeSMail ( array (
+				//		$user->email_address 
+				//), 
 
 				$subject, $html );
 				
@@ -887,9 +885,9 @@ class StripeInstance {
 			$error_data ['user_id'] = (isset ( $user_id )) ? $user_id : $_SESSION ['user_id'];
 			$error_data ['account_id'] = (isset ( $account )) ? $account->account_id : '';
 			$error_data ['$transaction_id'] = (isset ( $transaction_id )) ? $transaction_id : '';
-			$this->aws->sendSeSMail ( array (
-					MemreasConstants::ADMIN_EMAIL 
-			), "Stripe Error: AddValueAction", "An error has occurred for error data:: " + json_encode ( $error_data ) . ' e->getMessage() ' . $e->getMessage () );
+			//$this->aws->sendSeSMail ( array (
+			//		MemreasConstants::ADMIN_EMAIL 
+			//), "Stripe Error: AddValueAction", "An error has occurred for error data:: " + json_encode ( $error_data ) . ' e->getMessage() ' . $e->getMessage () );
 			return array (
 					'status' => 'Failure',
 					'message' => 'Unable to process payment' 

@@ -18,6 +18,8 @@ use Zend\View\Model\ViewModel;
 
 class StripeController extends AbstractActionController {
 	
+	private $redis;
+	private $sessHandler;
 	//
 	// start session by fetching and starting from REDIS - security check
 	//
