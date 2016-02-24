@@ -711,6 +711,10 @@ class StripeInstance {
 				// Get the last balance - Insert the new account balance
 				$now = date ( 'Y-m-d H:i:s' );
 				
+				// If no account found set the starting balance to zero else use the ending balance.
+				$starting_balance = (isset ( $account_memreas_float )) ? $account_memreas_float->ending_balance : '0.00';
+				$ending_balance = $starting_balance + $amount;
+				
 				$memreas_transaction = new Memreas_Transaction ();
 				$memreas_transaction->exchangeArray ( array (
 						'account_id' => $account_memreas_float->account_id,
@@ -732,9 +736,6 @@ class StripeInstance {
 				) );
 				$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 				
-				// If no account found set the starting balance to zero else use the ending balance.
-				$starting_balance = (isset ( $account_memreas_float )) ? $account_memreas_float->ending_balance : '0.00';
-				$ending_balance = $starting_balance + $amount;
 				$memreasFloatAccountBalance = new AccountBalances ();
 				$memreasFloatAccountBalance->exchangeArray ( array (
 						'account_id' => $account_memreas_float->account_id,
