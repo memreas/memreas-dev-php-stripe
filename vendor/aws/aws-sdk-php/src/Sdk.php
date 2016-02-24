@@ -119,6 +119,7 @@ class Sdk
     {
     	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
         // Get information about the service from the manifest file.
+        error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
         $service = manifest($name);
     	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
     	error_log(__CLASS__.__METHOD__.__LINE__.'$service[namespace]--->'.$service['namespace'].PHP_EOL);

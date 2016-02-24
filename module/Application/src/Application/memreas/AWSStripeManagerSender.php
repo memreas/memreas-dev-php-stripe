@@ -12,6 +12,7 @@ use Aws\Ses\SesClient;
 
 class AWSStripeManagerSender {
 	private $aws = null;
+	private $sqs = null;	
 	private $ses = null;	
 	public function __construct() {
 		try {
@@ -20,6 +21,11 @@ class AWSStripeManagerSender {
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->aws = MemreasConstants::fetchAWS ();
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
+			// Fetch the S3 class
+			$this->s3 = $this->aws->createS3 ();
+			// Fetch the Ses class
+			$this->sqs = $this->aws->createSqs ();
+			// Fetch the Ses class
 			$this->ses = $this->aws->createSes ();
 			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			/*
