@@ -8,6 +8,7 @@
 namespace Application\Controller;
 
 use Application\memreas\Mlog;
+use Application\memreas\AWSStripeManagerSender;
 use Application\memreas\CheckGitPull;
 use Application\Model\MemreasConstants;
 use Zend\Mvc\Controller\AbstractActionController;
