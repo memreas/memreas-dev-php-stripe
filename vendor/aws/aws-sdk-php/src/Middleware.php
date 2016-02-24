@@ -62,9 +62,9 @@ final class Middleware
      *
      * @return callable
      */
-    public static function validation(Service $api, Validator $validator = null)
+    public static function validation(Service $api)
     {
-        $validator = $validator ?: new Validator();
+        $validator = new Validator();
         return function (callable $handler) use ($api, $validator) {
             return function (
                 CommandInterface $command,

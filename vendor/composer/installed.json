@@ -5549,17 +5549,17 @@
     },
     {
         "name": "aws/aws-sdk-php",
-        "version": "3.15.4",
-        "version_normalized": "3.15.4.0",
+        "version": "3.12.2",
+        "version_normalized": "3.12.2.0",
         "source": {
             "type": "git",
             "url": "https://github.com/aws/aws-sdk-php.git",
-            "reference": "b1e854697f57b8376cf27a150fb452c45d495411"
+            "reference": "07e01f31ebfe283f24d06544c0cd615b5758486c"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/b1e854697f57b8376cf27a150fb452c45d495411",
-            "reference": "b1e854697f57b8376cf27a150fb452c45d495411",
+            "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/07e01f31ebfe283f24d06544c0cd615b5758486c",
+            "reference": "07e01f31ebfe283f24d06544c0cd615b5758486c",
             "shasum": ""
         },
         "require": {
@@ -5581,8 +5581,7 @@
             "ext-simplexml": "*",
             "ext-spl": "*",
             "nette/neon": "^2.3",
-            "phpunit/phpunit": "~4.0|~5.0",
-            "psr/cache": "^1.0"
+            "phpunit/phpunit": "~4.0"
         },
         "suggest": {
             "aws/aws-php-sns-message-validator": "To validate incoming SNS notifications",
@@ -5590,7 +5589,7 @@
             "ext-curl": "To send requests using cURL",
             "ext-openssl": "Allows working with CloudFront private distributions and verifying received SNS messages"
         },
-        "time": "2016-02-23 21:45:03",
+        "time": "2016-01-13 02:19:36",
         "type": "library",
         "extra": {
             "branch-alias": {

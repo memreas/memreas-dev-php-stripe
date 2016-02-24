@@ -12,9 +12,6 @@ use GuzzleHttp\Psr7\Uri;
  */
 class AwsClient implements AwsClientInterface
 {
-    /** @var array */
-    private $config;
-
     /** @var string */
     private $region;
 
@@ -271,12 +268,6 @@ class AwsClient implements AwsClientInterface
         $config += $this->api->getWaiterConfig($name);
 
         return new Waiter($this, $name, $args, $config);
-    }
-
-    public function __sleep()
-    {
-        throw new \RuntimeException('Instances of ' . static::class
-            . ' cannot be serialized');
     }
 
     /**

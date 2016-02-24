@@ -20,7 +20,7 @@
 	"doctrine/doctrine-orm-module": "0.8.0",		
         "zfr/zfr-stripe-module": "3.*",
         "stripe/stripe-php": "3.*",
-        "aws/aws-sdk-php": "3.15.*"
+        "aws/aws-sdk-php": "3.12.*"
     },    
     "config": {
 		"github-oauth": {

@@ -227,7 +227,9 @@ class WriteRequestBatch
             foreach ($requests as $request) {
                 $this->queue[] = [
                     'table' => $table,
-                    'data'  => $request,
+                    'data'  => isset($request['PutRequest'])
+                        ? $request['PutRequest']
+                        : $request['DeleteRequest']
                 ];
             }
         }

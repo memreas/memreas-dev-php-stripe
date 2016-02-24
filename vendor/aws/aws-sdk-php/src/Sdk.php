@@ -4,7 +4,6 @@ namespace Aws;
 /**
  * Builds AWS clients based on configuration settings.
  *
- * @method \Aws\Acm\AcmClient createAcm(array $args = [])
  * @method \Aws\ApiGateway\ApiGatewayClient createApiGateway(array $args = [])
  * @method \Aws\AutoScaling\AutoScalingClient createAutoScaling(array $args = [])
  * @method \Aws\CloudFormation\CloudFormationClient createCloudFormation(array $args = [])
@@ -14,7 +13,6 @@ namespace Aws;
  * @method \Aws\CloudSearchDomain\CloudSearchDomainClient createCloudSearchDomain(array $args = [])
  * @method \Aws\CloudTrail\CloudTrailClient createCloudTrail(array $args = [])
  * @method \Aws\CloudWatch\CloudWatchClient createCloudWatch(array $args = [])
- * @method \Aws\CloudWatchEvents\CloudWatchEventsClient createCloudWatchEvents(array $args = [])
  * @method \Aws\CloudWatchLogs\CloudWatchLogsClient createCloudWatchLogs(array $args = [])
  * @method \Aws\CodeCommit\CodeCommitClient createCodeCommit(array $args = [])
  * @method \Aws\CodeDeploy\CodeDeployClient createCodeDeploy(array $args = [])
@@ -39,7 +37,6 @@ namespace Aws;
  * @method \Aws\ElasticsearchService\ElasticsearchServiceClient createElasticsearchService(array $args = [])
  * @method \Aws\Emr\EmrClient createEmr(array $args = [])
  * @method \Aws\Firehose\FirehoseClient createFirehose(array $args = [])
- * @method \Aws\GameLift\GameLiftClient createGameLift(array $args = [])
  * @method \Aws\Glacier\GlacierClient createGlacier(array $args = [])
  * @method \Aws\Iam\IamClient createIam(array $args = [])
  * @method \Aws\Inspector\InspectorClient createInspector(array $args = [])
@@ -69,7 +66,7 @@ namespace Aws;
  */
 class Sdk
 {
-    const VERSION = '3.15.4';
+    const VERSION = '3.12.2';
 
     /** @var array Arguments for creating clients */
     private $args;
@@ -117,36 +114,22 @@ class Sdk
      */
     public function createClient($name, array $args = [])
     {
-    	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
         // Get information about the service from the manifest file.
-        error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
         $service = manifest($name);
-    	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
-    	error_log(__CLASS__.__METHOD__.__LINE__.'$service[namespace]--->'.$service['namespace'].PHP_EOL);
         $namespace = $service['namespace'];
 
         // Merge provided args with stored, service-specific args.
-    	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
         if (isset($this->args[$namespace])) {
-    	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
             $args += $this->args[$namespace];
         }
 
         // Provide the endpoint prefix in the args.
-    	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
         if (!isset($args['service'])) {
-    	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
-    	error_log(__CLASS__.__METHOD__.__LINE__.'$service[endpoint]--->'.$service['endpoint'].PHP_EOL);
             $args['service'] = $service['endpoint'];
         }
 
         // Instantiate the client class.
-    	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
-    	error_log(__CLASS__.__METHOD__.__LINE__.'$namespace--->'.$namespace.PHP_EOL);
         $client = "Aws\\{$namespace}\\{$namespace}Client";
-    	error_log(__CLASS__.__METHOD__.__LINE__.PHP_EOL);
-    	error_log(__CLASS__.__METHOD__.__LINE__.'$args--->'.print_r($args, true).PHP_EOL);
-    	error_log(__CLASS__.__METHOD__.__LINE__.'$this->args--->'.print_r($this->args, true).PHP_EOL);
         return new $client($args + $this->args);
     }
 
