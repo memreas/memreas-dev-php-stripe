@@ -105,6 +105,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function emailAction() {
 		$cm = __CLASS__ . __METHOD__;
+		Mlog::addone ( $cm . __LINE__ ,'Enter emailAction...' );
 		$to = $_REQUEST ["to"];
 		Mlog::addone ( $cm . __LINE__ . '::$to-->', $to );
 		$subject = $_REQUEST ["subject"];
