@@ -30,5 +30,5 @@ cp module/Application/src/Application/Model/MemreasConstants.localhost.php modul
 #
 # curl url to pull latest on backend
 #
-curl https://memreasdev-pay2.memreas.com/?action=clearlog
-curl https://memreasdev-pay2.memreas.com/?action=gitpull
+curl https://memreasdev-pay.memreas.com/?action=clearlog
+curl https://memreasdev-pay.memreas.com/?action=gitpull
