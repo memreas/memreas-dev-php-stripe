@@ -72,10 +72,9 @@ class MemreasConstants {
 				'region' => 'us-east-1',
 				'version' => 'latest',
 				'credentials' => [
-						'key' => self::SES_SMTP_KEY,
-						'secret' => self::SES_SMTP_SECRET
-				],
-				'debug' => true
+						'key' => self::AWS_APPKEY,
+						'secret' => self::AWS_APPSEC
+				]
 		];
 		
 		return new \Aws\Sdk ( $sharedConfig );
