@@ -43,6 +43,8 @@ class StripeController extends AbstractActionController {
 	public function fetchSession() {
 		// Mlog::addone ( __CLASS__ . __METHOD__ . '::$_SERVER-->', $_SERVER );
 		Mlog::addone ( __CLASS__ . __METHOD__ . '::$_REQUEST-->', $_REQUEST );
+		// start capture
+		ob_start ();
 		/**
 		 * setup aws here since this is always called
 		 */
@@ -50,8 +52,6 @@ class StripeController extends AbstractActionController {
 		$this->aws = new AWSStripeManagerSender ();
 		Mlog::addone ( __CLASS__ . __METHOD__ , 'completed calling aws from fetchSession' );
 		$cm = __CLASS__ . __METHOD__;
-		// start capture
-		ob_start ();
 		/**
 		 * Setup save handler and start session
 		 */
