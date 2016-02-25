@@ -49,7 +49,8 @@ class StripeController extends AbstractActionController {
 		 * setup aws here since this is always called
 		 */
 		Mlog::addone ( __CLASS__ . __METHOD__ , 'calling aws from fetchSession' );
-		$this->aws = new AWSStripeManagerSender ();
+		//$this->aws = new AWSStripeManagerSender ();
+		$this->aws = null;
 		Mlog::addone ( __CLASS__ . __METHOD__ , 'completed calling aws from fetchSession' );
 		$cm = __CLASS__ . __METHOD__;
 		/**
