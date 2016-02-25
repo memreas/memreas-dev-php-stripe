@@ -37,18 +37,17 @@ class MemreasStripe extends StripeInstance {
 	protected $clientPublic;
 	protected $user_id;
 	protected $aws;
-	protected $ses;
 	protected $dbDoctrine;
 	public $service_locator;
-	public function __construct($service_locator) {
+	public function __construct($service_locator, $aws) {
 		try {
 			$this->service_locator = $service_locator;
-			$this->aws = new AWSStripeManagerSender ();
 			$this->retreiveStripeKey ();
 			$this->stripeClient = new StripeClient ( $this->clientSecret, '2014-06-17' );
 			$this->memreasStripeTables = new MemreasStripeTables ( $service_locator );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
-			
+			$this->aws = $aws;
+				
 			// Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
 			
 			/**
