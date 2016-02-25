@@ -29,12 +29,6 @@ class StripeController extends AbstractActionController {
 		$this->sessHandler = new AWSMemreasRedisSessionHandler ( $this->redis, $this->getServiceLocator () );
 		session_set_save_handler ( $this->sessHandler );
 		
-		/**
-		 * setup aws here since this is always called
-		 */
-		Mlog::addone ( __CLASS__ . __METHOD__ . 'calling aws from setupSaveHandler' );
-		$this->aws = new AWSStripeManagerSender ();
-		Mlog::addone ( __CLASS__ . __METHOD__ . 'completed calling aws from setupSaveHandler' );
 	}
 	public function flushResponse($response) {
 		header ( 'Content-Type: application/json' );
@@ -49,6 +43,12 @@ class StripeController extends AbstractActionController {
 	public function fetchSession() {
 		// Mlog::addone ( __CLASS__ . __METHOD__ . '::$_SERVER-->', $_SERVER );
 		Mlog::addone ( __CLASS__ . __METHOD__ . '::$_REQUEST-->', $_REQUEST );
+		/**
+		 * setup aws here since this is always called
+		 */
+		Mlog::addone ( __CLASS__ . __METHOD__ . 'calling aws from setupSaveHandler' );
+		$this->aws = new AWSStripeManagerSender ();
+		Mlog::addone ( __CLASS__ . __METHOD__ . 'completed calling aws from setupSaveHandler' );
 		$cm = __CLASS__ . __METHOD__;
 		// start capture
 		ob_start ();
