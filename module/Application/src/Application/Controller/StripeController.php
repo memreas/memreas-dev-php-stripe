@@ -25,10 +25,13 @@ class StripeController extends AbstractActionController {
 	// start session by fetching and starting from REDIS - security check
 	//
 	public function setupSaveHandler() {
-		$this->redis = new AWSMemreasRedisCache ( $this->getServiceLocator () );
-		$this->sessHandler = new AWSMemreasRedisSessionHandler ( $this->redis, $this->getServiceLocator () );
-		session_set_save_handler ( $this->sessHandler );
-		
+		try {
+			$this->redis = new AWSMemreasRedisCache ( $this->getServiceLocator () );
+			$this->sessHandler = new AWSMemreasRedisSessionHandler ( $this->redis, $this->getServiceLocator () );
+			session_set_save_handler ( $this->sessHandler );
+		} catch ( \Exception $e ) {
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::setupSaveHandler() error->', $e->getMessage () );
+		}
 	}
 	public function flushResponse($response) {
 		header ( 'Content-Type: application/json' );
@@ -48,10 +51,10 @@ class StripeController extends AbstractActionController {
 		/**
 		 * setup aws here since this is always called
 		 */
-		Mlog::addone ( __CLASS__ . __METHOD__ , 'calling aws from fetchSession' );
-		//$this->aws = new AWSStripeManagerSender ();
+		Mlog::addone ( __CLASS__ . __METHOD__, 'calling aws from fetchSession' );
+		// $this->aws = new AWSStripeManagerSender ();
 		$this->aws = null;
-		Mlog::addone ( __CLASS__ . __METHOD__ , 'completed calling aws from fetchSession' );
+		Mlog::addone ( __CLASS__ . __METHOD__, 'completed calling aws from fetchSession' );
 		$cm = __CLASS__ . __METHOD__;
 		/**
 		 * Setup save handler and start session
@@ -114,7 +117,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function emailAction() {
 		$cm = __CLASS__ . __METHOD__;
-		Mlog::addone ( $cm . __LINE__ ,'Enter emailAction...' );
+		Mlog::addone ( $cm . __LINE__, 'Enter emailAction...' );
 		$to = $_REQUEST ["to"];
 		Mlog::addone ( $cm . __LINE__ . '::$to-->', $to );
 		$subject = $_REQUEST ["subject"];
@@ -131,7 +134,7 @@ class StripeController extends AbstractActionController {
 				$to 
 		), $subject, $content );
 		Mlog::addone ( $cm . __LINE__, "completed sendSeSMail(...)" );
-		die();
+		die ();
 	}
 	
 	/*
