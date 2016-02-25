@@ -9,8 +9,7 @@ echo "You entered $comment"
 #set -v verbose #echo on
 
 #copy fe settings to push to git...
-rm ./module/Application/src/Application/Model/MemreasConstants.php
-cp ./module/Application/src/Application/Model/MemreasConstants.pay.php ./module/Application/src/Application/Model/MemreasConstants.php
+echo cp ./module/Application/src/Application/Model/MemreasConstants.pay.php ./module/Application/src/Application/Model/MemreasConstants.php
 
 #Push to AWS
 echo "Committing to git..."
@@ -20,8 +19,7 @@ echo "Pushing to github..."
 set -v verbose #echo on
 git push
 
-rm ./module/Application/src/Application/Model/MemreasConstants.php
-cp module/Application/src/Application/Model/MemreasConstants.localhost.php module/Application/src/Application/Model/MemreasConstants.php
+echo cp module/Application/src/Application/Model/MemreasConstants.localhost.php module/Application/src/Application/Model/MemreasConstants.php
 
 #eb events -f
 
