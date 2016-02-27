@@ -388,7 +388,7 @@ class StripeController extends AbstractActionController {
 			$message_data = json_decode ( $json, true );
 			
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
-			$this->flushResponse ( json_encode ( $MemreasStripe->getAccountBalance ( message_data, true ) ) );
+			$this->flushResponse ( json_encode ( $MemreasStripe->getAccountBalance ( $message_data, true ) ) );
 			die ();
 		}
 	}
