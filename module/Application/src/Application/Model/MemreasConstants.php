@@ -27,6 +27,7 @@ class MemreasConstants {
 	const MEMREAS_WS = "https://memreasdev-wsj.memreas.com";
 	const MEMREAS_WSPROXYPAY = "https://memreasdev-wsj.memreas.com/index?action=";
 	const URL = "/index";
+	const COPYRIGHT = '&copy;2015 memreas, llc. all rights reserved.';
 	
 	// Key data
 	const SECRET_KEY = 'sk_test_AFU42eViRyXQfXVSxCPPh05Q';
