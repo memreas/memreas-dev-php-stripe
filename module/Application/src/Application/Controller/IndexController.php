@@ -86,7 +86,7 @@ class IndexController extends AbstractActionController {
 	}
 	public function indexAction() {
 		$cm = __CLASS__ . __METHOD__;
-		Mlog::addone ( $cm . __LINE__.'::$_REQUEST', $_REQUEST );
+		Mlog::addone ( $cm . __LINE__ . '::$_REQUEST', $_REQUEST );
 		$actionname = isset ( $_REQUEST ["action"] ) ? $_REQUEST ["action"] : '';
 		if ($actionname == "gitpull") {
 			$this->checkGitPull = new CheckGitPull ();
@@ -187,33 +187,53 @@ class IndexController extends AbstractActionController {
 					 */
 					case 'getorderhistory' :
 						
+						Mlog::addone ( $cm, __LINE__ );
 						$data = json_decode ( $_POST ['data'], true );
+						Mlog::addone ( $cm, __LINE__ );
 						
+						Mlog::addone ( $cm, __LINE__ );
 						$orderHistories = $MemreasStripe->getOrderHistories ( $data ['user_id'], $data ['search_username'], ( int ) $data ['page'], ( int ) $data ['limit'] );
+						Mlog::addone ( $cm, __LINE__ );
 						
+						Mlog::addone ( $cm, __LINE__ );
 						if ($orderHistories ['status'] == "Success") {
-							if ($data ['user_id'])
+							Mlog::addone ( $cm, __LINE__ );
+							if ($data ['user_id']) {
+								Mlog::addone ( $cm, __LINE__ );
 								$userDetail = $MemreasStripe->getUserById ( $data ['user_id'] );
-							else
+						Mlog::addone ( $cm , __LINE__ );
+							} else {
+						Mlog::addone ( $cm , __LINE__ );
 								$userDetail = null;
+							}
 							
+						Mlog::addone ( $cm , __LINE__ );
 							$orders = $orderHistories ['transactions'];
-							if (! empty ( $orders ))
+						Mlog::addone ( $cm , __LINE__ );
+							if (! empty ( $orders )) {
+						Mlog::addone ( $cm , __LINE__ );
 								$result = array (
 										'status' => 'Success',
 										'orders' => $orders,
 										'user' => $userDetail 
 								);
-							else
+						Mlog::addone ( $cm , __LINE__ );
+							} else {
+						Mlog::addone ( $cm , __LINE__ );
 								$result = array (
 										'status' => 'Failure',
 										'message' => 'No record found' 
 								);
-						} else
+						Mlog::addone ( $cm , __LINE__ );
+							}
+						} else {
+						Mlog::addone ( $cm , __LINE__ );
 							$result = array (
 									'status' => 'Failure',
 									'message' => $orderHistories ['message'] 
 							);
+						Mlog::addone ( $cm , __LINE__ );
+						}
 						break;
 					
 					/*
@@ -308,12 +328,11 @@ class IndexController extends AbstractActionController {
 					default :
 				}
 				
-				
 				/**
 				 * flush response
 				 */
-				Mlog::addone ( $cm . __LINE__ .'::$result', $result );
-				$this->flushResponse ( json_encode($result) );
+				Mlog::addone ( $cm . __LINE__ . '::$result', $result );
+				$this->flushResponse ( json_encode ( $result ) );
 			} // end if fetch sesssion
 		} else {
 			$view = new ViewModel ();
