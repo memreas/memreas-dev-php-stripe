@@ -51,9 +51,7 @@ class StripeController extends AbstractActionController {
 		/**
 		 * setup aws here since this is always called
 		 */
-		Mlog::addone ( __CLASS__ . __METHOD__, 'calling aws from fetchSession' );
 		$this->aws = new AWSStripeManagerSender ();
-		Mlog::addone ( __CLASS__ . __METHOD__, 'completed calling aws from fetchSession' );
 		$cm = __CLASS__ . __METHOD__;
 		/**
 		 * Setup save handler and start session
@@ -114,28 +112,7 @@ class StripeController extends AbstractActionController {
 			return $view;
 		}
 	}
-	public function emailAction() {
-		$cm = __CLASS__ . __METHOD__;
-		Mlog::addone ( $cm . __LINE__, 'Enter emailAction...' );
-		$to = $_REQUEST ["to"];
-		Mlog::addone ( $cm . __LINE__ . '::$to-->', $to );
-		$subject = $_REQUEST ["subject"];
-		Mlog::addone ( $cm . __LINE__ . '::$subject-->', $subject );
-		$content = $_REQUEST ["content"];
-		Mlog::addone ( $cm . __LINE__ . '::$content-->', $content );
-		
-		Mlog::addone ( $cm . __LINE__, "about to fetchAWS()" );
-		$this->aws = new AWSStripeManagerSender ();
-		// $this->aws = MemreasConstants::fetchAWS();
-		Mlog::addone ( $cm . __LINE__, "about to fetchAWS()" );
-		Mlog::addone ( $cm . __LINE__, "about to sendSeSMail(...)" );
-		$this->aws->sendSeSMail ( array (
-				$to 
-		), $subject, $content );
-		Mlog::addone ( $cm . __LINE__, "completed sendSeSMail(...)" );
-		die ();
-	}
-	
+
 	/*
 	 * Stripe webhook receiver
 	 */
