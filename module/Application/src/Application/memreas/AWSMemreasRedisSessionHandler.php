@@ -72,7 +72,7 @@ class AWSMemreasRedisSessionHandler implements \SessionHandlerInterface {
 		}
 		// error_log ( '_SESSION vars after memreascookie start...' . print_r ( $_SESSION, true ) . PHP_EOL );
 	}
-	public function startSessionWithUID($uid = '', $uname = '') {
+	public function startSessionWithUID($uid, $uname = '') {
 		if (! empty ( $uid )) {
 			$rUIDSession = $this->mRedis->getCache ( 'uid::' . $uid );
 		} else if (! empty ( $uname )) {
@@ -89,12 +89,17 @@ class AWSMemreasRedisSessionHandler implements \SessionHandlerInterface {
 		} else {
 			error_log ( 'startSessionWithUID pulling from db...' . PHP_EOL );
 			if (! empty ( $uid )) {
+				error_log ( __LINE__ . PHP_EOL );
 				$sql = "SELECT u  FROM Application\Entity\User as u  where u.user_id = '$uid'";
 			} else {
+				error_log ( __LINE__ . PHP_EOL );
 				$sql = "SELECT u  FROM Application\Entity\User as u  where u.username = '$uname'";
 			}
+				error_log ( __LINE__ . PHP_EOL );
 			$statement = $this->dbAdapter->createQuery ( $sql );
+				error_log ( __LINE__ . PHP_EOL );
 			$row = $statement->getResult ();
+				error_log ( __LINE__ . PHP_EOL );
 			if (! empty ( $row )) {
 				/*
 				 * Set the session for the user data...
