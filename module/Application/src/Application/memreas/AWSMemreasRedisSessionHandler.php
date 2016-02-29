@@ -87,7 +87,7 @@ class AWSMemreasRedisSessionHandler implements \SessionHandlerInterface {
 			}
 			// error_log ( 'rUIDSessionArr vars after uid start...' . print_r ( $rUIDSessionArr, true ) . PHP_EOL );
 		} else {
-			// error_log ( 'startSessionWithUID pulling from db...' . PHP_EOL );
+			error_log ( 'startSessionWithUID pulling from db...' . PHP_EOL );
 			if (! empty ( $uid )) {
 				$sql = "SELECT u  FROM Application\Entity\User as u  where u.user_id = '$uid'";
 			} else {
