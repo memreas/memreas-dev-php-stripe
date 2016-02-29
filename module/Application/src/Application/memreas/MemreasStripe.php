@@ -963,15 +963,12 @@ class StripeInstance {
 			 * Start debit amount from buyer
 			 */
 			$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user->user_id );
-			echo '<pre>';
-			print_r ($account);
-			echo '</pre>';
-			die();
-			if (! $account)
+			if (empty($account)) {
 				return array (
 						'status' => 'Failure',
 						'message' => 'You have no account at this time. Please add card first.' 
 				);
+			}
 			$accountId = $account->account_id;
 			
 			$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $accountId );
