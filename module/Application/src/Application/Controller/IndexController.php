@@ -51,10 +51,15 @@ class IndexController extends AbstractActionController {
 		header ( 'Access-Control-Allow-Origin: *' );
 		$this->setupSaveHandler ();
 		try {
+						Mlog::addone ( $cm , __LINE__ );
 			if (! empty ( $_REQUEST ['admin_key'] )) {
+						Mlog::addone ( $cm , __LINE__ );
 				$username = $this->redis->getCache ( 'admin_key' );
+						Mlog::addone ( $cm , __LINE__ );
 				$this->sessHandler->startSessionWithUID ( '', $username );
+						Mlog::addone ( $cm , __LINE__ );
 				$hasSession = true;
+						Mlog::addone ( $cm , __LINE__ );
 			} else if (! empty ( $_REQUEST ['memreascookie'] )) {
 				$sid = $_REQUEST ['memreascookie'];
 				$this->sessHandler->startSessionWithMemreasCookie ( $_REQUEST ['memreascookie'] );
@@ -108,8 +113,11 @@ class IndexController extends AbstractActionController {
 			exit ();
 		} else if (! empty ( $action )) {
 			
+						Mlog::addone ( $cm , __LINE__ );
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
+						Mlog::addone ( $cm , __LINE__ );
 			if ($this->fetchSession ()) {
+						Mlog::addone ( $cm , __LINE__ );
 				switch ($action) {
 					/*
 					 * Support WS : ListPlans
