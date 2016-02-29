@@ -8,6 +8,7 @@
 namespace Application\memreas;
 
 use Application\Model\MemreasConstants;
+use Application\Entity\User;
 
 class AWSMemreasRedisSessionHandler implements \SessionHandlerInterface {
 	private $ttl = 1800; // 30 minutes default
