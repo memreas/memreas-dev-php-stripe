@@ -113,7 +113,7 @@ class IndexController extends AbstractActionController {
 			echo $result;
 			// End buffering and flush
 			exit ();
-		} else if (! empty ( $action )) {
+		} else if (! empty ( $actionname )) {
 			
 						Mlog::addone ( $cm , __LINE__ );
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
