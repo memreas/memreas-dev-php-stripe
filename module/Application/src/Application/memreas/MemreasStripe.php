@@ -931,6 +931,10 @@ class StripeInstance {
 		 */
 		$cm = __CLASS__ . __METHOD__;
 		$user = $this->memreasStripeTables->getUserTable ()->getUser ( $data ['user_id'] );
+		echo '<pre>';
+		print_r ($user);
+		echo '</pre>';
+		die();
 		$amount = $data ['amount'];
 		$event_id = $data ['event_id'];
 		$seller_id = $data ['seller_id'];
