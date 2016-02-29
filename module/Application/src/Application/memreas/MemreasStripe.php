@@ -962,7 +962,7 @@ class StripeInstance {
 			 * -
 			 * Start debit amount from buyer
 			 */
-			$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user->user_id );
+			$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user->id );
 			if (! $account)
 				return array (
 						'status' => 'Failure',
