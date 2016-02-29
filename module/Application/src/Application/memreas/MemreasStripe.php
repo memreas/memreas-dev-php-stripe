@@ -1049,7 +1049,7 @@ class StripeInstance {
 			if (! $account)
 				return array (
 						'status' => 'Failure',
-						'message' => 'You have no account at this time. Please add card first.' 
+						'message' => 'The target event owner is not registered as a seller, please try again later'
 				);
 			
 			$accountId = $account->account_id;
