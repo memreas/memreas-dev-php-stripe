@@ -92,28 +92,28 @@ class IndexController extends AbstractActionController {
 	public function indexAction() {
 		$cm = __CLASS__ . __METHOD__;
 		Mlog::addone ( $cm . __LINE__ . '::$_REQUEST', $_REQUEST );
-		$actionname = isset ( $_REQUEST ["action"] ) ? $_REQUEST ["action"] : '';
+		$action = isset ( $_REQUEST ["action"] ) ? $_REQUEST ["action"] : '';
 						Mlog::addone ( $cm , __LINE__ );
-						Mlog::addone ( $cm , __LINE__ .$actionname);
-						if ($actionname == "gitpull") {
+						Mlog::addone ( $cm , __LINE__ .$action);
+						if ($action == "gitpull") {
 			$this->checkGitPull = new CheckGitPull ();
 			$this->checkGitPull->exec ();
 			$gitpull = true;
 			echo $this->checkGitPull->exec ( $gitpull );
 			exit ();
-		} else if ($actionname == "clearlog") {
+		} else if ($action == "clearlog") {
 			unlink ( getcwd () . '/php_errors.log' );
 			Mlog::addone ( $cm . __LINE__, "Log has been cleared!" );
 			echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
 			// End buffering and flush
 			exit ();
-		} else if ($actionname == "showlog") {
+		} else if ($action == "showlog") {
 			Mlog::addone ( $cm . __LINE__ . "showlog-->", "called..." );
 			$result = '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );
 			echo $result;
 			// End buffering and flush
 			exit ();
-		} else if (! empty ( $actionname )) {
+		} else if (! empty ( $action )) {
 			
 						Mlog::addone ( $cm , __LINE__ );
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
