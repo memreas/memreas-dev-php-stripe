@@ -1308,7 +1308,9 @@ class StripeInstance {
 			);
 		}
 
-		echo '<pre>'; print_r ($checkBuyMedia); die();
+		foreach ($checkBuyMedia as $item) {
+			echo '<pre>'; print_r($item); die();
+		}
 
 		return array (
 				'status' => 'Success',
