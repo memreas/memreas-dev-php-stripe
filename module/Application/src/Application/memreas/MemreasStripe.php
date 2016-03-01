@@ -1308,13 +1308,14 @@ class StripeInstance {
 			);
 		}
 
+		$event_ids = array();
 		foreach ($checkBuyMedia as $item) {
-			echo '<pre>'; print_r($item); die();
+			$event_ids[] = $item['event_id'];
 		}
 
 		return array (
 				'status' => 'Success',
-				'events' => ''
+				'events' => $event_ids
 		);
 	}
 	public function activePendingBalanceToAccount($transaction_id) {
