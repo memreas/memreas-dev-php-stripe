@@ -8,7 +8,12 @@
 namespace Application\Model;
 
 use Zend\Db\TableGateway\TableGateway;
+use Zend\Db\TableGateway\AbstractTableGateway;
 use Zend\Db\Sql\Select;
+use Zend\Db\Adapter\Adapter;
+use Zend\Db\Sql\Sql;
+use Zend\Db\Sql\Where;
+use Application\memreas\MUUID;
 
 class AccountPurchasesTable {
 	protected $tableGateway;
