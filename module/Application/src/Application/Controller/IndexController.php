@@ -343,6 +343,8 @@ class IndexController extends AbstractActionController {
 				 */
 				Mlog::addone ( $cm . __LINE__ . '::$result', $result );
 				$this->flushResponse ( json_encode ( $result ) );
+				die ();
+				
 			} // end if fetch sesssion
 		} else {
 			$view = new ViewModel ();
