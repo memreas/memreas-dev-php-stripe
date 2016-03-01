@@ -1289,27 +1289,30 @@ class StripeInstance {
 		}
 	}
 	public function checkOwnEvent($data) {
-		$event_id = $data ['event_id'];
 		$user_id = $data ['user_id'];
 		
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
-		if (! $account)
+		if (! $account) {
 			return array (
 					'status' => 'Failure',
-					'event_id' => $event_id 
+					'message' => 'There is no account relates to this user'
 			);
+		}
 		
-		$checkBuyMedia = $this->memreasStripeTables->getAccountPurchasesTable ()->getAccountPurchase ( $account->account_id, $event_id );
+		$checkBuyMedia = $this->memreasStripeTables->getAccountPurchasesTable ()->getAccountPurchases ( $account->account_id );
 		
-		if (empty ( $checkBuyMedia ))
+		if (empty ( $checkBuyMedia )) {
 			return array (
 					'status' => 'Failure',
-					'event_id' => $event_id 
+					'event_id' => 'Account has no purchase history'
 			);
-		
+		}
+
+		echo '<pre>'; print_r ($checkBuyMedia); die();
+
 		return array (
 				'status' => 'Success',
-				'event_id' => $event_id 
+				'events' => ''
 		);
 	}
 	public function activePendingBalanceToAccount($transaction_id) {
