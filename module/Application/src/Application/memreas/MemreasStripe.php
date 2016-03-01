@@ -320,8 +320,12 @@ class StripeInstance {
 					$Balance .= '<ending_balance></ending_balance>';
 				}
 				
+				if ($search_username) {
+					
+				}
 				$orders [] = array (
-						'username' => $user->username,
+						//'username' => $user->username,
+						'username' => $search_username,
 						'transaction' => $transaction,
 						'balance' => $Balance 
 				);
