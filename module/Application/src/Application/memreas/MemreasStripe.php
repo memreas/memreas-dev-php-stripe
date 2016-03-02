@@ -983,6 +983,7 @@ class StripeInstance {
 				);
 			}
 			$accountId = $account->account_id;
+			$buyer = $account;
 			
 			$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $accountId );
 			
@@ -1064,7 +1065,7 @@ class StripeInstance {
 						'status' => 'Failure',
 						'message' => 'The target event owner is not registered as a seller, please try again later'
 				);
-			
+			$seller_account = $account;
 			$accountId = $account->account_id;
 			
 			$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $accountId );
@@ -1271,6 +1272,29 @@ class StripeInstance {
 			 * Commit the transaction - chaching :)
 			 */
 			$connection->commit ();
+
+			/**
+			 * -
+			 * Send Purchase Confirmation email
+			 */
+			$viewModel = new ViewModel ( array (
+				'username' => $buyer->first_name . ' ' . $buyer->last_name,
+				'seller_name' => $seller_account->firstname . ' ' . $seller_account->last_name,
+				'transaction_id' => $transaction_id,
+				'amount' => $amount,
+				'balance' => $buyer->balance
+			) );
+			$viewModel->setTemplate ( 'email/buymedia' );
+			$viewRender = $this->service_locator->get ( 'ViewRenderer' );
+
+			$html = $viewRender->render ( $viewModel );
+			$subject = 'memreas buy media confirmation receipt';
+
+			$this->aws->sendSeSMail ( array (
+				$buyer->email_address
+			),
+
+				$subject, $html );
 			
 			return array (
 					'status' => 'Success',
