@@ -954,7 +954,12 @@ class StripeInstance {
 
 		//Validate password
 
-		echo $data['password'] . ' => ' . $user->password; die();
+		if (md5($data['password']) != $user->password) {
+			return array(
+				'status' => 'Failure',
+				'message' => 'Confirmation password is incorrect'
+			);
+		}
 
 		try {
 			
