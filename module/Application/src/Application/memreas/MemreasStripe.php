@@ -1275,7 +1275,8 @@ class StripeInstance {
 			return array (
 					'status' => 'Success',
 					'message' => 'Buying media completed',
-					'event_id' => $event_id 
+					'event_id' => $event_id,
+					'transaction_id' => $transaction_id
 			);
 		} catch ( \Exception $e ) {
 			/**
