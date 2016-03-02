@@ -98,15 +98,26 @@ body {
 		</div>
 		<div class="content">
 			<h2>Dear <?=$username?>,</h2>
-			<?php echo $seller_name ?> and memreas thank you for your purchase. We hope you enjoy the media. Here are the details of your purchase
-            memreas share: <?php echo $event_name ?>
-            confirmation number: <?php echo $transaction_id ?>
-            purchase amount: -<?php echo $amount ?>
-            memreas account remaining balance: <?php echo $balance ?>
+			<p>
+                <b><?php echo $seller_name ?></b> and memreas thank you for your purchase. We hope you enjoy the media. Here are the details of your purchase
+            </p>
+            <p>
+                memreas share: <b><?php echo $event_name ?></b>
+            </p>
+            <p>
+                confirmation number: <b><?php echo $transaction_id ?></b>
+            </p>
+            <p>
+                purchase amount: <b>-$<?php echo $amount ?></b>
+            </p>
+            <p>
+                memreas account remaining balance: <b>$<?php echo $balance ?></b>
+            </p>
 			<p>
 				Best Regards,<br /><img
                     src="<?php echo MemreasConstants::MEMREAS_WS?>/memreas/img/footer_ref.png"
                     width="103" height="20" />
+            </p>
 
 		</div>
 		<div class="footer" style="background: #45484d;">
