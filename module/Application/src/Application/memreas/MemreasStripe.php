@@ -1276,8 +1276,8 @@ class StripeInstance {
 			 * -
 			 * Send Purchase Confirmation email
 			 */
-			$buyer = $this->memreasStripeTables->getUserTable ()->getUser ( $data['user_id'] );
-			echo '<pre>'; print_r ($buyer); die();
+			$buyer = $account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data['user_id'] );
+			echo '<pre>'; print_r ($seller_account); die();
 			$viewModel = new ViewModel ( array (
 				'username' => $buyer->first_name . ' ' . $buyer->last_name,
 				'seller_name' => $seller_account->firstname . ' ' . $seller_account->last_name,
