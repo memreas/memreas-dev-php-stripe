@@ -310,14 +310,15 @@ class StripeInstance {
 			foreach ( $transactions as $transaction ) {
 				$user = $this->memreasStripeTables->getAccountTable ()->getAccount ( $transaction->account_id );
 				$AccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalanceByTransactionId ( $transaction->transaction_id );
+				$balance = array();
 				if (! empty ( $AccountBalance )) {
-					$Balance = '<starting_balance>' . $AccountBalance->starting_balance . '</starting_balance>';
-					$Balance .= '<amount>' . $AccountBalance->amount . '</amount>';
-					$Balance .= '<ending_balance>' . $AccountBalance->ending_balance . '</ending_balance>';
+					$balance['starting_balance'] = $AccountBalance->starting_balance;
+					$balance['amount'] = $AccountBalance->amount;
+					$balance['ending_balance'] = $AccountBalance->ending_balance;
 				} else {
-					$Balance = '<starting_balance></starting_balance>';
-					$Balance .= '<amount></amount>';
-					$Balance .= '<ending_balance></ending_balance>';
+					$balance['starting_balance'] = 0;
+					$balance['amount'] = 0;
+					$balance['ending_balance'] = 0;
 				}
 				
 				if ($search_username) {
@@ -327,7 +328,7 @@ class StripeInstance {
 						//'username' => $user->username,
 						'username' => $search_username,
 						'transaction' => $transaction,
-						'balance' => $Balance 
+						'balance' => $balance 
 				);
 			}
 			return array (
