@@ -356,8 +356,12 @@ class StripeInstance {
 	 */
 	public function getAccountDetailByAccountId($account_id) {
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $account_id );
-		$userDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-		return $userDetail;
+		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::account--->', $account);
+		if ($account) {
+			$userDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
+			return $userDetail;
+		}
+		return null;
 	}
 	
 	/*
