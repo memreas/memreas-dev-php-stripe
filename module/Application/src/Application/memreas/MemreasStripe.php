@@ -1278,8 +1278,6 @@ class StripeInstance {
 			 * Send Purchase Confirmation email
 			 */
 			$buyer = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data['user_id'] );
-			echo $buyer_email;
-			echo '<pre>'; print_r ($buyer); die();
 			$viewModel = new ViewModel ( array (
 				'username' => $buyer->username,
 				'seller_name' => $seller_account->username,
@@ -1295,7 +1293,7 @@ class StripeInstance {
 			$subject = 'memreas buy media confirmation receipt';
 
 			$this->aws->sendSeSMail ( array (
-				$buyer->email_address
+				$buyer_email
 			),
 
 				$subject, $html );
