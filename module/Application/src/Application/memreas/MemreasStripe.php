@@ -951,7 +951,7 @@ class StripeInstance {
 					'message' => 'No user related to this username' 
 			);
 		}
-		
+		echo '<pre>'; print_r($user); die();
 		try {
 			
 			/**
