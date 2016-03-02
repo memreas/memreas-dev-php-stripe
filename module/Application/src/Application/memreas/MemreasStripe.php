@@ -983,7 +983,6 @@ class StripeInstance {
 				);
 			}
 			$accountId = $account->account_id;
-			$buyer = $account;
 			
 			$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $accountId );
 			
@@ -1277,12 +1276,14 @@ class StripeInstance {
 			 * -
 			 * Send Purchase Confirmation email
 			 */
+			$buyer = $this->memreasStripeTables->getUserTable ()->getUser ( $data['user_id'] );
 			$viewModel = new ViewModel ( array (
 				'username' => $buyer->first_name . ' ' . $buyer->last_name,
 				'seller_name' => $seller_account->firstname . ' ' . $seller_account->last_name,
 				'transaction_id' => $transaction_id,
 				'amount' => $amount,
-				'balance' => $buyer->balance
+				'balance' => $buyer->balance,
+				'event_name' => $data['event_name'],
 			) );
 			$viewModel->setTemplate ( 'email/buymedia' );
 			$viewRender = $this->service_locator->get ( 'ViewRenderer' );
