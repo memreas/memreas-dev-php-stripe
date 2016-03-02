@@ -951,6 +951,7 @@ class StripeInstance {
 					'message' => 'No user related to this username' 
 			);
 		}
+		$buyer_email = $user->email_address;
 
 		//Validate password
 
@@ -1277,6 +1278,7 @@ class StripeInstance {
 			 * Send Purchase Confirmation email
 			 */
 			$buyer = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data['user_id'] );
+			echo $buyer_email;
 			echo '<pre>'; print_r ($buyer); die();
 			$viewModel = new ViewModel ( array (
 				'username' => $buyer->username,
