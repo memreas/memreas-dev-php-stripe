@@ -951,7 +951,11 @@ class StripeInstance {
 					'message' => 'No user related to this username' 
 			);
 		}
-		echo '<pre>'; print_r($user); die();
+
+		//Validate password
+
+		echo $data['password'] . ' => ' . $user->password; die();
+
 		try {
 			
 			/**
