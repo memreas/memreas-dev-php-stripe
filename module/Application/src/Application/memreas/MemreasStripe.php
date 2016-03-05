@@ -1928,6 +1928,33 @@ class StripeInstance {
 					'account_type' => $MassPee->account_type,
 					'balance' => $MassPee->balance 
 			);
+			/**
+			 * TODO: fetch list of corresponding transactions > 30
+			 *  - for loop for transactions here
+			 *      $failFlagTest=false
+			 *  	    TODO: fetch list of events and media ids for transaction
+			 *      - inner for loop here to get event and media ids 
+			 *      - if media does not have flag then ok to add to payout balance
+			 *      - if media does have flag then not ok to add to payout balance => $failFlagTest = true
+			 *  
+			 *  if (!$failFlagTest) {
+			 *     //here add flag to output
+			 *     arr['offensive_content'] = 0;
+			 *     arr['dmca_violation'] = 0
+			 *     $balancePyaout += $transaction_amount
+			 *  } else {
+			 *     //here add flag to output
+			 *     arr['offensive_content'] = 0;
+			 *     arr['dmca_violation'] = 1;
+			 *     arr['dmca_violation']['media_ids'] = array ("...","...");
+			 *     continue;
+			 *   } 
+			 *      
+			 */
+			
+			/**
+			 *  
+			 */
 		}
 		
 		return array (
