@@ -1926,13 +1926,6 @@ class StripeInstance {
 		
 		$massPayeesArray = array ();
 		foreach ( $massPayees as $MassPee ) {
-			$massPayeesArray [] = array (
-					'account_id' => $MassPee->account_id,
-					'user_id' => $MassPee->user_id,
-					'username' => $MassPee->username,
-					'account_type' => $MassPee->account_type,
-					'balance' => $MassPee->balance 
-			);
 			/**
 			 * TODO: fetch list of corresponding transactions > 30
 			 *  - for loop for transactions here
@@ -1958,8 +1951,23 @@ class StripeInstance {
 			 */
 			//Get Transactions
 			$transactions = $this->memreasStripeTables->getTransactionTable()->getTransactionByAccountId($MassPee->account_id);
-			echo '<pre>'; print_r ($transactions); die();
+			$transactions_array = array();
+			foreach ($transactions as $transaction) {
+				$transactions_array[] = array(
+					'id' => $transaction->id,
+					'amount' => $transaction->amount,
+					'type' => $transaction->transaction_type
+				);
+			}
 
+			$massPayeesArray [] = array (
+				'account_id' => $MassPee->account_id,
+				'user_id' => $MassPee->user_id,
+				'username' => $MassPee->username,
+				'account_type' => $MassPee->account_type,
+				'balance' => $MassPee->balance,
+				'transactions' => $transactions_array,
+			);
 		}
 		
 		return array (
