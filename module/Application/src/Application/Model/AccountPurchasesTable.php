@@ -36,6 +36,17 @@ class AccountPurchasesTable {
 		return $row;
 	}
 
+	public function getPurchaseByTransactionId($transaction_id) {
+		$rowset = $this->tableGateway->select ( array (
+				'transaction_id' => $transaction_id
+		) );
+		$row = $rowset->current ();
+		if (! $row) {
+			return null;
+		}
+		return $row;
+	}
+
 	public function getAccountPurchases($account_id) {
 
 		$adapter = $this->tableGateway->getAdapter ();

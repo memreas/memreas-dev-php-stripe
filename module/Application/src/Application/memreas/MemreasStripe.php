@@ -1953,17 +1953,21 @@ class StripeInstance {
 			$transactions = $this->memreasStripeTables->getTransactionTable()->getPayeeTransactionByAccountId($MassPee->account_id, MemreasConstants::LIST_MASS_PAYEE_INTERVAL);
 			$transactions_array = array();
 			foreach ($transactions as $transaction) {
+
+				//Get event ID
+				$AccountPurchase = $this->memreasStripeTables->getAccountPurchasesTable()->getPurchaseByTransactionId($transaction->transaction_id);
+				if (!empty($AccountPurchase)) {
+					$event_id = $AccountPurchase->event_id;
+				}
+
 				$transactions_array[] = array(
 					'id' => $transaction->transaction_id,
 					'amount' => $transaction->amount,
 					'type' => $transaction->transaction_type,
 					'date' => $transaction->transaction_sent,
-					'request' => $transaction->transaction_request,
-					'response' => $transaction->transaction_response
+					'event_id' => isset($event_id) ? $event_id : '',
 				);
 			}
-
-			echo '<pre>'; print_r ($transactions_array); die();
 
 			$massPayeesArray [] = array (
 				'account_id' => $MassPee->account_id,
