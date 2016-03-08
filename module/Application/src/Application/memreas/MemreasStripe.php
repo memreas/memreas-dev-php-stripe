@@ -1956,10 +1956,10 @@ class StripeInstance {
 			 *   } 
 			 *      
 			 */
-			
-			/**
-			 *  
-			 */
+			//Get Transactions
+			$transactions = $this->memreasStripeTables->getTransactionTable()->getTransactionByAccountId($MassPee->account_id);
+			echo '<pre>'; print_r ($transactions); die();
+
 		}
 		
 		return array (
