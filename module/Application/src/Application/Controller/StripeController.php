@@ -400,6 +400,17 @@ class StripeController extends AbstractActionController {
 			die ();
 		}
 	}
+	public function refundAction() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		if ($this->fetchSession ()) {
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
+			$this->flushResponse ( json_encode ( $MemreasStripe->refundAmount ( $message_data ) ) );
+			die ();
+		}
+	}
 	public function resetDataAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
