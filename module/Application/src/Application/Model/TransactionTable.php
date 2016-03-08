@@ -71,14 +71,16 @@ class TransactionTable {
 			$this->limit = $limit;
 			$resultSet = $this->tableGateway->select ( function (Select $select) {
 				$select->where ( array (
-					'account_id' => $this->account_id,
-					'transaction_sent < ' => '(NOW() - INTERVAL ' . $this->payee_interval . ' DAY)'
-				) )->order ( 'transaction_sent DESC' )->offset ( $this->offset )->limit ( $this->limit );
+					'account_id' => $this->account_id
+				) );
+				$select->where->lessThan('transaction_sent', '(NOW() - INTERVAL ' . $this->payee_interval . ' DAY)');
+				$select->order ( 'transaction_sent DESC' )->offset ( $this->offset )->limit ( $this->limit );
+
 			} );
 		} else {
 			$resultSet = $this->tableGateway->select ( array (
 				'account_id' => $account_id,
-				'transaction_sent < ' => '(NOW() - INTERVAL ' . $this->payee_interval . ' DAY)'
+				'transaction_sent < (NOW() - INTERVAL ' . $this->payee_interval . ' DAY)'
 			) );
 		}
 		return $resultSet;
