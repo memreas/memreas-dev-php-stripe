@@ -34,7 +34,7 @@ class AccountTable {
 		$rowset = $this->tableGateway->select ( function (Select $select) {
 			//Mlog::addone ( $cm, 'Inside select for listMassPayee' );
 			$conditions = "account_type = 'seller' AND balance > 0";
-			if (! empty ( $this->username )) {
+			if ($this->username != 'all') {
 				$conditions .= " AND username = '" . $this->username . "'";
 			}
 			$select->where ( $conditions )->limit ( $this->limit )->offset ( $this->offset );
