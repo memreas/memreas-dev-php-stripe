@@ -1954,7 +1954,7 @@ class StripeInstance {
 			$transactions_array = array();
 			foreach ($transactions as $transaction) {
 				$transactions_array[] = array(
-					'id' => $transaction->id,
+					'id' => $transaction->transaction_id,
 					'amount' => $transaction->amount,
 					'type' => $transaction->transaction_type
 				);
