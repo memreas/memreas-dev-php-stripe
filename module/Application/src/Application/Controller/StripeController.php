@@ -82,7 +82,7 @@ class StripeController extends AbstractActionController {
 				Mlog::addone ( $cm . __LINE__ . '$memreascookie', $memreascookie );
 				$this->sessHandler->startSessionWithMemreasCookie ( $memreascookie );
 				$hasSession = true;
-				//Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
+				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
 			}
 		} catch ( \Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session lookup error->', $e->getMessage () );
@@ -317,17 +317,15 @@ class StripeController extends AbstractActionController {
 	}
 	public function listMassPayeeAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ()) {
-			$json = $_REQUEST ['json'];
-			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
-			$message_data = json_decode ( $json, true );
-			Mlog::addone ( __CLASS__ . __METHOD__ . '$message_data-->', $message_data );
-			
-			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
-			Mlog::addone ( __CLASS__ . __METHOD__, 'About to enter listMassPayee...' );
-			$this->flushResponse ( json_encode ( $MemreasStripe->listMassPayee ($message_data) ) );
-			die ();
-		}
+		$json = $_REQUEST ['json'];
+		Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+		$message_data = json_decode ( $json, true );
+		Mlog::addone ( __CLASS__ . __METHOD__ . '$message_data-->', $message_data );
+
+		$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
+		Mlog::addone ( __CLASS__ . __METHOD__, 'About to enter listMassPayee...' );
+		$this->flushResponse ( json_encode ( $MemreasStripe->listMassPayee ($message_data) ) );
+		die ();
 	}
 	public function getCustomerInfoAction() {
 		if ($this->fetchSession ()) {
