@@ -11,6 +11,7 @@ use Zend\Db\Sql\Select;
 use Zend\Db\TableGateway\TableGateway;
 use Application\memreas\MUUID;
 use Application\memreas\Mlog;
+use Application\Model\MemreasConstants;
 
 class TransactionTable {
 	protected $tableGateway;
@@ -60,6 +61,30 @@ class TransactionTable {
 		}
 		return $resultSet;
 	}
+
+	public function getPayeeTransactionByAccountId($account_id, $page = null, $limit = null) {
+		Mlog::addone ( 'Inside getTransactionByAccountId', '...' );
+		$this->account_id = $account_id;
+		if ($page && $limit) {
+			$this->offset = ($page - 1) * $limit;
+			$this->limit = $limit;
+			$resultSet = $this->tableGateway->select ( function (Select $select) {
+				$interval_day = MemreasConstants::LIST_MASS_PAYEE_INTERVAL;
+				$select->where ( array (
+					'account_id' => $this->account_id,
+					'transaction_sent < ' => '(NOW() - INTERVAL ' . $interval_day . ' DAYS)'
+				) )->order ( 'transaction_sent DESC' )->offset ( $this->offset )->limit ( $this->limit );
+			} );
+		} else {
+			$interval_day = MemreasConstants::LIST_MASS_PAYEE_INTERVAL;
+			$resultSet = $this->tableGateway->select ( array (
+				'account_id' => $account_id,
+				'transaction_sent < ' => '(NOW() - INTERVAL ' . $interval_day . ' DAYS)'
+			) );
+		}
+		return $resultSet;
+	}
+
 	public function getTransactionByAccountIdAndDateFromTo($account_id, $date_from, $date_to, $page = null, $limit = null) {
 		Mlog::addone ( 'Inside getTransactionByAccountIdAndDateFromTo', '...' );
 		

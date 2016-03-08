@@ -1950,13 +1950,14 @@ class StripeInstance {
 			 *      
 			 */
 			//Get Transactions
-			$transactions = $this->memreasStripeTables->getTransactionTable()->getTransactionByAccountId($MassPee->account_id);
+			$transactions = $this->memreasStripeTables->getTransactionTable()->getPayeeTransactionByAccountId($MassPee->account_id);
 			$transactions_array = array();
 			foreach ($transactions as $transaction) {
 				$transactions_array[] = array(
 					'id' => $transaction->transaction_id,
 					'amount' => $transaction->amount,
-					'type' => $transaction->transaction_type
+					'type' => $transaction->transaction_type,
+					'date' => $transaction->transaction_sent,
 				);
 			}
 
