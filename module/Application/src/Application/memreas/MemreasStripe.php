@@ -1905,7 +1905,12 @@ class StripeInstance {
 	public function cancelSubscription($subscriptionId, $customerId) {
 		$this->stripeCustomer->cancelSubscription ( $subscriptionId, $customerId );
 	}
-	public function listMassPayee($username = '', $page = 1, $limit = 1000) {
+	public function listMassPayee($data) {
+
+		$username = $data['username'];
+		$page = isset($data['page']) ? $data['page'] : 1;
+		$limit = isset($data['limit']) ? $data['limit'] : 100;
+
 		$cm = __CLASS__ . __METHOD__;
 		Mlog::addone ( $cm, __LINE__ );
 		$massPayees = $this->memreasStripeTables->getAccountTable ()->listMassPayee ( $username, $page, $limit );

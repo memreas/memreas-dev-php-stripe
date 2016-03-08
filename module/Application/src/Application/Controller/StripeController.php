@@ -325,7 +325,7 @@ class StripeController extends AbstractActionController {
 			
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
 			Mlog::addone ( __CLASS__ . __METHOD__, 'About to enter listMassPayee...' );
-			$this->flushResponse ( json_encode ( $MemreasStripe->listMassPayee () ) );
+			$this->flushResponse ( json_encode ( $MemreasStripe->listMassPayee ($message_data) ) );
 			die ();
 		}
 	}
