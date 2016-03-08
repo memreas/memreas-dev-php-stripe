@@ -67,6 +67,7 @@ class TransactionTable {
 		Mlog::addone ( 'Inside getPayeeTransactionByAccountId', '...' );
 		$this->account_id = $account_id;
 		$this->payee_interval = MemreasConstants::LIST_MASS_PAYEE_INTERVAL;
+		echo '<pre>'; print_r ($this->payee_interval); die();
 		if ($page && $limit) {
 			$this->offset = ($page - 1) * $limit;
 			$this->limit = $limit;
@@ -77,7 +78,6 @@ class TransactionTable {
 				) )->order ( 'transaction_sent DESC' )->offset ( $this->offset )->limit ( $this->limit );
 			} );
 		} else {
-			$interval_day = MemreasConstants::LIST_MASS_PAYEE_INTERVAL;
 			$resultSet = $this->tableGateway->select ( array (
 				'account_id' => $account_id,
 				'transaction_sent < ' => '(NOW() - INTERVAL ' . $this->payee_interval . ' DAYS)'
