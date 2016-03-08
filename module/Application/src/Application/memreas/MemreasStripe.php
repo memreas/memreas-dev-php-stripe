@@ -1963,6 +1963,8 @@ class StripeInstance {
 				);
 			}
 
+			echo '<pre>'; print_r ($transactions_array); die();
+
 			$massPayeesArray [] = array (
 				'account_id' => $MassPee->account_id,
 				'user_id' => $MassPee->user_id,
