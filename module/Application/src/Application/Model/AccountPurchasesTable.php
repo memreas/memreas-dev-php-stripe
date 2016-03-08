@@ -38,8 +38,7 @@ class AccountPurchasesTable {
 
 	public function getPurchaseByTransactionId($transaction_id) {
 		$rowset = $this->tableGateway->select ( array (
-				//'transaction_id' => $transaction_id
-				'transaction_id' => '03159ded-6852-438d-9a82-e6b2613c4d8f'
+				'transaction_id' => $transaction_id
 		) );
 		$row = $rowset->current ();
 		if (! $row) {
