@@ -66,7 +66,6 @@ class TransactionTable {
 		Mlog::addone ( 'Inside getPayeeTransactionByAccountId', '...' );
 		$this->account_id = $account_id;
 		$this->payee_interval = $interval;
-		echo '<pre>'; print_r ($this->payee_interval); die();
 		if ($page && $limit) {
 			$this->offset = ($page - 1) * $limit;
 			$this->limit = $limit;
