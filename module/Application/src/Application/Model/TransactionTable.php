@@ -11,7 +11,6 @@ use Zend\Db\Sql\Select;
 use Zend\Db\TableGateway\TableGateway;
 use Application\memreas\MUUID;
 use Application\memreas\Mlog;
-use Application\Model\MemreasConstants;
 
 class TransactionTable {
 	protected $tableGateway;
@@ -63,10 +62,10 @@ class TransactionTable {
 		return $resultSet;
 	}
 
-	public function getPayeeTransactionByAccountId($account_id, $page = null, $limit = null) {
+	public function getPayeeTransactionByAccountId($account_id, $interval, $page = null, $limit = null) {
 		Mlog::addone ( 'Inside getPayeeTransactionByAccountId', '...' );
 		$this->account_id = $account_id;
-		$this->payee_interval = MemreasConstants::LIST_MASS_PAYEE_INTERVAL;
+		$this->payee_interval = $interval;
 		echo '<pre>'; print_r ($this->payee_interval); die();
 		if ($page && $limit) {
 			$this->offset = ($page - 1) * $limit;

@@ -1950,7 +1950,7 @@ class StripeInstance {
 			 *      
 			 */
 			//Get Transactions
-			$transactions = $this->memreasStripeTables->getTransactionTable()->getPayeeTransactionByAccountId($MassPee->account_id);
+			$transactions = $this->memreasStripeTables->getTransactionTable()->getPayeeTransactionByAccountId($MassPee->account_id, MemreasConstants::LIST_MASS_PAYEE_INTERVAL);
 			$transactions_array = array();
 			foreach ($transactions as $transaction) {
 				$transactions_array[] = array(
