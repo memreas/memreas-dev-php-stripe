@@ -1958,6 +1958,8 @@ class StripeInstance {
 					'amount' => $transaction->amount,
 					'type' => $transaction->transaction_type,
 					'date' => $transaction->transaction_sent,
+					'request' => $transaction->transaction_request,
+					'response' => $transaction->transaction_response
 				);
 			}
 
