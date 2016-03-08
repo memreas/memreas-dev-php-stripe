@@ -32,13 +32,13 @@ class AccountTable {
 		$this->limit = $limit;
 		$this->offset = ($page - 1) * $limit;
 		$rowset = $this->tableGateway->select ( function (Select $select) {
-			Mlog::addone ( $cm, 'Inside select for listMassPayee' );
+			//Mlog::addone ( $cm, 'Inside select for listMassPayee' );
 			$conditions = "account_type = 'seller' AND balance > 0";
 			if (! empty ( $this->username )) {
 				$conditions .= " AND username = '" . $this->username . "'";
 			}
 			$select->where ( $conditions )->limit ( $this->limit )->offset ( $this->offset );
-			Mlog::addone ( '$select->getSqlString($this->tableGateway->adapter->platform)-->', $select->getSqlString ( $this->tableGateway->adapter->platform ) );
+			//Mlog::addone ( '$select->getSqlString($this->tableGateway->adapter->platform)-->', $select->getSqlString ( $this->tableGateway->adapter->platform ) );
 		} );
 		
 		if (! $rowset) {
