@@ -70,7 +70,7 @@ class MemreasConstants {
 	//const AWS_APPSEC = 'GOTlfqOBhS7uTrIWCIz05lCcwSoFLF5JjDWQxF7v';
 
 	//Listpay Payout
-	const LIST_MASS_PAYEE_INTERVAL = 30; //Get records for older 30 days
+	const LIST_MASS_PAYEE_INTERVAL = 1; //Get records for older 30 days
 
 	public static function fetchAWS() {
 		$sharedConfig = [
