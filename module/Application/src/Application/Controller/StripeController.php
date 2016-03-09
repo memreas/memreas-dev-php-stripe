@@ -394,8 +394,12 @@ class StripeController extends AbstractActionController {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
+			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$message_data-->', $message_data );
+			die();
+			
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
 			$this->flushResponse ( json_encode ( $MemreasStripe->MakePayout ( $message_data ) ) );
 			die ();
@@ -405,6 +409,7 @@ class StripeController extends AbstractActionController {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
+			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
