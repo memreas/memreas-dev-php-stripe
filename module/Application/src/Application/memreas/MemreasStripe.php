@@ -1996,7 +1996,6 @@ class StripeInstance {
 		
 		$payees = $data ['payees'];
 		Mlog::addone ( $cm. __LINE__.'::$payees--->', $payees );
-		die();
 		foreach ( $payees as $payee ) {
 			
 			$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $payee ['account_id'], 'seller' );
