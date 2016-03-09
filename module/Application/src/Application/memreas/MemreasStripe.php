@@ -2042,7 +2042,7 @@ class StripeInstance {
 			Mlog::addone ( $cm, __LINE__ );
 			try {
 				Mlog::addone ( $cm, __LINE__ );
-				$transferResponse = $this->stripeRecipient->makePayout ( $transferParams );
+				$transferResponse = $this->stripeRecipient->stripePayout ( $transferParams );
 				Mlog::addone ( $cm, __LINE__ );
 			} catch ( ZfrStripe\Exception\BadRequestException $e ) {
 				return array (
@@ -2613,7 +2613,7 @@ class StripeRecipient {
 	 * Make payout amount to Recipient
 	 * params : $transferParams
 	 */
-	public function makePayout($transferParams) {
+	public function stripePayout($transferParams) {
 		Mlog::addone ( $cm. __LINE__ .'$transferParams--->', $transferParams);
 		$result = $this->stripeClient->createTransfer ( $transferParams ); 
 		Mlog::addone ( $cm. __LINE__ .'$result--->', $result);
