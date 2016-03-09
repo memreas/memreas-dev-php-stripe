@@ -315,19 +315,6 @@ class StripeController extends AbstractActionController {
 			die ();
 		}
 	}
-	public function listMassPayeeAction() {
-		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST );
-		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		$json = $_REQUEST ['json'];
-		Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
-		$message_data = json_decode ( $json, true );
-		Mlog::addone ( __CLASS__ . __METHOD__ . '$message_data-->', $message_data );
-
-		$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
-		Mlog::addone ( __CLASS__ . __METHOD__, 'About to enter listMassPayee...' );
-		$this->flushResponse ( json_encode ( $MemreasStripe->listMassPayee ($message_data) ) );
-		die ();
-	}
 	public function getCustomerInfoAction() {
 		if ($this->fetchSession ()) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
@@ -390,7 +377,31 @@ class StripeController extends AbstractActionController {
 			die ();
 		}
 	}
+	public function listMassPayeeAction() {
+		/*
+		if (empty($_REQUEST['admin_key'])) {
+			// Only admins allowed
+			die();
+		}
+		*/
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		$json = $_REQUEST ['json'];
+		Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+		$message_data = json_decode ( $json, true );
+		Mlog::addone ( __CLASS__ . __METHOD__ . '$message_data-->', $message_data );
+
+		$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
+		Mlog::addone ( __CLASS__ . __METHOD__, 'About to enter listMassPayee...' );
+		$this->flushResponse ( json_encode ( $MemreasStripe->listMassPayee ($message_data) ) );
+		die ();
+	}
 	public function payeePayoutAction() {
+		/*
+		if (empty($_REQUEST['admin_key'])) {
+			// Only admins allowed
+			die();
+		}
+		*/
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
@@ -398,8 +409,6 @@ class StripeController extends AbstractActionController {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$message_data-->', $message_data );
-			die();
-			
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
 			$this->flushResponse ( json_encode ( $MemreasStripe->MakePayout ( $message_data ) ) );
 			die ();

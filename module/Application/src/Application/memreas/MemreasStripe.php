@@ -47,7 +47,7 @@ class MemreasStripe extends StripeInstance {
 			$this->memreasStripeTables = new MemreasStripeTables ( $service_locator );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
 			$this->aws = $aws;
-				
+			
 			// Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
 			
 			/**
@@ -310,22 +310,21 @@ class StripeInstance {
 			foreach ( $transactions as $transaction ) {
 				$user = $this->memreasStripeTables->getAccountTable ()->getAccount ( $transaction->account_id );
 				$AccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalanceByTransactionId ( $transaction->transaction_id );
-				$balance = array();
+				$balance = array ();
 				if (! empty ( $AccountBalance )) {
-					$balance['starting_balance'] = $AccountBalance->starting_balance;
-					$balance['amount'] = $AccountBalance->amount;
-					$balance['ending_balance'] = $AccountBalance->ending_balance;
+					$balance ['starting_balance'] = $AccountBalance->starting_balance;
+					$balance ['amount'] = $AccountBalance->amount;
+					$balance ['ending_balance'] = $AccountBalance->ending_balance;
 				} else {
-					$balance['starting_balance'] = 0;
-					$balance['amount'] = 0;
-					$balance['ending_balance'] = 0;
+					$balance ['starting_balance'] = 0;
+					$balance ['amount'] = 0;
+					$balance ['ending_balance'] = 0;
 				}
 				
 				if ($search_username) {
-					
 				}
 				$orders [] = array (
-						//'username' => $user->username,
+						// 'username' => $user->username,
 						'username' => $search_username,
 						'transaction' => $transaction,
 						'balance' => $balance 
@@ -356,7 +355,7 @@ class StripeInstance {
 	 */
 	public function getAccountDetailByAccountId($account_id) {
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $account_id );
-		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::account--->', $account);
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::account--->', $account );
 		if ($account) {
 			$userDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
 			return $userDetail;
@@ -957,16 +956,16 @@ class StripeInstance {
 			);
 		}
 		$buyer_email = $user->email_address;
-
-		//Validate password
-
-		if (md5($data['password']) != $user->password) {
-			return array(
-				'status' => 'Failure',
-				'message' => 'Confirmation password is incorrect'
+		
+		// Validate password
+		
+		if (md5 ( $data ['password'] ) != $user->password) {
+			return array (
+					'status' => 'Failure',
+					'message' => 'Confirmation password is incorrect' 
 			);
 		}
-
+		
 		try {
 			
 			/**
@@ -982,7 +981,7 @@ class StripeInstance {
 			 * Start debit amount from buyer
 			 */
 			$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user->user_id );
-			if (empty($account)) {
+			if (empty ( $account )) {
 				return array (
 						'status' => 'Failure',
 						'message' => 'You have no account at this time. Please add card first.' 
@@ -1068,7 +1067,7 @@ class StripeInstance {
 			if (! $account)
 				return array (
 						'status' => 'Failure',
-						'message' => 'The target event owner is not registered as a seller, please try again later'
+						'message' => 'The target event owner is not registered as a seller, please try again later' 
 				);
 			$seller_account = $account;
 			$accountId = $account->account_id;
@@ -1277,37 +1276,37 @@ class StripeInstance {
 			 * Commit the transaction - chaching :)
 			 */
 			$connection->commit ();
-
+			
 			/**
 			 * -
 			 * Send Purchase Confirmation email
 			 */
-			$buyer = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data['user_id'] );
+			$buyer = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['user_id'] );
 			$viewModel = new ViewModel ( array (
-				'username' => $buyer->username,
-				'seller_name' => $seller_account->username,
-				'transaction_id' => $transaction_id,
-				'amount' => $amount,
-				'balance' => $buyer->balance,
-				'event_name' => $data['event_name'],
+					'username' => $buyer->username,
+					'seller_name' => $seller_account->username,
+					'transaction_id' => $transaction_id,
+					'amount' => $amount,
+					'balance' => $buyer->balance,
+					'event_name' => $data ['event_name'] 
 			) );
 			$viewModel->setTemplate ( 'email/buymedia' );
 			$viewRender = $this->service_locator->get ( 'ViewRenderer' );
-
+			
 			$html = $viewRender->render ( $viewModel );
 			$subject = 'memreas buy media confirmation receipt';
-
+			
 			$this->aws->sendSeSMail ( array (
-				$buyer_email
-			),
+					$buyer_email 
+			), 
 
-				$subject, $html );
+			$subject, $html );
 			
 			return array (
 					'status' => 'Success',
 					'message' => 'Buying media completed',
 					'event_id' => $event_id,
-					'transaction_id' => $transaction_id
+					'transaction_id' => $transaction_id 
 			);
 		} catch ( \Exception $e ) {
 			/**
@@ -1340,7 +1339,7 @@ class StripeInstance {
 		if (! $account) {
 			return array (
 					'status' => 'Failure',
-					'message' => 'There is no account relates to this user'
+					'message' => 'There is no account relates to this user' 
 			);
 		}
 		
@@ -1349,18 +1348,18 @@ class StripeInstance {
 		if (empty ( $checkBuyMedia )) {
 			return array (
 					'status' => 'Failure',
-					'event_id' => 'Account has no purchase history'
+					'event_id' => 'Account has no purchase history' 
 			);
 		}
-
-		$event_ids = array();
-		foreach ($checkBuyMedia as $item) {
-			$event_ids[] = $item['event_id'];
+		
+		$event_ids = array ();
+		foreach ( $checkBuyMedia as $item ) {
+			$event_ids [] = $item ['event_id'];
 		}
-
+		
 		return array (
 				'status' => 'Success',
-				'events' => $event_ids
+				'events' => $event_ids 
 		);
 	}
 	public function activePendingBalanceToAccount($transaction_id) {
@@ -1906,11 +1905,10 @@ class StripeInstance {
 		$this->stripeCustomer->cancelSubscription ( $subscriptionId, $customerId );
 	}
 	public function listMassPayee($data) {
-
-		$username = $data['username'];
-		$page = isset($data['page']) ? $data['page'] : 1;
-		$limit = isset($data['limit']) ? $data['limit'] : 100;
-
+		$username = $data ['username'];
+		$page = isset ( $data ['page'] ) ? $data ['page'] : 1;
+		$limit = isset ( $data ['limit'] ) ? $data ['limit'] : 100;
+		
 		$cm = __CLASS__ . __METHOD__;
 		Mlog::addone ( $cm, __LINE__ );
 		$massPayees = $this->memreasStripeTables->getAccountTable ()->listMassPayee ( $username, $page, $limit );
@@ -1928,54 +1926,53 @@ class StripeInstance {
 		foreach ( $massPayees as $MassPee ) {
 			/**
 			 * TODO: fetch list of corresponding transactions > 30
-			 *  - for loop for transactions here
-			 *      $failFlagTest=false
-			 *  	    TODO: fetch list of events and media ids for transaction
-			 *      - inner for loop here to get event and media ids 
-			 *      - if media does not have flag then ok to add to payout balance
-			 *      - if media does have flag then not ok to add to payout balance => $failFlagTest = true
-			 *  
-			 *  if (!$failFlagTest) {
-			 *     //here add flag to output
-			 *     arr['offensive_content'] = 0;
-			 *     arr['dmca_violation'] = 0
-			 *     $balancePyaout += $transaction_amount
-			 *  } else {
-			 *     //here add flag to output
-			 *     arr['offensive_content'] = 0;
-			 *     arr['dmca_violation'] = 1;
-			 *     arr['dmca_violation']['media_ids'] = array ("...","...");
-			 *     continue;
-			 *   } 
-			 *      
+			 * - for loop for transactions here
+			 * $failFlagTest=false
+			 * TODO: fetch list of events and media ids for transaction
+			 * - inner for loop here to get event and media ids
+			 * - if media does not have flag then ok to add to payout balance
+			 * - if media does have flag then not ok to add to payout balance => $failFlagTest = true
+			 *
+			 * if (!$failFlagTest) {
+			 * //here add flag to output
+			 * arr['offensive_content'] = 0;
+			 * arr['dmca_violation'] = 0
+			 * $balancePyaout += $transaction_amount
+			 * } else {
+			 * //here add flag to output
+			 * arr['offensive_content'] = 0;
+			 * arr['dmca_violation'] = 1;
+			 * arr['dmca_violation']['media_ids'] = array ("...","...");
+			 * continue;
+			 * }
 			 */
-			//Get Transactions
-			$transactions = $this->memreasStripeTables->getTransactionTable()->getPayeeTransactionByAccountId($MassPee->account_id, MemreasConstants::LIST_MASS_PAYEE_INTERVAL);
-			$transactions_array = array();
-			foreach ($transactions as $transaction) {
-
-				//Get event ID
-				$AccountPurchase = $this->memreasStripeTables->getAccountPurchasesTable()->getPurchaseByTransactionId($transaction->transaction_id);
-				if (!empty($AccountPurchase)) {
+			// Get Transactions
+			$transactions = $this->memreasStripeTables->getTransactionTable ()->getPayeeTransactionByAccountId ( $MassPee->account_id, MemreasConstants::LIST_MASS_PAYEE_INTERVAL );
+			$transactions_array = array ();
+			foreach ( $transactions as $transaction ) {
+				
+				// Get event ID
+				$AccountPurchase = $this->memreasStripeTables->getAccountPurchasesTable ()->getPurchaseByTransactionId ( $transaction->transaction_id );
+				if (! empty ( $AccountPurchase )) {
 					$event_id = $AccountPurchase->event_id;
 				}
-
-				$transactions_array[] = array(
-					'id' => $transaction->transaction_id,
-					'amount' => $transaction->amount,
-					'type' => $transaction->transaction_type,
-					'date' => $transaction->transaction_sent,
-					'event_id' => isset($event_id) ? $event_id : '',
+				
+				$transactions_array [] = array (
+						'id' => $transaction->transaction_id,
+						'amount' => $transaction->amount,
+						'type' => $transaction->transaction_type,
+						'date' => $transaction->transaction_sent,
+						'event_id' => isset ( $event_id ) ? $event_id : '' 
 				);
 			}
-
+			
 			$massPayeesArray [] = array (
-				'account_id' => $MassPee->account_id,
-				'user_id' => $MassPee->user_id,
-				'username' => $MassPee->username,
-				'account_type' => $MassPee->account_type,
-				'balance' => $MassPee->balance,
-				'transactions' => $transactions_array,
+					'account_id' => $MassPee->account_id,
+					'user_id' => $MassPee->user_id,
+					'username' => $MassPee->username,
+					'account_type' => $MassPee->account_type,
+					'balance' => $MassPee->balance,
+					'transactions' => $transactions_array 
 			);
 		}
 		
@@ -1986,123 +1983,131 @@ class StripeInstance {
 		);
 	}
 	public function MakePayout($data) {
-		$cm = __CLASS__.__METHOD__;
+		$cm = __CLASS__ . __METHOD__;
 		
-		Mlog::addone($cm ,__LINE__);
+		Mlog::addone ( $cm, __LINE__ );
 		/**
 		 * TODO: code needs to log transaction before and after call to Strip
 		 * code needs to decrement memreas_master for payout amount and log transactions to memreas_master for payout and fees
-		 * i.e. payout is $8 to seller, memereas master logs transaction for fees (links to transaction_id of seller), and payout - fees
+		 * i.e.
+		 * payout is $8 to seller, memereas master logs transaction for fees (links to transaction_id of seller), and payout - fees
 		 */
-		Mlog::addone($cm ,__LINE__);
-		$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $data ['account_id'], 'seller' );
-		Mlog::addone($cm ,__LINE__);
+		Mlog::addone ( $cm, __LINE__ );
 		
-		if (! $account) {
-		Mlog::addone($cm ,__LINE__);
-			return array (
-					'status' => 'Failure',
-					'message' => 'Account is not exist' 
-			);
-		}
+		$payees = $data ['payees'];
+		foreach ( $payees as $payee ) {
+			
+			$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $payee ['account_id'], 'seller' );
+			Mlog::addone ( $cm, __LINE__ );
+			
+			if (! $account) {
+				Mlog::addone ( $cm, __LINE__ );
+				return array (
+						'status' => 'Failure',
+						'message' => 'Account is not exist' 
+				);
+			}
 			
 			// Check if account has available balance
-		if ($account->balance < $data ['amount']) {
-		Mlog::addone($cm ,__LINE__);
-			return array (
-					'status' => 'Failure',
-					'message' => 'Account balance is smaller than amount you requested' 
+			if ($account->balance < $payee ['amount']) {
+				Mlog::addone ( $cm, __LINE__ );
+				return array (
+						'status' => 'Failure',
+						'message' => 'Account balance is smaller than amount you requested' 
+				);
+			}
+			Mlog::addone ( $cm, __LINE__ );
+			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
+			Mlog::addone ( $cm, __LINE__ );
+			
+			// Check if stripe customer / recipient is set
+			Mlog::addone ( $cm, __LINE__ );
+			if (empty ( $accountDetail->stripe_customer_id )) {
+				Mlog::addone ( $cm, __LINE__ );
+				return array (
+						'status' => 'Failure',
+						'message' => 'No stripe ID related to this account' 
+				);
+			}
+			
+			Mlog::addone ( $cm, __LINE__ );
+			$transferParams = array (
+					'amount' => $payee ['amount'],
+					'currency' => 'USD',
+					'recipient' => $accountDetail->stripe_customer_id,
+					'description' => $payee ['description'] 
 			);
-		}
-		Mlog::addone($cm ,__LINE__);
-		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-		Mlog::addone($cm ,__LINE__);
-		
-		// Check if stripe customer / recipient is set
-		Mlog::addone($cm ,__LINE__);
-		if (empty ( $accountDetail->stripe_customer_id )) {
-		Mlog::addone($cm ,__LINE__);
-			return array (
-					'status' => 'Failure',
-					'message' => 'No stripe ID related to this account' 
-			);
-		}
-		
-		Mlog::addone($cm ,__LINE__);
-		$transferParams = array (
-				'amount' => $data ['amount'],
-				'currency' => 'USD',
-				'recipient' => $accountDetail->stripe_customer_id,
-				'description' => $data ['description'] 
-		);
-		
-		Mlog::addone($cm ,__LINE__);
-		try {
-		Mlog::addone($cm ,__LINE__);
-			$transferResponse = $this->stripeRecipient->makePayout ( $transferParams );
-		Mlog::addone($cm ,__LINE__);
-		} catch ( ZfrStripe\Exception\BadRequestException $e ) {
-			return array (
-					'status' => 'Failure',
-					'message' => $e->getMessage () 
-			);
-		}
-		
-		$now = date ( 'Y-m-d H:i:s' );
-		// Update transaction
-		Mlog::addone($cm ,__LINE__);
-		$transaction = new Memreas_Transaction ();
-		
-		$transaction->exchangeArray ( array (
-				'account_id' => $account->account_id,
-				'transaction_type' => 'make_payout_seller',
-				'transaction_request' => '',
-				'transaction_sent' => $now,
-				'pass_fail' => 1,
-				'transaction_response' => json_encode ( $transferResponse ),
-				'transaction_receive' => $now 
-		) );
-		Mlog::addone($cm ,__LINE__);
-		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-		Mlog::addone($cm ,__LINE__);
-		
-		// Update Account Balance
-		Mlog::addone($cm ,__LINE__);
-		$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $account->account_id );
-		Mlog::addone($cm ,__LINE__);
-		$startingAccountBalance = (isset ( $currentAccountBalance )) ? $currentAccountBalance->ending_balance : '0.00';
-		Mlog::addone($cm ,__LINE__);
-		$endingAccountBalance = $startingAccountBalance - $data ['amount'];
-		Mlog::addone($cm ,__LINE__);
-		$accountBalance = new AccountBalances ();
-		Mlog::addone($cm ,__LINE__);
-		$accountBalance->exchangeArray ( array (
-				'account_id' => $account->account_id,
-				'transaction_id' => $transaction_id,
-				'transaction_type' => "seller_payout",
-				'starting_balance' => $startingAccountBalance,
-				'amount' => $data ['amount'],
-				'ending_balance' => $endingAccountBalance,
-				'create_time' => $now 
-		) );
-		Mlog::addone($cm ,__LINE__);
-		$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $accountBalance );
-		
-		// Update account table
-		Mlog::addone($cm ,__LINE__);
-		$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $account->account_id, 'seller' );
-		Mlog::addone($cm ,__LINE__);
-		$account->exchangeArray ( array (
-				'balance' => $endingAccountBalance,
-				'update_time' => $now 
-		) );
-		Mlog::addone($cm ,__LINE__);
-		$accountId = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
-		Mlog::addone($cm ,__LINE__);
+			
+			Mlog::addone ( $cm, __LINE__ );
+			try {
+				Mlog::addone ( $cm, __LINE__ );
+				$transferResponse = $this->stripeRecipient->makePayout ( $transferParams );
+				Mlog::addone ( $cm, __LINE__ );
+			} catch ( ZfrStripe\Exception\BadRequestException $e ) {
+				return array (
+						'status' => 'Failure',
+						'message' => $e->getMessage () 
+				);
+			}
+			
+			$now = date ( 'Y-m-d H:i:s' );
+			// Update transaction
+			Mlog::addone ( $cm, __LINE__ );
+			$transaction = new Memreas_Transaction ();
+			
+			$transaction->exchangeArray ( array (
+					'account_id' => $account->account_id,
+					'transaction_type' => 'make_payout_seller',
+					'transaction_request' => '',
+					'transaction_sent' => $now,
+					'pass_fail' => 1,
+					'transaction_response' => json_encode ( $transferResponse ),
+					'transaction_receive' => $now 
+			) );
+			Mlog::addone ( $cm, __LINE__ );
+			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+			Mlog::addone ( $cm, __LINE__ );
+			
+			// Update Account Balance
+			Mlog::addone ( $cm, __LINE__ );
+			$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $account->account_id );
+			Mlog::addone ( $cm, __LINE__ );
+			$startingAccountBalance = (isset ( $currentAccountBalance )) ? $currentAccountBalance->ending_balance : '0.00';
+			Mlog::addone ( $cm, __LINE__ );
+			$endingAccountBalance = $startingAccountBalance - $payee ['amount'];
+			Mlog::addone ( $cm, __LINE__ );
+			$accountBalance = new AccountBalances ();
+			Mlog::addone ( $cm, __LINE__ );
+			$accountBalance->exchangeArray ( array (
+					'account_id' => $account->account_id,
+					'transaction_id' => $transaction_id,
+					'transaction_type' => "seller_payout",
+					'starting_balance' => $startingAccountBalance,
+					'amount' => $payee ['amount'],
+					'ending_balance' => $endingAccountBalance,
+					'create_time' => $now 
+			) );
+			Mlog::addone ( $cm, __LINE__ );
+			$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $accountBalance );
+			
+			// Update account table
+			Mlog::addone ( $cm, __LINE__ );
+			$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $account->account_id, 'seller' );
+			Mlog::addone ( $cm, __LINE__ );
+			$account->exchangeArray ( array (
+					'balance' => $endingAccountBalance,
+					'update_time' => $now 
+			) );
+			Mlog::addone ( $cm, __LINE__ );
+			$accountId = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
+			Mlog::addone ( $cm, __LINE__ );
+		} // end foreach($payees as $payee)
 		
 		return array (
 				'status' => 'Success',
-				'message' => 'Amount has been transferred' 
+				'message' => 'Amount has been transferred',
+				'payouts' => $payouts
+				
 		);
 	}
 	
