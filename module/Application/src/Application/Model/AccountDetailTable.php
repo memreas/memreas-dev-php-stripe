@@ -55,6 +55,7 @@ class AccountDetailTable {
 				'account_detail_id' => $account->account_detail_id,
 				'account_id' => $account->account_id,
 				'stripe_customer_id' => $account->stripe_customer_id,
+				'tax_ssn_ein' => $account->tax_ssn_ein,
 				'first_name' => $account->first_name,
 				'last_name' => $account->last_name,
 				'address_line_1' => $account->address_line_1,

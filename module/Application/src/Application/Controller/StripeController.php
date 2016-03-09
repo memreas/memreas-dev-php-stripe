@@ -378,12 +378,10 @@ class StripeController extends AbstractActionController {
 		}
 	}
 	public function listMassPayeeAction() {
-		/*
 		if (empty($_REQUEST['admin_key'])) {
 			// Only admins allowed
 			die();
 		}
-		*/
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		$json = $_REQUEST ['json'];
 		Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
@@ -396,12 +394,10 @@ class StripeController extends AbstractActionController {
 		die ();
 	}
 	public function payeePayoutAction() {
-		/*
 		if (empty($_REQUEST['admin_key'])) {
 			// Only admins allowed
 			die();
 		}
-		*/
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );

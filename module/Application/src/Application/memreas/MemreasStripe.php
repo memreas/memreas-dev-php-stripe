@@ -8,7 +8,6 @@
 namespace Application\memreas;
 
 use Application\Entity\User;
-use Application\memreas\AWSStripeManagerSender;
 use Application\memreas\Mlog;
 use Application\memreas\StripePlansConfig;
 use Application\Model\Account;
@@ -21,8 +20,8 @@ use Application\Model\Subscription;
 use Application\Model\Transaction as Memreas_Transaction;
 use Aws\Ses\Exception\SesException;
 use Guzzle\Http\Client;
-use Zend\View\Model\ViewModel;
 use Guzzle\Service\Exception\ValidationException;
+use Zend\View\Model\ViewModel;
 use ZfrStripe;
 use ZfrStripe\Client\StripeClient;
 use ZfrStripe\Exception\BadRequestException;
@@ -106,7 +105,7 @@ class StripeInstance {
 	}
 	
 	/*
-	 * List stripe plan
+	 * Stripe Webhook Receiver
 	 */
 	public function webHookReceiver() {
 		$cm = __CLASS__ . __METHOD__;
@@ -450,7 +449,9 @@ class StripeInstance {
 					'account_number' => $seller_data ['account_number'] 
 			);
 			
-			// Create Stripe Recipient data
+			/**
+			 * Create Recipient for Seller
+			 */
 			$recipientParams = array (
 					'name' => $seller_data ['first_name'] . ' ' . $seller_data ['last_name'],
 					'email' => $stripe_email_address,
@@ -460,11 +461,21 @@ class StripeInstance {
 			$this->stripeRecipient->setRecipientInfo ( $recipientParams );
 			$recipientResponse = $this->stripeRecipient->createRecipient ();
 			
-			if (array_key_exists ( 'error', $recipientResponse ))
+			/**
+			 * Create Account for Seller
+			 */
+			
+			
+			
+			
+			
+			
+			if (array_key_exists ( 'error', $recipientResponse )) {
 				return array (
 						'status' => 'Failure',
 						'message' => $recipientResponse ['message'] 
 				);
+			}
 				
 				// Create an account entry
 			$now = date ( 'Y-m-d H:i:s' );
@@ -493,9 +504,10 @@ class StripeInstance {
 		$accountDetail = new AccountDetail ();
 		$accountDetail->exchangeArray ( array (
 				'account_id' => $account_id,
+				'stripe_customer_id' => $recipientResponse ['id'],
+				'tax_ssn_ein' => $seller_data ['tax_ssn_ein'],
 				'first_name' => $seller_data ['first_name'],
 				'last_name' => $seller_data ['last_name'],
-				'stripe_customer_id' => $recipientResponse ['id'],
 				'address_line_1' => $seller_data ['address_line_1'],
 				'address_line_2' => $seller_data ['address_line_2'],
 				'city' => $seller_data ['city'],
