@@ -34,7 +34,7 @@ class AccountTable {
 		$rowset = $this->tableGateway->select ( function (Select $select) {
 			//Mlog::addone ( $cm, 'Inside select for listMassPayee' );
 			$conditions = "account_type = 'seller' AND balance > 0";
-			$conditions =  " AND ((username = '" . MemreasConstants::ACCOUNT_MEMREAS_FLOAT . "') OR (username = '" . MemreasConstants::ACCOUNT_MEMREAS_MASTER . "'))";
+			$conditions =  " AND (username != '" . MemreasConstants::ACCOUNT_MEMREAS_FLOAT . "') AND (username != '" . MemreasConstants::ACCOUNT_MEMREAS_MASTER . "')";
 			if ($this->username != 'all') {
 				$conditions .= " AND username = '" . $this->username . "'";
 			}
