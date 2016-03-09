@@ -1986,30 +1986,49 @@ class StripeInstance {
 		);
 	}
 	public function MakePayout($data) {
-		$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $data ['account_id'], 'seller' );
+		$cm = __CLASS__.__METHOD__;
 		
-		if (! $account)
+		Mlog::addone($cm ,__LINE__);
+		/**
+		 * TODO: code needs to log transaction before and after call to Strip
+		 * code needs to decrement memreas_master for payout amount and log transactions to memreas_master for payout and fees
+		 * i.e. payout is $8 to seller, memereas master logs transaction for fees (links to transaction_id of seller), and payout - fees
+		 */
+		Mlog::addone($cm ,__LINE__);
+		$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $data ['account_id'], 'seller' );
+		Mlog::addone($cm ,__LINE__);
+		
+		if (! $account) {
+		Mlog::addone($cm ,__LINE__);
 			return array (
 					'status' => 'Failure',
 					'message' => 'Account is not exist' 
 			);
+		}
 			
 			// Check if account has available balance
-		if ($account->balance < $data ['amount'])
+		if ($account->balance < $data ['amount']) {
+		Mlog::addone($cm ,__LINE__);
 			return array (
 					'status' => 'Failure',
 					'message' => 'Account balance is smaller than amount you requested' 
 			);
-		
+		}
+		Mlog::addone($cm ,__LINE__);
 		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
+		Mlog::addone($cm ,__LINE__);
 		
 		// Check if stripe customer / recipient is set
-		if (empty ( $accountDetail->stripe_customer_id ))
+		Mlog::addone($cm ,__LINE__);
+		if (empty ( $accountDetail->stripe_customer_id )) {
+		Mlog::addone($cm ,__LINE__);
 			return array (
 					'status' => 'Failure',
 					'message' => 'No stripe ID related to this account' 
 			);
+		}
 		
+		Mlog::addone($cm ,__LINE__);
 		$transferParams = array (
 				'amount' => $data ['amount'],
 				'currency' => 'USD',
@@ -2017,8 +2036,11 @@ class StripeInstance {
 				'description' => $data ['description'] 
 		);
 		
+		Mlog::addone($cm ,__LINE__);
 		try {
+		Mlog::addone($cm ,__LINE__);
 			$transferResponse = $this->stripeRecipient->makePayout ( $transferParams );
+		Mlog::addone($cm ,__LINE__);
 		} catch ( ZfrStripe\Exception\BadRequestException $e ) {
 			return array (
 					'status' => 'Failure',
@@ -2028,6 +2050,7 @@ class StripeInstance {
 		
 		$now = date ( 'Y-m-d H:i:s' );
 		// Update transaction
+		Mlog::addone($cm ,__LINE__);
 		$transaction = new Memreas_Transaction ();
 		
 		$transaction->exchangeArray ( array (
@@ -2039,13 +2062,20 @@ class StripeInstance {
 				'transaction_response' => json_encode ( $transferResponse ),
 				'transaction_receive' => $now 
 		) );
+		Mlog::addone($cm ,__LINE__);
 		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+		Mlog::addone($cm ,__LINE__);
 		
 		// Update Account Balance
+		Mlog::addone($cm ,__LINE__);
 		$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $account->account_id );
+		Mlog::addone($cm ,__LINE__);
 		$startingAccountBalance = (isset ( $currentAccountBalance )) ? $currentAccountBalance->ending_balance : '0.00';
+		Mlog::addone($cm ,__LINE__);
 		$endingAccountBalance = $startingAccountBalance - $data ['amount'];
+		Mlog::addone($cm ,__LINE__);
 		$accountBalance = new AccountBalances ();
+		Mlog::addone($cm ,__LINE__);
 		$accountBalance->exchangeArray ( array (
 				'account_id' => $account->account_id,
 				'transaction_id' => $transaction_id,
@@ -2055,15 +2085,20 @@ class StripeInstance {
 				'ending_balance' => $endingAccountBalance,
 				'create_time' => $now 
 		) );
+		Mlog::addone($cm ,__LINE__);
 		$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $accountBalance );
 		
 		// Update account table
+		Mlog::addone($cm ,__LINE__);
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $account->account_id, 'seller' );
+		Mlog::addone($cm ,__LINE__);
 		$account->exchangeArray ( array (
 				'balance' => $endingAccountBalance,
 				'update_time' => $now 
 		) );
+		Mlog::addone($cm ,__LINE__);
 		$accountId = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
+		Mlog::addone($cm ,__LINE__);
 		
 		return array (
 				'status' => 'Success',
