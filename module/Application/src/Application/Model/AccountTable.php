@@ -29,13 +29,12 @@ class AccountTable {
 		$cm = __CLASS__ . __METHOD__;
 		
 		Mlog::addone ( $cm, '::enter listMassPayee' );
-		$conditions = '';
 		$this->username = $username;
 		$this->limit = $limit;
 		$this->offset = ($page - 1) * $limit;
 		$rowset = $this->tableGateway->select ( function (Select $select) {
 			//Mlog::addone ( $cm, 'Inside select for listMassPayee' );
-			$conditions .= "account_type = 'seller'";
+			$conditions = "account_type = 'seller'";
 			$conditions .= " AND balance > 0";
 			$conditions .= " AND (username != '" . MemreasConstants::ACCOUNT_MEMREAS_FLOAT . "')";
 			$conditions .= " AND (username != '" . MemreasConstants::ACCOUNT_MEMREAS_MASTER . "')";
