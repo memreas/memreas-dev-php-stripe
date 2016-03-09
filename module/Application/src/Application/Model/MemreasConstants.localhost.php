@@ -65,9 +65,10 @@ class MemreasConstants {
 	const AWS_APPSEC = 'TM+p8s9hlJwnKECCEKSVVhEOBjVhTWDG4ijIhJdk';
 	const SES_SMTP_KEY = 'AKIAJZNY5YHUCYUP2U4A';
 	const SES_SMTP_SECRET = 'Ashp1eCvbvKuL5uTpw/TSipW/O7CkewRoTl/N+NXUAGr';
-	//SES
-	//const AWS_APPKEY = 'AKIAJXSV2QLTZP7UKX4Q';
-	//const AWS_APPSEC = 'GOTlfqOBhS7uTrIWCIz05lCcwSoFLF5JjDWQxF7v';
+
+	//Listpay Payout
+	const LIST_MASS_PAYEE_INTERVAL = 1; //Get records for older 30 days
+	
 	public static function fetchAWS() {
 		$sharedConfig = [
 				'region' => 'us-east-1',
