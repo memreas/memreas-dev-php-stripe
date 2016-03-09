@@ -2033,7 +2033,7 @@ class StripeInstance {
 			
 			Mlog::addone ( $cm, __LINE__ );
 			$transferParams = array (
-					'amount' => $payee ['amount'],
+					'amount' => $payee ['amount'] * 100, //stripe stores in cents
 					'currency' => 'USD',
 					'recipient' => $accountDetail->stripe_customer_id,
 					'description' => $payee ['description'] 
