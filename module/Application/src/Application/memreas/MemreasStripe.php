@@ -2614,7 +2614,10 @@ class StripeRecipient {
 	 * params : $transferParams
 	 */
 	public function makePayout($transferParams) {
-		return $this->stripeClient->createTransfer ( $transferParams );
+		Mlog::addone ( $cm. __LINE__ .'$transferParams--->', $transferParams);
+		$result = $this->stripeClient->createTransfer ( $transferParams ); 
+		Mlog::addone ( $cm. __LINE__ .'$result--->', $result);
+		return $result;
 	}
 }
 
