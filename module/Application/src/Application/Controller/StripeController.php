@@ -316,6 +316,7 @@ class StripeController extends AbstractActionController {
 		}
 	}
 	public function listMassPayeeAction() {
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST );
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		$json = $_REQUEST ['json'];
 		Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
