@@ -30,8 +30,8 @@ class MemreasConstants {
 	const COPYRIGHT = '&copy;2015 memreas, llc. all rights reserved.';
 	
 	// Key data
-	const SECRET_KEY = 'sk_test_J92Qtec7ORzWNxZc86smGeSN';
-	const PUBLIC_KEY = 'pk_test_BwM1EZJWSUWhXPOFj6rTqRi4';
+	const SECRET_KEY = 'sk_test_mAQfjBDajagGKzguEn1YeOII';
+	const PUBLIC_KEY = 'pk_test_7lVycxA8zUe3p6dUDejUXjBh';
 	
 	// Account data
 	const ACCOUNT_MEMREAS_FLOAT = "memreas_float";

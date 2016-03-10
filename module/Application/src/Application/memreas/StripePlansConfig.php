@@ -11,11 +11,8 @@
  */
 namespace Application\memreas;
 
-use ZfrStripeModule;
-use ZfrStripe\Client\StripeClient;
-use ZfrStripe\Exception\TransactionErrorException;
-use ZfrStripe\Exception\NotFoundException;
 use Application\Model\MemreasConstants;
+use ZfrStripe\Exception\NotFoundException;
 
 class StripePlansConfig {
 	protected $stripeClient;
@@ -41,6 +38,7 @@ class StripePlansConfig {
 		return $this->stripeClient->createPlan ( $params );
 	}
 	public function getPlan($planId) {
+		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$this->stripeClient-->', $this->stripeClient);
 		try {
 			$plan = $this->stripeClient->getPlan ( array (
 					'id' => $planId 

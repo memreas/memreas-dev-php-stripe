@@ -22,15 +22,15 @@ use Aws\Ses\Exception\SesException;
 use Guzzle\Http\Client;
 use Guzzle\Service\Exception\ValidationException;
 use Zend\View\Model\ViewModel;
-use ZfrStripe;
-use ZfrStripe\Client\StripeClient;
-use ZfrStripe\Exception\BadRequestException;
-use ZfrStripe\Exception\CardErrorException;
-use ZfrStripe\Exception\NotFoundException;
+//use ZfrStripe;
+//use ZfrStripe\Client\StripeClient;
+//use ZfrStripe\Exception\BadRequestException;
+//use ZfrStripe\Exception\CardErrorException;
+//use ZfrStripe\Exception\NotFoundException;
 
 class MemreasStripe extends StripeInstance {
-	private $stripeClient;
-	private $stripeInstance;
+	public $stripeClient;
+	public $stripeInstance;
 	public $memreasStripeTables;
 	protected $clientSecret;
 	protected $clientPublic;
@@ -41,8 +41,13 @@ class MemreasStripe extends StripeInstance {
 	public function __construct($service_locator, $aws) {
 		try {
 			$this->service_locator = $service_locator;
-			$this->retreiveStripeKey ();
-			$this->stripeClient = new StripeClient ( $this->clientSecret, '2014-06-17' );
+			//$this->retreiveStripeKey ();
+			//$this->stripeClient = new StripeClient ( $this->clientSecret, '2014-06-17' );
+			/**
+			 * migrate to pure Stripe PHP API - 2016-03-07 (version)
+			 * needed for upgrade to managed accounts - payout failing for recipients...
+			 */
+			$this->stripeClient = new StripeClient();
 			$this->memreasStripeTables = new MemreasStripeTables ( $service_locator );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
 			$this->aws = $aws;
@@ -448,6 +453,11 @@ class StripeInstance {
 					'routing_number' => $seller_data ['bank_routing'],
 					'account_number' => $seller_data ['account_number'] 
 			);
+			
+			
+			
+			
+			
 			
 			/**
 			 * Create Recipient for Seller
@@ -2022,7 +2032,7 @@ class StripeInstance {
 		}
 		
 		$massPayeesArray = array ();
-		foreach ( $massPayees as $MassPee ) {
+		foreach ( $massPayees as $massPayee ) {
 			/**
 			 * TODO: fetch list of corresponding transactions > 30
 			 * - for loop for transactions here
@@ -2046,7 +2056,7 @@ class StripeInstance {
 			 * }
 			 */
 			// Get Transactions
-			$transactions = $this->memreasStripeTables->getTransactionTable ()->getPayeeTransactionByAccountId ( $MassPee->account_id, MemreasConstants::LIST_MASS_PAYEE_INTERVAL );
+			$transactions = $this->memreasStripeTables->getTransactionTable ()->getPayeeTransactionByAccountId ( $massPayee->account_id, MemreasConstants::LIST_MASS_PAYEE_INTERVAL );
 			$transactions_array = array ();
 			foreach ( $transactions as $transaction ) {
 				
@@ -2066,11 +2076,11 @@ class StripeInstance {
 			}
 			
 			$massPayeesArray [] = array (
-					'account_id' => $MassPee->account_id,
-					'user_id' => $MassPee->user_id,
-					'username' => $MassPee->username,
-					'account_type' => $MassPee->account_type,
-					'balance' => $MassPee->balance,
+					'account_id' => $massPayee->account_id,
+					'user_id' => $massPayee->user_id,
+					'username' => $massPayee->username,
+					'account_type' => $massPayee->account_type,
+					'balance' => $massPayee->balance,
 					'transactions' => $transactions_array 
 			);
 		}
@@ -2086,7 +2096,7 @@ class StripeInstance {
 		
 		Mlog::addone ( $cm, __LINE__ );
 		/**
-		 * TODO: code needs to log transaction before and after call to Strip
+		 * TODO: code needs to log transaction before and after call to Stripe
 		 * code needs to decrement memreas_master for payout amount and log transactions to memreas_master for payout and fees
 		 * i.e.
 		 * payout is $8 to seller, memereas master logs transaction for fees (links to transaction_id of seller), and payout - fees
@@ -2855,6 +2865,7 @@ class StripeCard {
 	public function storeCard($card_data = null) {
 		Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
 		if ($card_data) {
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			$this->setCarddata ( $card_data );
 			try {
 				$cardToken = $this->stripeClient->createCardToken ( array (
@@ -2867,6 +2878,7 @@ class StripeCard {
 				);
 			}
 		} else {
+			Mlog::addone ( __CLASS__ . __METHOD__ , __LINE__ );
 			try {
 				$cardToken = $this->stripeClient->createCardToken ( array (
 						'card' => $this->getCardValues () 
@@ -3034,3 +3046,298 @@ class StripeCard {
 		return $this->{$attributeName};
 	}
 }
+
+
+/*
+ * Inherit Main Stripe Class
+ * Implement stripe functions using Stripe PHP API here...
+ */
+class StripeClient {
+	public $stripeApiKey;
+	
+	public function __construct() {
+		$this->stripeApiKey = \Stripe\Stripe::setApiKey(MemreasConstants::SECRET_KEY);
+		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$this->stripeApiKey-->', $this->stripeApiKey);
+	}
+
+	/**
+	 * function deleteCard
+	 * @param stripe arguments $data
+	 */
+	public function deleteCard($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		die();
+		$customer = \Stripe\Customer::retrieve("cus_83PRfPAGz2DoL3");
+		$result = $customer->sources->retrieve("card_17nL5W2gUEVpEUdcWjCfFfrG")->delete();	$card->name = "Jane Austen";
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+
+	/**
+	 * function updateCard
+	 * @param stripe arguments $data
+	 */
+	public function updateCard($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		die();
+		$customer = \Stripe\Customer::retrieve("cus_83PRfPAGz2DoL3");
+		$card = $customer->sources->retrieve("card_17nL5W2gUEVpEUdcWjCfFfrG");
+		$card->name = "Jane Austen";
+		$result = $card->save();
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+	
+	/**
+	 * function getCard
+	 * @param stripe arguments $data
+	 */
+	public function getCard($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		die();
+		$customer = \Stripe\Customer::retrieve("cus_83PRfPAGz2DoL3");
+		$result = $customer->sources->retrieve("card_17nL5W2gUEVpEUdcWjCfFfrG");
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+
+	/**
+	 * function createCard
+	 * @param stripe arguments $data
+	 */
+	public function createCard($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		die();
+		$customer = \Stripe\Customer::retrieve("cus_83PRfPAGz2DoL3");
+		$result = $customer->sources->create(array("source" => "tok_17nIxq2gUEVpEUdcRuA1eTC8"));
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+
+	/**
+	 * function createCardToken
+	 * @param stripe arguments $data
+	 */
+	public function createCardToken($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		$result = \Stripe\Token::create($data);
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+
+	/**
+	 * function captureCharge
+	 * @param stripe arguments $data
+	 */
+	public function captureCharge($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		$ch = \Stripe\Charge::retrieve($data['id']);
+		$result = $ch->capture();
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+
+	/**
+	 * function createCharge
+	 * @param stripe arguments $data
+	 */
+	public function createCharge($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		$result = \Stripe\Charge::create($data);
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+
+	/**
+	 * function createTransfer
+	 * @param stripe arguments $data
+	 */
+	public function createTransfer($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		$result = \Stripe\Transfer::create($data);
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+
+	/**
+	 * function createRecipient
+	 * @param stripe arguments $data
+	 */
+	public function createRecipient($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		$result = \Stripe\Recipient::create($data);
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+
+	
+	/**
+	 * function cancelSubscription
+	 * @param stripe arguments $data
+	 */
+	public function cancelSubscription($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		die();
+		$cu = \Stripe\Customer::retrieve($data['stripe_customer_id']);
+		Mlog::addone($cm. __LINE__.'::$cu--->',$cu);
+		/**
+		 * TODO - find subscription id
+		 */
+		die();
+		$result = $cu->subscriptions->retreive($cu['XXXX'])->cancel();
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+
+	/**
+	 * function createSubscription
+	 * @param stripe arguments $data
+	 */
+	public function createSubscription($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		die();
+		$cu = \Stripe\Customer::retrieve($data['stripe_customer_id']);
+		$result = $cu->subscriptions->create($data['plan']);
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+
+	/**
+	 * function deleteCustomer
+	 * @param stripe arguments $data
+	 */
+	public function deleteCustomer($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		$cu = \Stripe\Customer::retrieve($data);
+		$result = $cu->delete();
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+
+	/**
+	 * function updateCustomer
+	 * @param stripe arguments $data
+	 */
+	public function updateCustomer($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		die();
+		/**
+		 * TODO - update per stripe AID
+		 */
+		//$source = \Stripe\Customer::retrieve($data['stripe_customer_id']);
+		//$cu->description = "Customer for test@example.com";
+		//$cu->source = "tok_17nIxq2gUEVpEUdcRuA1eTC8"; // obtained with Stripe.js
+		//$cu->save();
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+
+	/**
+	 * function getCustomers
+	 * @param stripe arguments $data
+	 */
+	public function getCustomers($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		$result = \Stripe\Customer::all($data);
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+
+	/**
+	 * function createCustomer
+	 * @param stripe arguments $data
+	 */
+	public function createCustomer($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::$data--->',$data);
+		$result = \Stripe\Customer::create($data);
+		Mlog::addone($cm. __LINE__.'::$result--->',$result);
+		return json_decode($result, true);
+	}
+
+	/**
+	 * function createPlan
+	 * @param stripe arguments $data
+	 */
+	public function createPlan($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::Plan::create::$data--->',$data);
+		$result = \Stripe\Plan::create($data);
+		Mlog::addone($cm. __LINE__.'::Plan::create::$result--->',$result);
+		return json_decode($result, true);
+	}
+	
+	/**
+	 * function getPlans
+	 * @param stripe arguments $data
+	 */
+	public function getPlans($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::Plan::all::$data--->',$data);
+		$result = \Stripe\Plan::all($data);
+		Mlog::addone($cm. __LINE__.'::Plan::all::$result--->',$result);
+		return json_decode($result, true);
+	}
+	
+	/**
+	 * function getPlan
+	 * @param stripe arguments $data
+	 */
+	public function getPlan($data) {
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::Plan::retrieve::$data--->',$data);
+		$result = \Stripe\Plan::retrieve($data);
+		Mlog::addone($cm. __LINE__.'::Plan::retrieve::$result--->',$result);
+		return json_decode($result, true);
+	}
+	
+	/**
+	 * function deletePlan
+	 * @param stripe arguments $data
+	 */
+	public function deletePlan($data) {
+		
+		$cm = __CLASS__.__METHOD__;
+		Mlog::addone($cm, __LINE__);
+		Mlog::addone($cm. __LINE__.'::Plan::retrieve::$data--->',$data);
+		die();
+		$plan = \Stripe\Plan::retrieve("PLAN_D_100GB_MONTHLY");
+		$result = $plan->delete();
+		Mlog::addone($cm. __LINE__.'::Plan::all::$result--->',$result);
+		return json_decode($result, true);
+		
+	}
+	
+} //end StripeClient
