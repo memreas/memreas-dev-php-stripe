@@ -1246,7 +1246,7 @@ class StripeInstance {
 		) );
 		$capture_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 		
-		$chargeResult = $this->stripeCard->captureCharge ( $stripeChargeParams );
+		$chargeResult = $this->stripeCard->captureCharge ( $stripeCaptureParams );
 		if ($chargeResult) {
 			// Check if Charge is successful or not
 			if (! $chargeResult ['paid']) {
