@@ -3056,11 +3056,8 @@ class StripeClient {
 	public $stripeApiKey;
 	
 	public function __construct() {
-		try {
-		$this->stripeApiKey = \Stripe\Stripe::setApiKey(MemreasConstants::SECRET_KEY);
-		} catch (Exception $e) {
-			Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::Exception-->', $e->getMessage());
-		}
+		$key = MemreasConstants::SECRET_KEY;
+		$this->stripeApiKey = \Stripe\Stripe::setApiKey($key);
 		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$this->stripeApiKey-->', $this->stripeApiKey);
 	}
 
