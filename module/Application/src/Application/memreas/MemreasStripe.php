@@ -1236,7 +1236,7 @@ class StripeInstance {
 		);
 		$memreas_transaction = new Memreas_Transaction ();
 		$memreas_transaction->exchangeArray ( array (
-				'account_id' => $account->account_id,
+				'account_id' => $Transaction->account_id,
 				'transaction_type' => 'add_value_to_account',
 				'transaction_request' => json_encode ( $transactionRequest ),
 				'amount' => $Transaction->amount,
@@ -1246,6 +1246,10 @@ class StripeInstance {
 		) );
 		$capture_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 		
+		/**
+		 * -
+		 * Make Capture call to Stripe
+		 */
 		$chargeResult = $this->stripeCard->captureCharge ( $stripeCaptureParams );
 		if ($chargeResult) {
 			// Check if Charge is successful or not
