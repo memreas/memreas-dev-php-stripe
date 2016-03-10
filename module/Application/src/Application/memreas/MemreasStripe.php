@@ -649,10 +649,9 @@ class StripeInstance {
 			$activeCreditToken = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 			
 			$chargeResult = $this->stripeCard->createCharge ( $stripeChargeParams );
-			Mlog::addone($cm.__LINE__.'::$chargeResult', $chargeResult);
-			$charge = json_decode($chargeResult, true);
-			Mlog::addone($cm.__LINE__.'::$charge', $charge);
-				
+			// Mlog::addone($cm.__LINE__.'::$chargeResult', $chargeResult);
+			$charge_authorization_id = $chargeResult ['id'];
+			// Mlog::addone($cm.__LINE__.'::$chargeResult', $chargeResult);
 			if ($chargeResult) {
 				// Check if Charge is successful or not
 				if (! $chargeResult ['paid']) {
@@ -662,7 +661,6 @@ class StripeInstance {
 					);
 				}
 				
-				
 				/**
 				 * -
 				 * Buyer Section
@@ -671,7 +669,7 @@ class StripeInstance {
 				 * - Update the account
 				 */
 				$now = date ( 'Y-m-d H:i:s' );
-				Mlog::addone(__CLASS__.__METHOD__.__LINE__.'$chargeResult-->', $chargeResult);
+				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '$chargeResult-->', $chargeResult );
 				$transactionDetail = array (
 						'transaction_id' => $transaction_id,
 						'account_id' => $account->account_id,
@@ -683,7 +681,6 @@ class StripeInstance {
 				$memreas_transaction->exchangeArray ( $transactionDetail );
 				$authorization_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 				
-				
 				/**
 				 * -
 				 * Send activation email
@@ -691,7 +688,7 @@ class StripeInstance {
 				$viewModel = new ViewModel ( array (
 						'username' => $accountDetail->first_name . ' ' . $accountDetail->last_name,
 						
-						'active_link' => MemreasConstants::MEMREAS_WSPROXYPAY . 'stripe_activeCredit&token=' . $activeCreditToken . '&tid=' . $authorization_transaction_id,
+						'active_link' => MemreasConstants::MEMREAS_WSPROXYPAY . 'stripe_activeCredit&token=' . $activeCreditToken . '&cid=' . $charge_authorization_id,
 						'amount' => $amount,
 						'currency' => $currency 
 				) );
@@ -1205,7 +1202,7 @@ class StripeInstance {
 				'events' => $event_ids 
 		);
 	}
-	public function activePendingBalanceToAccount($transaction_id) {
+	public function activePendingBalanceToAccount($transaction_id, $charge_authorization_id) {
 		$Transaction = $this->memreasStripeTables->getTransactionTable ()->getTransaction ( $transaction_id );
 		
 		if (empty ( $Transaction ))
@@ -1220,251 +1217,273 @@ class StripeInstance {
 					'message' => 'These credits were applied in a prior activation.' 
 			);
 		
-			/**
-			 * TODO Move to activate credit section
-			 */
-			$stripeChargeParams = array (
-					'amount' => $transactionAmount,
-					'currency' => $currency,
-					'customer' => $customerId,
-					'card' => $cardId, // If this card param is null, Stripe will get primary customer card to charge
-					'description' => 'Add value to account'
-			); // Set description more details later
-				
-			/**
-			 * -
-			 * Store transaction data prior to sending to Stripe
-			 */
-			$now = date ( 'Y-m-d H:i:s' );
-			// Begin storing transaction to DB
-			$transactionRequest = $stripeChargeParams;
-			$transactionRequest ['account_id'] = $account->account_id;
-			$transactionRequest ['stripe_details'] = array (
-					'stripeCustomer' => $customerId,
-					'stripeCardToken' => $cardToken,
-					'stripeCardId' => $cardId
-			);
-			$memreas_transaction = new Memreas_Transaction ();
-			$memreas_transaction->exchangeArray ( array (
-					'account_id' => $account->account_id,
-					'transaction_type' => 'add_value_to_account',
-					'transaction_request' => json_encode ( $transactionRequest ),
-					'amount' => $data ['amount'],
-					'currency' => $currency,
-					'capture' => "false",
-					'transaction_sent' => $now
-			) );
-			$activeCreditToken = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-				
-			$chargeResult = $this->stripeCard->createCharge ( $stripeChargeParams );
-			if ($chargeResult) {
-				// Check if Charge is successful or not
-				if (! $chargeResult ['paid']) {
-					return array (
-							'status' => 'Failure',
-							'Transaction declined! Please check your Stripe account and cards'
-					);
-				}
-			}
-			
-			
-			
-			/**
-			 * -
-			 * Store Account Balance
-			 */
-			$amount = $data ['amount'];
-			$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $account->account_id );
-			$startingAccountBalance = (isset ( $currentAccountBalance )) ? $currentAccountBalance->ending_balance : '0.00';
-			$endingAccountBalance = $startingAccountBalance + $amount;
-			
-			$accountBalance = new AccountBalances ();
-			$accountBalance->exchangeArray ( array (
-					'account_id' => $account->account_id,
-					'transaction_id' => $transaction_id,
-					'transaction_type' => "add_value_to_account",
-					'starting_balance' => $startingAccountBalance,
-					'amount' => $amount,
-					'ending_balance' => $endingAccountBalance,
-					'create_time' => $now
-			) );
-			$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $accountBalance );
-			
-			/**
-			 * -
-			 * Update Account to reflect the latest balance
-			 */
-			// Update the account table
-			$now = date ( 'Y-m-d H:i:s' );
-			$account->exchangeArray ( array (
-					'balance' => $endingAccountBalance,
-					'update_time' => $now
-			) );
-			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
-			
-			/**
-			 * -
-			 * memreas_float section
-			 * Store to memreas_float here (add transaction entries to deduct fee and store remainder as float)
-			 * - store the transaction
-			 * - store the account balance
-			 * - update account
-			 * - store the fee as a transaction
-			 * - store the fees deducted account balance
-			 * - update the account to reflect the fee
-			 */
-			$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
-			// Get the last balance - Insert the new account balance
-			$now = date ( 'Y-m-d H:i:s' );
-			$starting_balance = (isset ( $account_memreas_float )) ? $account_memreas_float->balance : '0.00';
-			$ending_balance = $starting_balance + $amount;
-			
-			$memreas_transaction = new Memreas_Transaction ();
-			$memreas_transaction->exchangeArray ( array (
-					'account_id' => $account_memreas_float->account_id,
-					'transaction_type' => "add_value_to_memreas_float_account",
-					'starting_balance' => $starting_balance,
-					'amount' => $amount,
-					'currency' => $currency,
-					'ending_balance' => $ending_balance,
-					'pass_fail' => 1,
-					'transaction_status' => "success",
-					'transaction_request' => json_encode ( array (
-							'correlated_transaction_id' => $transaction_id
-					) ),
-					'transaction_response' => json_encode ( array (
-							'correlated_transaction_id' => $transaction_id
-					) ),
-					'transaction_sent' => $now,
-					'transaction_receive' => $now
-			) );
-			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-			
-			// If no account found set the starting balance to zero else use the ending balance.
-			$memreasFloatAccountBalance = new AccountBalances ();
-			$memreasFloatAccountBalance->exchangeArray ( array (
-					'account_id' => $account_memreas_float->account_id,
-					'transaction_id' => $transaction_id,
-					'transaction_type' => "add_value_to_memreas_float_account",
-					'starting_balance' => $startingAccountBalance,
-					'amount' => $amount,
-					'ending_balance' => $endingAccountBalance,
-					'create_time' => $now
-			) );
-			$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $memreasFloatAccountBalance );
-			Mlog::addone ( $cm, __LINE__ );
-			
-			// Update the account table
-			$now = date ( 'Y-m-d H:i:s' );
-			$account_memreas_float->exchangeArray ( array (
-					'balance' => $endingAccountBalance,
-					'update_time' => $now
-			) );
-			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
-			Mlog::addone ( $cm, __LINE__ );
-			
-			/**
-			 * -
-			 * Deduct the fees from float
-			 */
-			$stripeBalanceTransactionParams = array (
-					'id' => $chargeResult ['balance_transaction']
-			);
-			
-			/**
-			 * -
-			 * Store balance transaction fee request prior to sending to stripe
-			 */
-			$now = date ( 'Y-m-d H:i:s' );
-			$memreas_transaction = new Memreas_Transaction ();
-			$memreas_transaction->exchangeArray ( array (
-					'account_id' => $account_id,
-					'transaction_type' => 'add_value_to_account_memreas_float_account_fees',
-					'transaction_request' => json_encode ( $stripeBalanceTransactionParams ),
-					'transaction_sent' => $now
-			) );
-			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-			Mlog::addone ( $cm, __LINE__ );
-			
-			/**
-			 * -
-			 * Make call to Stripe
-			 */
-			$balance_transaction = $this->stripeCard->getBalanceTransaction ( $stripeBalanceTransactionParams );
-			Mlog::addone ( $cm . 'addValueToAccount()->$balance_transaction::', $balance_transaction );
-			$fees = $balance_transaction ['fee'] / 100; // stripe stores in cents
-			
-			/**
-			 * -
-			 * Store balance transaction fee response from stripe
-			 */
-			
-			$now = date ( 'Y-m-d H:i:s' );
-			$memreas_transaction->exchangeArray ( array (
-					'transaction_id' => $transaction_id,
-					'amount' => "-$fees",
-					'currency' => $currency,
-					'pass_fail' => 1,
-					'transaction_status' => 'success',
-					'transaction_response' => json_encode ( $balance_transaction ),
-					'transaction_receive' => $now
-			) );
-			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-			Mlog::addone ( $cm, __LINE__ );
-			
-			/**
-			 * -
-			 * Deduct fee from float account
-			 */
-			// Get the last balance
-			// If no account found set the starting balance to zero else use the ending balance.
-			$starting_balance = $ending_balance;
-			$ending_balance = $starting_balance - $fees;
-			
-			// Insert the new account balance
-			$now = date ( 'Y-m-d H:i:s' );
-			$endingAccountBalance = new AccountBalances ();
-			$endingAccountBalance->exchangeArray ( array (
-					'account_id' => $account_memreas_float->account_id,
-					'transaction_id' => $transaction_id,
-					'transaction_type' => "add_value_to_memreas_float_account_fees",
-					'starting_balance' => $starting_balance,
-					'amount' => "-$fees",
-					'ending_balance' => $ending_balance,
-					'create_time' => $now
-			) );
-			$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
-			Mlog::addone ( $cm, __LINE__ );
-			
-			// Update the account table
-			$now = date ( 'Y-m-d H:i:s' );
-			$account_memreas_float->exchangeArray ( array (
-					'balance' => $ending_balance,
-					'update_time' => $now
-			) );
-			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
-			Mlog::addone ( $cm, __LINE__ );
-				
-			
-			
-			
-			
-			
+		/**
+		 * TODO Move to activate credit section
+		 */
+		$stripeCaptureParams = array (
+				'id' => $charge_authorization_id 
+		); // Set description more details later
+		
+		/**
+		 * -
+		 * Store transaction data prior to sending to Stripe
+		 */
 		$now = date ( 'Y-m-d H:i:s' );
+		// Begin storing transaction to DB
+		// $transactionRequest = $stripeCaptureParams;
+		$transactionRequest ['account_id'] = $Transaction->account_id;
+		$transactionRequest ['stripe_details'] = array (
+				'id' => $charge_authorization_id 
+		);
+		$memreas_transaction = new Memreas_Transaction ();
+		$memreas_transaction->exchangeArray ( array (
+				'account_id' => $account->account_id,
+				'transaction_type' => 'add_value_to_account',
+				'transaction_request' => json_encode ( $transactionRequest ),
+				'amount' => $Transaction->amount,
+				'currency' => $Transaction->currency,
+				'ref_transaction_id' => $transaction_id,
+				'transaction_sent' => $now 
+		) );
+		$capture_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 		
-		// Update Account Balance
-		$currentAccountBalance = $this->memreasStripeTables->getAccountTable ()->getAccount ( $Transaction->account_id );
-		$startingAccountBalance = (isset ( $currentAccountBalance )) ? $currentAccountBalance->balance : '0.00';
+		$chargeResult = $this->stripeCard->captureCharge ( $stripeChargeParams );
+		if ($chargeResult) {
+			// Check if Charge is successful or not
+			if (! $chargeResult ['paid']) {
+				return array (
+						'status' => 'Failure',
+						'Transaction declined! Please check your Stripe account and cards' 
+				);
+			}
+		}
 		
+		/**
+		 * -
+		 * Store Account Balance
+		 */
+		$account_id = $Transaction->account_id;
+		$amount = $Transaction->amount;
+		$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $account_id );
+		$startingAccountBalance = (isset ( $currentAccountBalance )) ? $currentAccountBalance->ending_balance : '0.00';
 		$endingAccountBalance = $startingAccountBalance + $Transaction->amount;
 		
-		$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $Transaction->account_id );
+		$accountBalance = new AccountBalances ();
+		$accountBalance->exchangeArray ( array (
+				'account_id' => $account_id,
+				'transaction_id' => $transaction_id,
+				'transaction_type' => "add_value_to_account",
+				'starting_balance' => $startingAccountBalance,
+				'amount' => $amount,
+				'ending_balance' => $endingAccountBalance,
+				'create_time' => $now 
+		) );
+		$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $accountBalance );
+		
+		/**
+		 * -
+		 * Update Account to reflect the latest balance
+		 */
+		// Update the account table
+		$now = date ( 'Y-m-d H:i:s' );
 		$account->exchangeArray ( array (
 				'balance' => $endingAccountBalance,
 				'update_time' => $now 
 		) );
-		$accountId = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
+		$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
 		
+		/**
+		 * -
+		 * memreas_float section
+		 * Store to memreas_float here (add transaction entries to deduct fee and store remainder as float)
+		 * - store the transaction
+		 * - store the account balance
+		 * - update account
+		 * - store the fee as a transaction
+		 * - store the fees deducted account balance
+		 * - update the account to reflect the fee
+		 */
+		$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
+		// Get the last balance - Insert the new account balance
+		$now = date ( 'Y-m-d H:i:s' );
+		$starting_balance = (isset ( $account_memreas_float )) ? $account_memreas_float->balance : '0.00';
+		$ending_balance = $starting_balance + $amount;
+		
+		$memreas_transaction = new Memreas_Transaction ();
+		$memreas_transaction->exchangeArray ( array (
+				'account_id' => $account_memreas_float->account_id,
+				'transaction_type' => "add_value_to_memreas_float_account",
+				'starting_balance' => $starting_balance,
+				'amount' => $amount,
+				'currency' => $currency,
+				'ending_balance' => $ending_balance,
+				'pass_fail' => 1,
+				'transaction_status' => "success",
+				'transaction_request' => json_encode ( array (
+						'correlated_transaction_id' => $transaction_id 
+				) ),
+				'transaction_response' => json_encode ( array (
+						'correlated_transaction_id' => $transaction_id 
+				) ),
+				'transaction_sent' => $now,
+				'transaction_receive' => $now 
+		) );
+		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+		
+		// If no account found set the starting balance to zero else use the ending balance.
+		$memreasFloatAccountBalance = new AccountBalances ();
+		$memreasFloatAccountBalance->exchangeArray ( array (
+				'account_id' => $account_memreas_float->account_id,
+				'transaction_id' => $transaction_id,
+				'transaction_type' => "add_value_to_memreas_float_account",
+				'starting_balance' => $startingAccountBalance,
+				'amount' => $amount,
+				'ending_balance' => $endingAccountBalance,
+				'create_time' => $now 
+		) );
+		$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $memreasFloatAccountBalance );
+		Mlog::addone ( $cm, __LINE__ );
+		
+		// Update the account table
+		$now = date ( 'Y-m-d H:i:s' );
+		$account_memreas_float->exchangeArray ( array (
+				'balance' => $endingAccountBalance,
+				'update_time' => $now 
+		) );
+		$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
+		Mlog::addone ( $cm, __LINE__ );
+		
+		/**
+		 * -
+		 * Deduct the fees from float
+		 * setup paramters to fetch fees
+		 */
+		$stripeBalanceTransactionParams = array (
+				'id' => $chargeResult ['balance_transaction'] 
+		);
+		Mlog::addone ( $cm, __LINE__ );
+		
+		/**
+		 * -
+		 * Store balance transaction fee request prior to sending to stripe
+		 */
+		$now = date ( 'Y-m-d H:i:s' );
+		$memreas_transaction = new Memreas_Transaction ();
+		$memreas_transaction->exchangeArray ( array (
+				'account_id' => $account_id,
+				'transaction_type' => 'add_value_to_account_memreas_float_account_fees',
+				'transaction_request' => json_encode ( $stripeBalanceTransactionParams ),
+				'transaction_sent' => $now 
+		) );
+		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+		Mlog::addone ( $cm, __LINE__ );
+		
+		/**
+		 * -
+		 * Make call to Stripe
+		 */
+		$balance_transaction = $this->stripeCard->getBalanceTransaction ( $stripeBalanceTransactionParams );
+		Mlog::addone ( $cm . 'addValueToAccount()->$balance_transaction::', $balance_transaction );
+		$fees = $balance_transaction ['fee'] / 100; // stripe stores in cents
+		Mlog::addone ( $cm, __LINE__ );
+		
+		/**
+		 * -
+		 * Store balance transaction fee response from stripe
+		 */
+		$now = date ( 'Y-m-d H:i:s' );
+		$memreas_transaction->exchangeArray ( array (
+				'transaction_id' => $transaction_id,
+				'amount' => "-$fees",
+				'currency' => $currency,
+				'pass_fail' => 1,
+				'transaction_status' => 'success',
+				'transaction_response' => json_encode ( $balance_transaction ),
+				'transaction_receive' => $now 
+		) );
+		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+		Mlog::addone ( $cm, __LINE__ );
+		
+		/**
+		 * -
+		 * Deduct fee from float account
+		 */
+		// Get the last balance
+		// If no account found set the starting balance to zero else use the ending balance.
+		$starting_balance = $ending_balance;
+		$ending_balance = $starting_balance - $fees;
+		
+		// Insert the new account balance
+		$now = date ( 'Y-m-d H:i:s' );
+		$endingAccountBalance = new AccountBalances ();
+		$endingAccountBalance->exchangeArray ( array (
+				'account_id' => $account_memreas_float->account_id,
+				'transaction_id' => $transaction_id,
+				'transaction_type' => "add_value_to_memreas_float_account_fees",
+				'starting_balance' => $starting_balance,
+				'amount' => "-$fees",
+				'ending_balance' => $ending_balance,
+				'create_time' => $now 
+		) );
+		$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
+		Mlog::addone ( $cm, __LINE__ );
+		
+		// Update the account table
+		$now = date ( 'Y-m-d H:i:s' );
+		$account_memreas_float->exchangeArray ( array (
+				'balance' => $ending_balance,
+				'update_time' => $now 
+		) );
+		$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
+		Mlog::addone ( $cm, __LINE__ );
+		
+		/**
+		 * Deduct fees from memreas_master also
+		 */
+		$account_memreas_master = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_MASTER );
+		$starting_balance = (isset ( $account_memreas_master )) ? $account_memreas_master->balance : '0.00';
+		$ending_balance = $starting_balance - $fees;
+		$memreasMasterAccountBalance = new AccountBalances ();
+		$memreasMasterAccountBalance->exchangeArray ( array (
+				'account_id' => $account_memreas_master->account_id,
+				'transaction_id' => $transaction_id,
+				'transaction_type' => "add_value_to_memreas_master_account_fees",
+				'starting_balance' => $starting_balance,
+				'amount' => - $fees,
+				'ending_balance' => $ending_balance,
+				'create_time' => $now 
+		) );
+		$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $memreasMasterAccountBalance );
+		Mlog::addone ( $cm, __LINE__ );
+		
+		// Update the account table
+		$now = date ( 'Y-m-d H:i:s' );
+		$account_memreas_master->exchangeArray ( array (
+				'balance' => $ending_balance,
+				'update_time' => $now 
+		) );
+		$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_master );
+		Mlog::addone ( $cm, __LINE__ );
+		
+		/*
+		 *
+		 * $now = date ( 'Y-m-d H:i:s' );
+		 *
+		 * // Update Account Balance
+		 * $currentAccountBalance = $this->memreasStripeTables->getAccountTable ()->getAccount ( $Transaction->account_id );
+		 * $startingAccountBalance = (isset ( $currentAccountBalance )) ? $currentAccountBalance->balance : '0.00';
+		 *
+		 * $endingAccountBalance = $startingAccountBalance + $Transaction->amount;
+		 *
+		 * $account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $Transaction->account_id );
+		 * $account->exchangeArray ( array (
+		 * 'balance' => $endingAccountBalance,
+		 * 'update_time' => $now
+		 * ) );
+		 * $accountId = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
+		 */
+		
+		$Transaction = $this->memreasStripeTables->getTransactionTable ()->getTransaction ( $capture_transaction_id );
 		$Transaction->transaction_status = 'buy_credit_email, buy_credit_verified, buy_credit_activated';
 		$metadata = array (
 				'IP' => $_SERVER ['REMOTE_ADDR'],
@@ -1476,7 +1495,7 @@ class StripeInstance {
 		
 		return array (
 				'status' => 'Success',
-				'message' => 'Amount has been activated' 
+				'message' => 'Amount has been captured and activated' 
 		);
 	}
 	public function AccountHistory($data) {
@@ -2181,8 +2200,7 @@ class StripeInstance {
 				'status' => 'Success',
 				'message' => 'Amount has been transferred',
 				'payouts' => $payouts 
-		)
-		;
+		);
 	}
 	
 	/*
@@ -2737,6 +2755,13 @@ class StripeCard {
 	 */
 	public function createCharge($data) {
 		return $this->stripeClient->createCharge ( $data );
+	}
+	
+	/*
+	 * Capture value
+	 */
+	public function captureCharge($data) {
+		return $this->stripeClient->captureCharge ( $data );
 	}
 	
 	/*

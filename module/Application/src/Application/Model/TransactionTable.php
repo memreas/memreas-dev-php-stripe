@@ -136,6 +136,7 @@ class TransactionTable {
 				'pass_fail' => $transaction->pass_fail,
 				'amount' => $transaction->amount,
 				'currency' => $transaction->currency,
+				'ref_transaction_id' => $transaction->ref_transaction_id,
 				'transaction_request' => $transaction->transaction_request,
 				'transaction_response' => $transaction->transaction_response,
 				'transaction_sent' => $transaction->transaction_sent,

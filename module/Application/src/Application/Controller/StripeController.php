@@ -331,7 +331,8 @@ class StripeController extends AbstractActionController {
 		if (isset ( $_REQUEST ['token'] )) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
 			$token = $_REQUEST ['token'];
-			$activeBalance = $MemreasStripe->activePendingBalanceToAccount ( $token );
+			$cid = $_REQUEST ['cid'];
+			$activeBalance = $MemreasStripe->activePendingBalanceToAccount ( $token, $cid );
 			// echo '<h3 style="text-align: center">' . $activeBalance ['message'] . '</h3>';
 			if ($activeBalance ['status'] == 'Success') {
 				$this->flushResponse ( '<script type="text/javascript">document.location.href="' . MemreasConstants::MEMREAS_FE . '/?credits_activated=1";</script>' );
