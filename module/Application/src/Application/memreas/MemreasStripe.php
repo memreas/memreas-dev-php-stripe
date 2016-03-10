@@ -3057,7 +3057,8 @@ class StripeClient {
 	public function __construct() {
 		\Stripe\Stripe::setApiKey((string) MemreasConstants::SECRET_KEY);
 		//\Stripe\Stripe::setApiKey("sk_test_mAQfjBDajagGKzguEn1YeOII");
-		$result = \Stripe\Plan::all();
+		//$result = \Stripe\Plan::all();
+		$result = $this->getPlans($data)
 		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$result-->', $result);
 	}
 
@@ -3300,13 +3301,13 @@ class StripeClient {
 	
 	/**
 	 * function getPlans
-	 * @param stripe arguments $data
+	 * @param stripe arguments none
 	 */
-	public function getPlans($data) {
+	public function getPlans() {
 		$cm = __CLASS__.__METHOD__;
 		Mlog::addone($cm, __LINE__);
 		Mlog::addone($cm. __LINE__.'::Plan::all::$data--->',$data);
-		$result = \Stripe\Plan::all($data);
+		$result = \Stripe\Plan::all();
 		Mlog::addone($cm. __LINE__.'::Plan::all::$result--->',$result);
 		return json_decode($result, true);
 	}
