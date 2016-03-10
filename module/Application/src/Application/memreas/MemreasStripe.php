@@ -950,6 +950,7 @@ class StripeInstance {
 		 * - if an error occurs the transaction is rolled back and an email is sent.
 		 */
 		$cm = __CLASS__ . __METHOD__;
+		Mlog::addone($cm.__LINE__.'buyMedia->$data', $data)
 		$user = $this->memreasStripeTables->getUserTable ()->getUser ( $data ['user_id'] );
 		$amount = $data ['amount'];
 		$event_id = $data ['event_id'];
