@@ -1202,6 +1202,7 @@ class StripeInstance {
 		);
 	}
 	public function activePendingBalanceToAccount($transaction_id, $charge_authorization_id) {
+		$cm = __CLASS__.__METHOD__;
 		$Transaction = $this->memreasStripeTables->getTransactionTable ()->getTransaction ( $transaction_id );
 		
 		if (empty ( $Transaction ))
@@ -1220,7 +1221,8 @@ class StripeInstance {
 		 * TODO Move to activate credit section
 		 */
 		$stripeCaptureParams = array (
-				'id' => $charge_authorization_id 
+				'id' => $charge_authorization_id,
+				'capture' => true
 		); // Set description more details later
 		
 		/**
