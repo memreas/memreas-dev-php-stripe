@@ -619,6 +619,7 @@ class StripeInstance {
 					'amount' => $transactionAmount,
 					'currency' => $currency,
 					'customer' => $customerId,
+					'capture' => false,
 					'card' => $cardId, // If this card param is null, Stripe will get primary customer card to charge
 					'description' => 'Add value to account' 
 			); // Set description more details later
@@ -643,7 +644,6 @@ class StripeInstance {
 					'transaction_request' => json_encode ( $transactionRequest ),
 					'amount' => $data ['amount'],
 					'currency' => $currency,
-					'capture' => false,
 					'transaction_sent' => $now 
 			) );
 			$activeCreditToken = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
