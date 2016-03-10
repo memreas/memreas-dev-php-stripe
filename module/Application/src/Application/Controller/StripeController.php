@@ -327,7 +327,7 @@ class StripeController extends AbstractActionController {
 		}
 	}
 	public function activeCreditAction() {
-		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST );
 		if (isset ( $_REQUEST ['token'] )) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
 			$token = $_REQUEST ['token'];
