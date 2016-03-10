@@ -1289,7 +1289,7 @@ class StripeInstance {
 		 */
 		// Update the account table
 		$now = date ( 'Y-m-d H:i:s' );
-		$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccount ( $account_id );
+		$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $account_id );
 		$account->exchangeArray ( array (
 				'balance' => $endingAccountBalance,
 				'update_time' => $now 
