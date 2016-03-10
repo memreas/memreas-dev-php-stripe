@@ -687,7 +687,6 @@ class StripeInstance {
 				 */
 				$viewModel = new ViewModel ( array (
 						'username' => $accountDetail->first_name . ' ' . $accountDetail->last_name,
-						
 						'active_link' => MemreasConstants::MEMREAS_WSPROXYPAY . 'stripe_activeCredit&token=' . $activeCreditToken . '&cid=' . $charge_authorization_id,
 						'amount' => $amount,
 						'currency' => $currency 
