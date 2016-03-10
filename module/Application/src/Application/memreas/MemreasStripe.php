@@ -3053,12 +3053,11 @@ class StripeCard {
  * Implement stripe functions using Stripe PHP API here...
  */
 class StripeClient {
-	public $stripeApiKey;
 	
 	public function __construct() {
 		$key = MemreasConstants::SECRET_KEY;
-		$this->stripeApiKey = \Stripe\Stripe::setApiKey($key);
-		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$this->stripeApiKey-->', $this->stripeApiKey);
+		$result = \Stripe\Stripe::setApiKey($key);
+		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$this->stripeApiKey-->', $result);
 	}
 
 	/**
