@@ -3056,8 +3056,10 @@ class StripeClient {
 	
 	public function __construct() {
 		$key = MemreasConstants::SECRET_KEY;
-		$result = \Stripe\Stripe::setApiKey($key);
-		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$this->stripeApiKey-->', $result);
+		//$result = \Stripe\Stripe::setApiKey($key);
+		\Stripe\Stripe::setApiKey("sk_test_mAQfjBDajagGKzguEn1YeOII");
+		$result = \Stripe\Plan::all();
+		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$result-->', $result);
 	}
 
 	/**
