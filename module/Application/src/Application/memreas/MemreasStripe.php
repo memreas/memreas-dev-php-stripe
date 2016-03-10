@@ -643,7 +643,7 @@ class StripeInstance {
 					'transaction_request' => json_encode ( $transactionRequest ),
 					'amount' => $data ['amount'],
 					'currency' => $currency,
-					'capture' => "false",
+					'capture' => false,
 					'transaction_sent' => $now 
 			) );
 			$activeCreditToken = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
