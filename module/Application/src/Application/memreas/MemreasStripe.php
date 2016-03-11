@@ -143,6 +143,22 @@ class StripeInstance {
 		Mlog::addone ( $cm . __LINE__ . '::$data', $data );
 		
 		try {
+			
+			/*
+			 * -
+			 * create stripe customer account with free plan
+			 */
+			$stripe_data = [ ];
+			$stripe_data ['email'] = $data ['email'];
+			$stripe_data ['description'] = $data ['description'];
+			$stripe_data ['metadata'] = $data ['metadata'];
+			$stripe_data ['plan'] = ( string ) MemreasConstants::PLAN_ID_A;
+			
+			$result = $this->stripeClient->createCustomer ( $stripe_data );
+			$stripe_customer_id = $result ['id'];
+			// Mlog::addone ( $cm . __LINE__ . '::$result', $result );
+			Mlog::addone ( $cm . __LINE__ . '::$stripe_customer_id', $stripe_customer_id );
+			
 			/*
 			 * -
 			 * create account table entry
@@ -153,29 +169,13 @@ class StripeInstance {
 					'username' => $data ['username'],
 					'account_type' => MemreasConstants::ACCOUNT_TYPE_BUYER,
 					'balance' => 0,
+					'stripe_customer_id' => $stripe_customer_id,
+					'stripe_email_address' => $stripe_data ['email'],
 					'create_time' => $now,
 					'update_time' => $now 
 			) );
 			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
 			Mlog::addone ( $cm . __LINE__ . '::$account_id', $account_id );
-
-			/*
-			 * -
-			 * create stripe customer account with free plan
-			 */
-			$stripe_data = [];
-			$stripe_data['email'] = $data['email'];
-			$stripe_data['description'] = $data['description'];
-			$stripe_data['metadata'] = $data['metadata'];
-			$stripe_data['metadata']['account_id'] = $account_id;
-			$stripe_data['plan'] = (string) MemreasConstants::PLAN_ID_A;
-				
-			$result = $this->stripeClient->createCustomer ( $stripe_data );
-			$stripe_customer_id = $result['id'];
-			//Mlog::addone ( $cm . __LINE__ . '::$result', $result );
-			Mlog::addone ( $cm . __LINE__ . '::$stripe_customer_id', $stripe_customer_id );
-				
-				
 			
 			/*
 			 * -
@@ -192,11 +192,9 @@ class StripeInstance {
 					'billing_frequency' => MemreasConstants::PLAN_BILLINGFREQUENCY,
 					'active' => '1',
 					'start_date' => $now,
-					'stripe_customer_id' => $stripe_customer_id,
 					'create_date' => $now,
 					'update_time' => $now 
-			)
-			 );
+			) );
 			$subscription_id = $this->memreasStripeTables->getSubscriptionTable ()->saveSubscription ( $subscription );
 			
 			return array (
@@ -1661,52 +1659,113 @@ class StripeInstance {
 	public function storeCard($card_data = null) {
 		$cm = __CLASS__ . __METHOD__;
 		Mlog::addone ( $cm . '::$card_data', $card_data );
-		if (isset ( $card_data ['user_id'] ))
+		if (isset ( $card_data ['user_id'] )) {
 			$user_id = $card_data ['user_id'];
-		else
+		} else {
 			$user_id = $_SESSION ['user_id'];
+		}
 		
 		$user = $this->memreasStripeTables->getUserTable ()->getUser ( $user_id );
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
 		if (! $account) {
 			
-			// Create new stripe customer
-			$userStripeParams = array (
-					'email' => $user->email_address,
-					'description' => 'Stripe account accociated with memreas user id : ' . $user->user_id,
-					'metadata' => array (
-							'memreas_user_id' => $user->user_id 
-					) 
-			);
-			
+			//for testing
+			$data = [ ];
+			$data ['user_id'] = $user->user_id;
+			$data ['username'] = $user->username;
+			$data ['email'] = $user->email_address;
+			$data ['description'] = "Stripe account for email: " . $user->email_address;
+			$data ['metadata'] = array('user_id' => $user_id );
+			$data ['plan'] = ( string ) MemreasConstants::PLAN_ID_A;
+			$this->createCustomer($data);
+			$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
 			/*
-			 * -
-			 * Stripe call to create customer
-			 */
-			$stripeUser = $this->stripeClient->createCustomer ( $userStripeParams );
-			Mlog::addone ( $cm . '::$stripeUser', $stripeUser );
-			$stripeCusId = $stripeUser ['response'] ['id'];
-			
-			// Create a new account if this account has no existed
-			$now = date ( 'Y-m-d H:i:s' );
-			$account = new Account ();
-			$account->exchangeArray ( array (
-					'user_id' => $user_id,
-					'username' => $user->username,
-					'account_type' => 'buyer',
-					'balance' => 0,
-					'create_time' => $now,
-					'update_time' => $now 
-			) );
-			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
-		} else {
-			$account_id = $account->account_id;
-			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account_id );
-			$stripeCusId = $accountDetail->stripe_customer_id;
+			return array (
+					'status' => 'Failure',
+					'message' => "registered user is missing account" 
+			);
+			*/
 		}
 		
-		// Update customer id in card
-		$this->stripeCard->setCardAttribute ( 'customer', $stripeCusId );
+		// fetch data for card
+		$account_id = $account->account_id;
+		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account_id );
+		$stripe_customer_id = $account->stripe_customer_id;
+		$this->stripeCard->setCardAttribute ( 'customer', $stripe_customer_id );
+		
+		/*
+		 * -
+		 * Store the request transaction
+		 */
+		$now = date ( 'Y-m-d H:i:s' );
+		$transaction = new Memreas_Transaction ();
+		// Copy the card and obfuscate the card number before storing the transaction
+		$obfuscated_card = json_decode ( json_encode ( $card_data ), true );
+		$obfuscated_card ['number'] = $this->obfuscateAccountNumber ( $obfuscated_card ['number'] );
+		$obfuscated_card ['cvc'] = '';
+		
+		$transaction->exchangeArray ( array (
+				'account_id' => $account_id,
+				'transaction_type' => 'store_credit_card',
+				'transaction_request' => json_encode ( $obfuscated_card ),
+				'transaction_sent' => $now 
+		) );
+		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+		
+		/*
+		 * -
+		 * Call Stripe - Save customer card
+		 */
+		//$stripeCard = $this->stripeCard->storeCard ( $card_data );
+		//new array - api complains about user_id
+		$cardForStripe['source']['object'] = "card";
+		$cardForStripe['source']['name'] = $card_data['name'];
+		$cardForStripe['source']['number'] = $card_data['number'];
+		$cardForStripe['source']['cvc'] = $card_data['cvc'];
+		$cardForStripe['source']['exp_month'] = $card_data['exp_month'];
+		$cardForStripe['source']['exp_year'] = $card_data['exp_year'];
+		$cardForStripe['source']['address_line1'] = $card_data['address_line1'];
+		$cardForStripe['source']['address_line2'] = $card_data['address_line2'];
+		$cardForStripe['source']['address_city'] = $card_data['address_city'];
+		$cardForStripe['source']['address_state'] = $card_data['address_state'];
+		$cardForStripe['source']['address_zip'] = $card_data['address_zip'];
+		$cardForStripe['source']['address_country'] = $card_data['address_country'];
+		$stripeCard = $this->stripeClient->createCard ( $stripe_customer_id, $cardForStripe );
+		$card_id = $stripeCard['id'];
+		Mlog::addone ( __CLASS__ . __METHOD__ . '::$stripeCard', $stripeCard );
+		if (empty($card_id)) {
+			/*
+			 * -
+			 * Handle error and store
+			 */
+			$now = date ( 'Y-m-d H:i:s' );
+			$transaction->exchangeArray ( array (
+					'account_id' => $account_id,
+					'pass_fail' => 0,
+					'transaction_type' => 'store_credit_card_failed',
+					'transaction_response' => $stripeCard,
+					'transaction_receive' => $now 
+			) );
+			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+			
+			return array (
+					'status' => 'Failure',
+					'message' => $stripeCard ['message'] 
+			);
+		}
+		
+		/*
+		 * -
+		 * Handle success and store transaction
+		 */
+		$transaction->exchangeArray ( array (
+				'transaction_id' => $transaction_id,
+				'pass_fail' => 1,
+				'transaction_status' => 'store_credit_card_passed',
+				'transaction_response' => json_encode ( $stripeCard ),
+				'transaction_receive' => $now 
+		) );
+		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 		
 		// Update account detail information
 		$accountDetail = new AccountDetail ();
@@ -1715,8 +1774,6 @@ class StripeInstance {
 		$lastName = $fullname [1];
 		$accountDetail->exchangeArray ( array (
 				'account_id' => $account_id,
-				'stripe_customer_id' => $stripeCusId,
-				'stripe_email_address' => $user->email_address,
 				'first_name' => $firstName,
 				'last_name' => $lastName,
 				'address_line_1' => $card_data ['address_line1'],
@@ -1728,47 +1785,12 @@ class StripeInstance {
 		) );
 		$account_detail_id = $this->memreasStripeTables->getAccountDetailTable ()->saveAccountDetail ( $accountDetail );
 		
-		// Save customer card to Stripe
-		$stripeCard = $this->stripeCard->storeCard ( $card_data );
-		if (! $stripeCard ['card_added'])
-			return array (
-					'status' => 'Failure',
-					'message' => $stripeCard ['message'] 
-			);
-		$stripeCard = $stripeCard ['response'];
-		Mlog::addone ( __CLASS__ . __METHOD__ . '::$stripeCard', $stripeCard );
-		
-		$now = date ( 'Y-m-d H:i:s' );
-		$transaction = new Memreas_Transaction ();
-		
-		// Copy the card and obfuscate the card number before storing the transaction
-		$obfuscated_card = json_decode ( json_encode ( $card_data ), true );
-		$obfuscated_card ['number'] = $this->obfuscateAccountNumber ( $obfuscated_card ['number'] );
-		
-		$transaction->exchangeArray ( array (
-				'account_id' => $account_id,
-				'transaction_type' => 'store_credit_card',
-				'transaction_request' => json_encode ( $obfuscated_card ),
-				'transaction_sent' => $now 
-		) );
-		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-		
-		$transaction->exchangeArray ( array (
-				'transaction_id' => $transaction_id,
-				'pass_fail' => 1,
-				'transaction_status' => 'store_credit_card_passed',
-				'transaction_response' => json_encode ( $stripeCard ),
-				'transaction_receive' => $now 
-		) );
-		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-		
 		// Add the new payment method
 		$payment_method = new PaymentMethod ();
 		$payment_method->exchangeArray ( array (
 				'account_id' => $account_id,
 				'account_detail_id' => $account_detail_id,
 				'stripe_card_reference_id' => $stripeCard ['id'],
-				'stripe_card_token' => $this->stripeCard->getCardAttribute ( 'card_token' ),
 				'card_type' => $stripeCard ['brand'],
 				'obfuscated_card_number' => $obfuscated_card ['number'],
 				'exp_month' => $stripeCard ['exp_month'],
@@ -2967,34 +2989,28 @@ class StripeCard {
 	public function storeCard($card_data = null) {
 		Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
 		if ($card_data) {
+			/*-
+			 * Only need to call create card per Stripe
+			 */
+			$cardForStripe = [];			
+			
+			$cardForStripe['object'] = "card";
+			$cardForStripe['exp_month'] = $card_data['exp_month'];
+			$cardForStripe['exp_year'] = $card_data['exp_year'];
+			$cardForStripe['number'] = $card_data['number'];
+			$cardForStripe['address_city'] = $card_data['address_city'];
+			$cardForStripe['address_country'] = $card_data['address_country'];
+			$cardForStripe['address_line1'] = $card_data['address_line1'];
+			$cardForStripe['address_line2'] = $card_data['address_line2'];
+			$cardForStripe['address_state'] = $card_data['address_state'];
+			$cardForStripe['address_zip'] = $card_data['address_zip'];
+			$cardForStripe['cvc'] = $card_data['cvc'];
+			$cardForStripe['name'] = $card_data['name'];
 			Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
-			$this->setCarddata ( $card_data );
-			try {
-				$cardToken = $this->stripeClient->createCardToken ( array (
-						'card' => $card_data 
-				) );
-			} catch ( CardErrorException $exception ) {
-				return array (
-						'card_added' => false,
-						'message' => $exception->getMessage () 
-				);
-			}
-		} else {
-			Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
-			try {
-				$cardToken = $this->stripeClient->createCardToken ( array (
-						'card' => $this->getCardValues () 
-				) );
-			} catch ( CardErrorException $exception ) {
-				return array (
-						'card_added' => false,
-						'message' => $exception->getMessage () 
-				);
-			}
+			Mlog::addone ( __CLASS__ . __METHOD__. __LINE__ .'::$card_data-->',$card_data);
+			
 		}
-		$this->updateInfo ( $cardToken ['card'] );
-		$this->setCardAttribute ( 'card_token', $cardToken ['id'] );
-		$args = $this->getCardValues ();
+		
 		try {
 			$result ['card_added'] = true;
 			$result ['response'] = $this->stripeClient->createCard ( array (
@@ -3162,15 +3178,15 @@ class StripeClient {
 	 * function deleteCard
 	 * stripe arguments $data
 	 */
-	public function deleteCard($data) {
+	public function deleteCard($stripe_customer_id, $cardToken) {
 		try {
 			$cm = __CLASS__ . __METHOD__;
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
 			die ();
-			$customer = \Stripe\Customer::retrieve ( "cus_83PRfPAGz2DoL3" );
-			$result = $customer->sources->retrieve ( "card_17nL5W2gUEVpEUdcWjCfFfrG" )->delete ();
-			$card->name = "Jane Austen";
+			$customer = \Stripe\Customer::retrieve ( $stripe_customer_id );
+			$collection = $customer->sources->retrieve ( $cardToken )->delete ();
+			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
@@ -3187,19 +3203,23 @@ class StripeClient {
 	
 	/**
 	 * function updateCard
-	 *
 	 * stripe arguments $data
 	 */
-	public function updateCard($data) {
+	public function updateCard($stripe_customer_id, $cardToken, $card_data) {
 		try {
 			$cm = __CLASS__ . __METHOD__;
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
 			die ();
-			$customer = \Stripe\Customer::retrieve ( "cus_83PRfPAGz2DoL3" );
+			$customer = \Stripe\Customer::retrieve ( $stripe_customer_id );
+			$result = $customer->sources->retrieve ( $cardToken );
 			$card = $customer->sources->retrieve ( "card_17nL5W2gUEVpEUdcWjCfFfrG" );
-			$card->name = "Jane Austen";
-			$result = $card->save ();
+			/**
+			 * TODO - updated fields
+			 */
+			//$card->name = "Jane Austen";
+			$collection = $card->save ();
+			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
@@ -3216,17 +3236,15 @@ class StripeClient {
 	
 	/**
 	 * function getCard
-	 *
 	 * stripe arguments $data
 	 */
-	public function getCard($data) {
+	public function getCard($stripe_customer_id, $card_token) {
 		try {
 			$cm = __CLASS__ . __METHOD__;
 			Mlog::addone ( $cm, __LINE__ );
-			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
-			die ();
-			$customer = \Stripe\Customer::retrieve ( "cus_83PRfPAGz2DoL3" );
-			$result = $customer->sources->retrieve ( "card_17nL5W2gUEVpEUdcWjCfFfrG" );
+			$customer = \Stripe\Customer::retrieve ( $stripe_customer_id );
+			$collection = $customer->sources->retrieve ( $card_token );
+			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
@@ -3243,20 +3261,14 @@ class StripeClient {
 	
 	/**
 	 * function createCard
-	 *
 	 * stripe arguments $data
 	 */
-	public function createCard($data) {
+	public function createCard($stripe_customer_id, $card_data) {
 		try {
 			$cm = __CLASS__ . __METHOD__;
-			Mlog::addone ( $cm, __LINE__ );
-			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
-			die ();
-			$customer = \Stripe\Customer::retrieve ( "cus_83PRfPAGz2DoL3" );
-			$result = $customer->sources->create ( array (
-					"source" => "tok_17nIxq2gUEVpEUdcRuA1eTC8" 
-			) );
-			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
+			$customer = \Stripe\Customer::retrieve ( $stripe_customer_id );
+			$collection = $customer->sources->create ( $card_data );
+			$result = $collection->__toArray ( true );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
 			// Display a very generic error to the user, and maybe send
@@ -3280,7 +3292,8 @@ class StripeClient {
 			$cm = __CLASS__ . __METHOD__;
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
-			$result = \Stripe\Token::create ( $data );
+			$collection = \Stripe\Token::create ( $data );
+			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
@@ -3306,7 +3319,8 @@ class StripeClient {
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
 			$ch = \Stripe\Charge::retrieve ( $data ['id'] );
-			$result = $ch->capture ();
+			$collection = $ch->capture ();
+			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
@@ -3331,7 +3345,8 @@ class StripeClient {
 			$cm = __CLASS__ . __METHOD__;
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
-			$result = \Stripe\Charge::create ( $data );
+			$collection = \Stripe\Charge::create ( $data );
+			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
@@ -3355,7 +3370,8 @@ class StripeClient {
 			$cm = __CLASS__ . __METHOD__;
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
-			$result = \Stripe\Transfer::create ( $data );
+			$collection = \Stripe\Transfer::create ( $data );
+			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
@@ -3381,7 +3397,7 @@ class StripeClient {
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
 			$result = \Stripe\Recipient::create ( $data );
-			
+			$collection = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
@@ -3401,14 +3417,15 @@ class StripeClient {
 	 *
 	 * stripe arguments $data
 	 */
-	public function cancelSubscription($data) {
+	public function cancelSubscription($stripe_customer_id, $subscription_id) {
 		try {
 			$cm = __CLASS__ . __METHOD__;
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
 			die ();
-			$cu = \Stripe\Customer::retrieve ( $data ['stripe_customer_id'] );
-			$result = $cu->subscriptions->retreive ( $data ['subscription_id'] )->cancel ();
+			$cu = \Stripe\Customer::retrieve ( $stripe_customer_id );
+			$collection = $cu->subscriptions->retreive ( $subscription_id )->cancel ();
+			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
@@ -3434,8 +3451,9 @@ class StripeClient {
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
 			$cu = \Stripe\Customer::retrieve ( $data ['stripe_customer_id'] );
-			$result = $cu->subscriptions->create ( $data ['plan'] );
-			
+			$collection = $cu->subscriptions->create ( $data ['plan'] );
+			$result = $collection->__toArray ( true );
+				
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
@@ -3461,7 +3479,8 @@ class StripeClient {
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
 			$cu = \Stripe\Customer::retrieve ( $data );
-			$result = $cu->delete ();
+			$collection = $cu->delete ();
+			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
@@ -3526,7 +3545,8 @@ class StripeClient {
 			$cm = __CLASS__ . __METHOD__;
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
-			$result = \Stripe\Customer::all ( $data );
+			$collection = \Stripe\Customer::all ( $data );
+			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
@@ -3550,7 +3570,8 @@ class StripeClient {
 			$cm = __CLASS__ . __METHOD__;
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
-			$result = \Stripe\Customer::retrieve ( $data );
+			$collection = \Stripe\Customer::retrieve ( $data );
+			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {

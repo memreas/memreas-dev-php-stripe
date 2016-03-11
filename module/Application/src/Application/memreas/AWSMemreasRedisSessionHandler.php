@@ -70,7 +70,7 @@ class AWSMemreasRedisSessionHandler implements \SessionHandlerInterface {
 			session_id ( $rMemreasCookieSessionArr ['sid'] );
 			session_start ();
 		}
-		// error_log ( '_SESSION vars after memreascookie start...' . print_r ( $_SESSION, true ) . PHP_EOL );
+		error_log ( '_SESSION vars after memreascookie start...' . print_r ( $_SESSION, true ) . PHP_EOL );
 	}
 	public function startSessionWithUID($uid, $uname = '') {
 		if (! empty ( $uid )) {
@@ -85,7 +85,7 @@ class AWSMemreasRedisSessionHandler implements \SessionHandlerInterface {
 				session_id ( $rUIDSessionArr ['sid'] );
 				session_start ();
 			}
-			// error_log ( 'rUIDSessionArr vars after uid start...' . print_r ( $rUIDSessionArr, true ) . PHP_EOL );
+			error_log ( 'rUIDSessionArr vars after uid start...' . print_r ( $rUIDSessionArr, true ) . PHP_EOL );
 		} else {
 			error_log ( 'startSessionWithUID pulling from db...' . PHP_EOL );
 			if (! empty ( $uid )) {

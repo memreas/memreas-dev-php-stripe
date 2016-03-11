@@ -24,7 +24,6 @@ class PaymentMethod {
 		$this->account_id = (isset ( $data ['account_id'] )) ? $data ['account_id'] : $this->account_id;
 		$this->account_detail_id = (isset ( $data ['account_detail_id'] )) ? $data ['account_detail_id'] : $this->account_detail_id;
 		$this->stripe_card_reference_id = (isset ( $data ['stripe_card_reference_id'] )) ? $data ['stripe_card_reference_id'] : $this->stripe_card_reference_id;
-		$this->stripe_card_token = (isset ( $data ['stripe_card_token'] )) ? $data ['stripe_card_token'] : $this->stripe_card_token;
 		$this->card_type = (isset ( $data ['card_type'] )) ? $data ['card_type'] : $this->card_type;
 		$this->obfuscated_card_number = (isset ( $data ['obfuscated_card_number'] )) ? $data ['obfuscated_card_number'] : $this->obfuscated_card_number;
 		$this->exp_month = (isset ( $data ['exp_month'] )) ? $data ['exp_month'] : $this->exp_month;

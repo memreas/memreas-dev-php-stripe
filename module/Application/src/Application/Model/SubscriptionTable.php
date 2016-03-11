@@ -55,7 +55,6 @@ class SubscriptionTable {
 				'active' => $subscription->active,
 				'start_date' => $subscription->start_date,
 				'end_date' => $subscription->end_date,
-				'stripe_customer_id' => $subscription->stripe_customer_id,
 				'create_date' => $subscription->createDate,
 				'update_time' => $subscription->updateTime 
 		);

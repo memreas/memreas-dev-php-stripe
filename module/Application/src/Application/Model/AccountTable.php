@@ -96,6 +96,9 @@ class AccountTable {
 				'username' => $account->username,
 				'account_type' => $account->account_type,
 				'balance' => $account->balance,
+				'tax_ssn_ein' => $account->tax_ssn_ein,
+				'stripe_customer_id' => $account->stripe_customer_id,
+				'stripe_email_address' => $account->stripe_email_address,
 				'create_time' => $account->create_time,
 				'update_time' => $account->update_time 
 		);

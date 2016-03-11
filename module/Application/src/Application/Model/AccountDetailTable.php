@@ -40,22 +40,10 @@ class AccountDetailTable {
 		}
 		return $row;
 	}
-	public function getAccountDetailByStripeReferenceId($stripe_card_reference_id) {
-		$rowset = $this->tableGateway->select ( array (
-				'stripe_card_reference_id' => $stripe_card_reference_id 
-		) );
-		$row = $rowset->current ();
-		if (! $row) {
-			throw new \Exception ( "Could not find row $payment_method_id" );
-		}
-		return $row;
-	}
 	public function saveAccountDetail(AccountDetail $account) {
 		$data = array (
 				'account_detail_id' => $account->account_detail_id,
 				'account_id' => $account->account_id,
-				'stripe_customer_id' => $account->stripe_customer_id,
-				'tax_ssn_ein' => $account->tax_ssn_ein,
 				'first_name' => $account->first_name,
 				'last_name' => $account->last_name,
 				'address_line_1' => $account->address_line_1,

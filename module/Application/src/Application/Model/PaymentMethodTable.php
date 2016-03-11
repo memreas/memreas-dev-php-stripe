@@ -90,7 +90,6 @@ class PaymentMethodTable {
 				'account_id' => $payment_method->account_id,
 				'account_detail_id' => $payment_method->account_detail_id,
 				'stripe_card_reference_id' => $payment_method->stripe_card_reference_id,
-				'stripe_card_token' => $payment_method->stripe_card_token,
 				'card_type' => $payment_method->card_type,
 				'obfuscated_card_number' => $payment_method->obfuscated_card_number,
 				'exp_month' => $payment_method->exp_month,

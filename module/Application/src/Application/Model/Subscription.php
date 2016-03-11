@@ -19,7 +19,6 @@ class Subscription {
 	public $active;
 	public $start_date;
 	public $end_date;
-	public $stripe_customer_id;
 	public $create_date;
 	public $update_time;
 	public function exchangeArray($data) {
@@ -34,7 +33,6 @@ class Subscription {
 		$this->active = (isset ( $data ['active'] )) ? $data ['active'] : 0;
 		$this->start_date = (isset ( $data ['start_date'] )) ? $data ['start_date'] : null;
 		$this->end_date = (isset ( $data ['end_date'] )) ? $data ['end_date'] : null;
-		$this->stripe_customer_id = (isset ( $data ['stripe_customer_id'] )) ? $data ['stripe_customer_id'] : null;
 		$this->createDate = (isset ( $data ['create_date'] )) ? $data ['create_date'] : null;
 		$this->updateTime = (isset ( $data ['update_time'] )) ? $data ['update_time'] : null;
 	}
