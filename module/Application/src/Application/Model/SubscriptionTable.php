@@ -30,6 +30,17 @@ class SubscriptionTable {
 		}
 		return $row;
 	}
+	public function getActiveSubscription($account_id) {
+		$rowset = $this->tableGateway->select ( array (
+				'account_id' => $account_id, 
+				'active' => '1' 
+		) );
+		$row = $rowset->current ();
+		if (! $row) {
+			throw new \Exception ( "Could not find active subscription for account_id: " . $account_id );
+		}
+		return $row;
+	}
 	public function saveSubscription(Subscription $subscription) {
 		error_log ( "About to saveSubscription...." . PHP_EOL );
 		$data = array (
@@ -41,10 +52,10 @@ class SubscriptionTable {
 				'plan_description' => $subscription->plan_description,
 				'gb_storage_amount' => $subscription->gb_storage_amount,
 				'billing_frequency' => $subscription->billing_frequency,
+				'active' => $subscription->active,
 				'start_date' => $subscription->start_date,
 				'end_date' => $subscription->end_date,
-				'subscription_profile_id' => $subscription->subscription_profile_id,
-				'subscription_profile_status' => $subscription->subscription_profile_status,
+				'stripe_customer_id' => $subscription->stripe_customer_id,
 				'create_date' => $subscription->createDate,
 				'update_time' => $subscription->updateTime 
 		);
@@ -66,11 +77,6 @@ class SubscriptionTable {
 			\Zend\Debug\Debug::dump ( $e->__toString () );
 		}
 		return $data ['subscription_id'];
-	}
-	public function deleteSubscription($subscription_id) {
-		$this->tableGateway->delete ( array (
-				'subscription_id' => $subscription_id 
-		) );
 	}
 	public function countUser($planId) {
 		$rowset = $this->tableGateway->select ( array (

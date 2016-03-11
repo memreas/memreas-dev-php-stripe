@@ -16,8 +16,10 @@ class Subscription {
 	public $plan_description;
 	public $gb_storage_amount;
 	public $billing_frequency;
+	public $active;
 	public $start_date;
 	public $end_date;
+	public $stripe_customer_id;
 	public $create_date;
 	public $update_time;
 	public function exchangeArray($data) {
@@ -29,10 +31,10 @@ class Subscription {
 		$this->plan_description = (isset ( $data ['plan_description'] )) ? $data ['plan_description'] : null;
 		$this->gb_storage_amount = (isset ( $data ['gb_storage_amount'] )) ? $data ['gb_storage_amount'] : null;
 		$this->billing_frequency = (isset ( $data ['billing_frequency'] )) ? $data ['billing_frequency'] : null;
+		$this->active = (isset ( $data ['active'] )) ? $data ['active'] : 0;
 		$this->start_date = (isset ( $data ['start_date'] )) ? $data ['start_date'] : null;
 		$this->end_date = (isset ( $data ['end_date'] )) ? $data ['end_date'] : null;
-		$this->subscription_profile_id = (isset ( $data ['subscription_profile_id'] )) ? $data ['subscription_profile_id'] : null;
-		$this->subscription_profile_status = (isset ( $data ['subscription_profile_status'] )) ? $data ['subscription_profile_status'] : null;
+		$this->stripe_customer_id = (isset ( $data ['stripe_customer_id'] )) ? $data ['stripe_customer_id'] : null;
 		$this->createDate = (isset ( $data ['create_date'] )) ? $data ['create_date'] : null;
 		$this->updateTime = (isset ( $data ['update_time'] )) ? $data ['update_time'] : null;
 	}

@@ -38,7 +38,6 @@ class StripePlansConfig {
 		return $this->stripeClient->createPlan ( $params );
 	}
 	public function getPlan($planId) {
-		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$this->stripeClient-->', $this->stripeClient);
 		try {
 			$plan = $this->stripeClient->getPlan ( array (
 					'id' => $planId 

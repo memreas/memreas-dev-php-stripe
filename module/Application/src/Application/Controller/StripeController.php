@@ -156,6 +156,25 @@ class StripeController extends AbstractActionController {
 		 */
 		die ();
 	}
+
+	
+	/*
+	 * Create Customer Action
+	 */
+	public function createCustomerAction() {
+		if ($this->fetchSession ()) {
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$_REQUEST', $_REQUEST );
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '::$json::', $json );
+			$message_data = json_decode ( $json, true );
+			Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data::', $message_data );
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
+			$this->flushResponse ( json_encode ( $MemreasStripe->createCustomer ($message_data) ) );
+			die ();
+		}
+	}
+	
+	
 	
 	/*
 	 * List stripe plan

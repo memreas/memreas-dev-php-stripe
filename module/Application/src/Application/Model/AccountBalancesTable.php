@@ -60,12 +60,4 @@ class AccountBalancesTable {
 		
 		return $data ['transaction_id'];
 	}
-	public function deleteAccountBalances($transaction_id) {
-		$this->tableGateway->delete ( array (
-				'transaction_id' => $transaction_id 
-		) );
-	}
-	public function deleteAll() {
-		$this->tableGateway->delete ( "1" );
-	}
 }
