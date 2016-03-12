@@ -530,7 +530,6 @@ class StripeInstance {
 			);
 			$managedAccount ['request'] ['customer'] = $data;
 			$managedAccount ['response'] ['customer'] = $result = $this->stripeClient->createCustomer ( $data );
-			Mlog::addone ( $cm . __LINE__ . '::$this->stripeClient->createCustomer($data)-->', $result );
 			$stripe_customer_id = $result ['id'];
 			
 			// build basic info to create account
@@ -555,17 +554,17 @@ class StripeInstance {
 			$seller_info ['legal_entity'] ['first_name'] = $seller_data ['first_name'];
 			$seller_info ['legal_entity'] ['last_name'] = $seller_data ['last_name'];
 			$seller_info ['legal_entity'] ['type'] = "individual"; // company later
-			
-			//verification
-			$seller_info ['legal_entity'] ['address']['line1'] = $seller_data ['address_line_1'];
-			$seller_info ['legal_entity'] ['address']['city'] = $seller_data ['city'];
-			$seller_info ['legal_entity'] ['address']['state'] = $seller_data ['state'];
-			$seller_info ['legal_entity'] ['address']['postal_code'] = $seller_data ['zip_code'];
-			$ssn_last4 = substr($seller_data ['tax_ssn_ein'], -4, 4);
-			//Mlog::addone ( $cm. __LINE__ . '::$ssn_last4--->',  $ssn_last4);
+			                                                       
+			// verification
+			$seller_info ['legal_entity'] ['address'] ['line1'] = $seller_data ['address_line_1'];
+			$seller_info ['legal_entity'] ['address'] ['city'] = $seller_data ['city'];
+			$seller_info ['legal_entity'] ['address'] ['state'] = $seller_data ['state'];
+			$seller_info ['legal_entity'] ['address'] ['postal_code'] = $seller_data ['zip_code'];
+			$ssn_last4 = substr ( $seller_data ['tax_ssn_ein'], - 4, 4 );
+			// Mlog::addone ( $cm. __LINE__ . '::$ssn_last4--->', $ssn_last4);
 			$seller_info ['legal_entity'] ['ssn_last_4'] = $ssn_last4;
 			$seller_info ['legal_entity'] ['personal_id_number'] = $seller_data ['tax_ssn_ein'];
-				
+			
 			// bank data
 			$seller_info ['external_account'] ['object'] = "bank_account";
 			$seller_info ['external_account'] ['account_number'] = $seller_data ['account_number'];
@@ -584,7 +583,7 @@ class StripeInstance {
 			$managedAccount ['request'] ['account'] = $seller_info;
 			$managedAccount ['response'] ['account'] = $response = $this->stripeClient->createManagedAccount ( $seller_info );
 			$stripe_account_id = $managedAccount ['response'] ['account'] ['id'];
-			$bank_account_id = $managedAccount ['response'] ['account'] ['external_accounts'] ['data'] [0] ['id'];
+			$stripe_bank_account_id = $managedAccount ['response'] ['account'] ['external_accounts'] ['data'] [0] ['id'];
 			$keys = $managedAccount ['response'] ['account'] ['keys'];
 			
 			/*
@@ -592,14 +591,13 @@ class StripeInstance {
 			 * Create Account for Seller
 			 */
 			$account = new Account ();
-			Mlog::addone ( $cm, __LINE__ );
 			$account->exchangeArray ( array (
 					'user_id' => $user->user_id,
 					'username' => $user->username,
 					'account_type' => 'seller',
 					'balance' => 0,
-					//store only last 4 of ssn for PII purposes...
-					//'tax_ssn_ein' => $seller_data ['tax_ssn_ein'],
+					// store only last 4 of ssn for PII purposes...
+					// 'tax_ssn_ein' => $seller_data ['tax_ssn_ein'],
 					'tax_ssn_ein' => $ssn_last4,
 					'stripe_customer_id' => $stripe_customer_id,
 					'stripe_email_address' => $user->email_address,
@@ -607,9 +605,7 @@ class StripeInstance {
 					'create_time' => self::now (),
 					'update_time' => self::now () 
 			) );
-			Mlog::addone ( $cm, __LINE__ );
 			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
-			Mlog::addone ( $cm, __LINE__ );
 			
 			// Store the transaction request and response with Stripe
 			// account_id is required for transaction
@@ -671,12 +667,14 @@ class StripeInstance {
 		$bank_account->exchangeArray ( array (
 				'account_id' => $account_id,
 				'account_detail_id' => $account_detail_id,
-				'stripe_bank_acount_id' => $bank_account_id,
+				'stripe_bank_acount_id' => $stripe_bank_account_id,
 				'account_holder_name' => $seller_data ['first_name'] . ' ' . $seller_data ['last_name'],
 				'account_number' => $seller_data ['account_number'],
 				'routing_number' => $seller_data ['routing_number'],
-				'tax_ssn_ein' => $seller_data ['tax_ssn_ein'],
-				'keys' => json_encode ( $keys ) 
+				'tax_ssn_ein' => $ssn_last4,
+				'keys' => json_encode ( $keys ),
+				'create_time' => self::now (),
+				'update_time' => self::now () 
 		) );
 		$bank_account_id = $this->memreasStripeTables->getBankAccountTable ()->saveBankAccount ( $bank_account );
 		
@@ -1401,6 +1399,8 @@ class StripeInstance {
 		}
 		Mlog::addone ( $cm . 'activePendingBalanceToAccount()->$chargeResult::', $chargeResult );
 		
+		//fetch the balance transaction for 
+		
 		/**
 		 * -
 		 * Store Account Balance
@@ -1535,7 +1535,6 @@ class StripeInstance {
 		 * -
 		 * Store balance transaction fee response from stripe
 		 */
-		
 		$memreas_transaction->exchangeArray ( array (
 				'transaction_id' => $transaction_id,
 				'amount' => "-$fees",
@@ -1717,7 +1716,7 @@ class StripeInstance {
 	 */
 	public function storeCard($card_data = null) {
 		$cm = __CLASS__ . __METHOD__;
-		Mlog::addone ( $cm . '::$card_data', $card_data );
+		//Mlog::addone ( $cm . '::$card_data', $card_data );
 		if (isset ( $card_data ['user_id'] )) {
 			$user_id = $card_data ['user_id'];
 		} else {
@@ -1739,6 +1738,7 @@ class StripeInstance {
 			);
 			$data ['plan'] = ( string ) MemreasConstants::PLAN_ID_A;
 			$result = $this->createCustomer ( $data );
+			//Mlog::addone ( $cm . '::$this->createCustomer ( $data )', $result );
 			$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
 		}
 		
@@ -3392,7 +3392,6 @@ class StripeClient {
 	
 	/**
 	 * function createCharge
-	 *
 	 * stripe arguments $data
 	 */
 	public function createCharge($data) {
@@ -3401,6 +3400,31 @@ class StripeClient {
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
 			$collection = \Stripe\Charge::create ( $data );
+			$result = $collection->__toArray ( true );
+			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
+			return $result;
+		} catch ( \Stripe\Error\Base $e ) {
+			// Display a very generic error to the user, and maybe send
+			// yourself an email
+			Mlog::addone ( $cm . __LINE__ . '::Error--->', $e->getMessage () );
+			return null;
+		} catch ( Exception $e ) {
+			// Something else happened, completely unrelated to Stripe
+			Mlog::addone ( $cm . __LINE__ . '::Error--->', $e->getMessage () );
+			return null;
+		}
+	}
+	
+	/**
+	 * function getBalanceTransaction
+	 * stripe arguments $data
+	 *  - returns fee from Stripe
+	 */
+	public function getBalanceTransaction($data) {
+		try {
+			$cm = __CLASS__ . __METHOD__;
+			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
+			$collection =\Stripe\BalanceTransaction::retrieve ( $data );
 			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;

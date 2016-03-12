@@ -91,6 +91,7 @@ class AccountTable {
 		return $row;
 	}
 	public function saveAccount(Account $account) {
+		Mlog::addone(__CLASS__.__METHOD__,__LINE__);
 		$data = array (
 				'account_id' => $account->account_id,
 				'user_id' => $account->user_id,
@@ -104,15 +105,20 @@ class AccountTable {
 				'create_time' => $account->create_time,
 				'update_time' => $account->update_time 
 		);
+		Mlog::addone(__CLASS__.__METHOD__,__LINE__);
+		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$data-->', $data);
 		
 		if (isset ( $account->account_id )) {
+		Mlog::addone(__CLASS__.__METHOD__,__LINE__);
 			$this->tableGateway->update ( $data, array (
 					'account_id' => $account->account_id 
 			) );
 		} else {
+		Mlog::addone(__CLASS__.__METHOD__,__LINE__);
 			$data ['account_id'] = MUUID::fetchUUID ();
 			$this->tableGateway->insert ( $data );
 		}
+		Mlog::addone(__CLASS__.__METHOD__,__LINE__);
 		return $data ['account_id'];
 	}
 	public function deleteAccount($account_id) {
