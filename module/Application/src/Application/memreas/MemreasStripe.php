@@ -23,6 +23,7 @@ use Aws\Ses\Exception\SesException;
 use Guzzle\Http\Client;
 use Guzzle\Service\Exception\ValidationException;
 use Zend\View\Model\ViewModel;
+
 class MemreasStripe extends StripeInstance {
 	public $stripeClient;
 	public $stripeInstance;
@@ -85,11 +86,13 @@ class StripeInstance {
 	// private $stripeCustomer;
 	// private $stripeRecipient;
 	// private $stripeCard;
-	// private $stripePlan;
+	private $stripePlan;
 	private $stripeClient;
 	protected $session;
 	protected $memreasStripeTables;
-	
+	public static function now() {
+		return date ( 'Y-m-d H:i:s' );
+	}
 	/*
 	 * -
 	 * Constructor
@@ -135,7 +138,7 @@ class StripeInstance {
 	 */
 	public function createCustomer($data) {
 		$cm = __CLASS__ . __METHOD__;
-		$now = date ( 'Y-m-d H:i:s' );
+		
 		Mlog::addone ( $cm . __LINE__ . '::$data', $data );
 		
 		try {
@@ -167,8 +170,8 @@ class StripeInstance {
 					'balance' => 0,
 					'stripe_customer_id' => $stripe_customer_id,
 					'stripe_email_address' => $stripe_data ['email'],
-					'create_time' => $now,
-					'update_time' => $now 
+					'create_time' => self::now (),
+					'update_time' => self::now () 
 			) );
 			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
 			Mlog::addone ( $cm . __LINE__ . '::$account_id', $account_id );
@@ -187,9 +190,9 @@ class StripeInstance {
 					'gb_storage_amount' => MemreasConstants::PLAN_GB_STORAGE_AMOUNT_A,
 					'billing_frequency' => MemreasConstants::PLAN_BILLINGFREQUENCY,
 					'active' => '1',
-					'start_date' => $now,
-					'create_date' => $now,
-					'update_time' => $now 
+					'start_date' => self::now (),
+					'create_date' => self::now (),
+					'update_time' => self::now () 
 			) );
 			$subscription_id = $this->memreasStripeTables->getSubscriptionTable ()->saveSubscription ( $subscription );
 			
@@ -265,7 +268,6 @@ class StripeInstance {
 					'message' => 'Please add a payment method.' 
 			);
 		
-		$now = date ( 'Y-m-d H:i:s' );
 		$account->reason = $data ['reason'];
 		$transactionDetail = array (
 				'account_id' => $account->account_id,
@@ -274,8 +276,8 @@ class StripeInstance {
 				'currency' => 'USD',
 				'transaction_request' => json_encode ( $account ),
 				'transaction_response' => json_encode ( $account ),
-				'transaction_sent' => $now,
-				'transaction_receive' => $now 
+				'transaction_sent' => self::now (),
+				'transaction_receive' => self::now () 
 		);
 		$memreas_transaction = new Memreas_Transaction ();
 		$memreas_transaction->exchangeArray ( $transactionDetail );
@@ -294,7 +296,7 @@ class StripeInstance {
 				'starting_balance' => $startingAccountBalance,
 				'amount' => $data ['amount'],
 				'ending_balance' => $endingAccountBalance,
-				'create_time' => $now 
+				'create_time' => self::now () 
 		) );
 		$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $accountBalance );
 		
@@ -302,7 +304,7 @@ class StripeInstance {
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $account->account_id );
 		$account->exchangeArray ( array (
 				'balance' => $endingAccountBalance,
-				'update_time' => $now 
+				'update_time' => self::now () 
 		) );
 		$accountId = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
 		
@@ -496,6 +498,7 @@ class StripeInstance {
 	 * Override customer's function
 	 */
 	public function addSeller($seller_data) {
+		$cm = __CLASS__ . __METHOD__;
 		
 		// Get memreas user name
 		$user_name = $seller_data ['user_name'];
@@ -509,56 +512,109 @@ class StripeInstance {
 		
 		// Fetch User, Account
 		$user = $this->memreasStripeTables->getUserTable ()->getUserByUsername ( $user_name );
-		$stripe_email_address = $user->email_address;
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user->user_id, 'seller' );
-		if (!$account) {
+		$stripe_email_address = $user->email_address;
+		if (! $account) {
 			/*
 			 * -
 			 * Call Stripe and create account
 			 */
 			
-			//create customer for seller
+			// create customer for seller
+			$managedAccount = [ ];
 			$data = [ ];
 			$data ['email'] = $user->email_address;
 			$data ['description'] = "stripe seller account for email: " . $user->email_address;
-			$data ['metadata'] = array('user_id' => $user->user_id);
-			$result = $this->stripeClient->createCustomer($data);
-			Mlog::addone($cm.__LINE__.'::$this->stripeClient->createCustomer($data)-->', $result);
-			$stripe_customer_id = $result['id'];
-			$keys = $result['keys'];
+			$data ['metadata'] = array (
+					'user_id' => $user->user_id 
+			);
+			$managedAccount ['request'] ['customer'] = $data;
+			$managedAccount ['response'] ['customer'] = $result = $this->stripeClient->createCustomer ( $data );
+			Mlog::addone ( $cm . __LINE__ . '::$this->stripeClient->createCustomer($data)-->', $result );
+			$stripe_customer_id = $result ['id'];
 			
 			// build basic info to create account
-			$basic_info = [ ];
-			$basic_info ['managed'] = true;
-			$basic_info ['country'] = 'US'; // US accounts only for now
-			$basic_info ['email'] = $user->email_address; // email address on file.
-			                                             
-			// build basic info to create bank account
-			$bank_info = [ ];
-			$bank_info ['external_account']['object'] = "bank_account";
-			$bank_info ['external_account']['account_number'] = $seller_data ['account_number'];
-			$bank_info ['external_account']['routing_number'] = $seller_data ['routing_number'];
-			$bank_info ['external_account']['account_holder_name'] = $seller_data ['first_name'] . ' ' . $seller_data ['last_name'];
-			$bank_info ['external_account']['account_holder_type'] = "individual"; // "company" later
-			$bank_info ['external_account']['country'] = 'US'; // US accounts only for now
-			$bank_info ['external_account']['currency'] = "USD";
+			// - split dob - 0-month, 1-day, 2-year
+			$dob_split = explode ( "-", $seller_data ['date_of_birth'] );
+			$seller_info = [ ];
+			$seller_info ['managed'] = true;
+			$seller_info ['country'] = 'US'; // US accounts only for now
+			$seller_info ['email'] = $user->email_address; // email address on file.
+			                                               
+			// extended data
+			$seller_info ['metadata'] ['user_id'] = $user->user_id;
+			$seller_info ['tos_acceptance'] ['date'] = strtotime ( self::now () );
+			$seller_info ['tos_acceptance'] ['ip'] = $seller_data ['ip_address'];
+			$seller_info ['tos_acceptance'] ['user_agent'] = $seller_data ['user_agent'];
 			
-			// build extended data for account
-			$extended_info = [ ];
-			$extended_info ['user_id'] = $user->user_id;
-			$extended_info ['username'] = $user->username;
-			$extended_info ['ip_address'] = $seller_data ['ip_address'];
-			$extended_info ['user_agent'] = $seller_data ['user_agent'];
+			// legal_entity
+			$seller_info ['legal_entity'] ['business_tax_id'] = $seller_data ['tax_ssn_ein'];
+			$seller_info ['legal_entity'] ['dob'] ['month'] = $dob_split [0];
+			$seller_info ['legal_entity'] ['dob'] ['day'] = $dob_split [1];
+			$seller_info ['legal_entity'] ['dob'] ['year'] = $dob_split [2];
+			$seller_info ['legal_entity'] ['first_name'] = $seller_data ['first_name'];
+			$seller_info ['legal_entity'] ['last_name'] = $seller_data ['last_name'];
+			$seller_info ['legal_entity'] ['type'] = "individual"; // company later
 			
-			$managedAccount = $response = $this->stripeClient->createManagedAccount ( $stripe_customer_id, $basic_info, $bank_info, $extended_info );
-			// Store the transaction that is sent to Stripe
-			$now = date ( 'Y-m-d H:i:s' );
-			$transaction = new Memreas_Transaction ();
-			$request = [];
-			$request['basic_info'] = $basic_info;
-			$request['bank_info'] = $bank_info;
-			$request['extended_info'] = $extended_info;
+			//verification
+			$seller_info ['legal_entity'] ['address']['line1'] = $seller_data ['address_line_1'];
+			$seller_info ['legal_entity'] ['address']['city'] = $seller_data ['city'];
+			$seller_info ['legal_entity'] ['address']['state'] = $seller_data ['state'];
+			$seller_info ['legal_entity'] ['address']['postal_code'] = $seller_data ['zip_code'];
+			$ssn_last4 = substr($seller_data ['tax_ssn_ein'], -4, 4);
+			//Mlog::addone ( $cm. __LINE__ . '::$ssn_last4--->',  $ssn_last4);
+			$seller_info ['legal_entity'] ['ssn_last_4'] = $ssn_last4;
+			$seller_info ['legal_entity'] ['personal_id_number'] = $seller_data ['tax_ssn_ein'];
 				
+			// bank data
+			$seller_info ['external_account'] ['object'] = "bank_account";
+			$seller_info ['external_account'] ['account_number'] = $seller_data ['account_number'];
+			$seller_info ['external_account'] ['routing_number'] = $seller_data ['routing_number'];
+			$seller_info ['external_account'] ['account_holder_name'] = $seller_data ['first_name'] . ' ' . $seller_data ['last_name'];
+			$seller_info ['external_account'] ['account_holder_type'] = "individual"; // "company" later
+			$seller_info ['external_account'] ['country'] = 'US'; // US accounts only for now
+			$seller_info ['external_account'] ['currency'] = "USD";
+			$seller_info ['external_account'] ['currency'] = "USD";
+			$seller_info ['transfer_schedule'] ['interval'] = "manual";
+			
+			/*
+			 * -
+			 * Make call to stripe to create account and bank account and send verification data
+			 */
+			$managedAccount ['request'] ['account'] = $seller_info;
+			$managedAccount ['response'] ['account'] = $response = $this->stripeClient->createManagedAccount ( $seller_info );
+			$stripe_account_id = $managedAccount ['response'] ['account'] ['id'];
+			$bank_account_id = $managedAccount ['response'] ['account'] ['external_accounts'] ['data'] [0] ['id'];
+			$keys = $managedAccount ['response'] ['account'] ['keys'];
+			
+			/*
+			 * -
+			 * Create Account for Seller
+			 */
+			$account = new Account ();
+			Mlog::addone ( $cm, __LINE__ );
+			$account->exchangeArray ( array (
+					'user_id' => $user->user_id,
+					'username' => $user->username,
+					'account_type' => 'seller',
+					'balance' => 0,
+					//store only last 4 of ssn for PII purposes...
+					//'tax_ssn_ein' => $seller_data ['tax_ssn_ein'],
+					'tax_ssn_ein' => $ssn_last4,
+					'stripe_customer_id' => $stripe_customer_id,
+					'stripe_email_address' => $user->email_address,
+					'stripe_account_id' => $stripe_account_id,
+					'create_time' => self::now (),
+					'update_time' => self::now () 
+			) );
+			Mlog::addone ( $cm, __LINE__ );
+			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
+			Mlog::addone ( $cm, __LINE__ );
+			
+			// Store the transaction request and response with Stripe
+			// account_id is required for transaction
+			$transaction = new Memreas_Transaction ();
+			$request = $seller_info;
 			$transaction->exchangeArray ( array (
 					'account_id' => $account_id,
 					'transaction_type' => 'add_seller',
@@ -566,34 +622,10 @@ class StripeInstance {
 					'transaction_request' => json_encode ( $response ),
 					'pass_fail' => 1,
 					'transaction_status' => 'add_seller_passed',
-					'transaction_sent' => $now,
-					'transaction_receive' => $now
+					'transaction_sent' => self::now (),
+					'transaction_receive' => self::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-			
-				
-			/**
-			 * Create Account for Seller
-			 */
-			if (empty ( $managedAccount ['account_id'] )) {
-				return array (
-						'status' => 'Failure',
-						'message' => "failed to create seller account" 
-				);
-			}
-			
-			// Create an account entry
-			$now = date ( 'Y-m-d H:i:s' );
-			$account = new Account ();
-			$account->exchangeArray ( array (
-					'user_id' => $user->user_id,
-					'username' => $user->username,
-					'account_type' => 'seller',
-					'balance' => 0,
-					'create_time' => $now,
-					'update_time' => $now 
-			) );
-			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
 		} else {
 			// If user has an account with type is buyer, register a new seller account
 			$account_id = $account->account_id;
@@ -617,7 +649,7 @@ class StripeInstance {
 				'state' => $seller_data ['state'],
 				'zip_code' => $seller_data ['zip_code'],
 				'postal_code' => $seller_data ['zip_code'],
-				'stripe_email_address' => $seller_data ['stripe_email_address'] 
+				'stripe_email_address' => $user->email_address 
 		) );
 		$account_detail_id = $this->memreasStripeTables->getAccountDetailTable ()->saveAccountDetail ( $accountDetail );
 		
@@ -630,24 +662,23 @@ class StripeInstance {
 				'starting_balance' => 0,
 				'amount' => 0,
 				'ending_balance' => 0,
-				'create_time' => $now 
+				'create_time' => self::now () 
 		) );
 		$account_balances_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $account_balances );
 		
 		// Insert bank account
-		$bank_account = new BankAccount();
-		$bank_account->exchangeArray(array(
+		$bank_account = new BankAccount ();
+		$bank_account->exchangeArray ( array (
 				'account_id' => $account_id,
 				'account_detail_id' => $account_detail_id,
-				'stripe_bank_acount_id' => $managedAccount['bank_account_id'],
-				'account_holder_name' => $seller_data['first_name'] . ' ' . $seller_data['last_name'],
-				'account_number' => $seller_data['account_number'],
-				'routing_number' => $seller_data['routing_number'],
-				'tax_ssn_ein' => $seller_data['tax_ssn_ein'],
-				'keys' => json_encode($keys)
-		));
-		$bank_account_id = $this->memreasStripeTables->getBankAccountTable()->saveBankAccount($bank_account);
-		
+				'stripe_bank_acount_id' => $bank_account_id,
+				'account_holder_name' => $seller_data ['first_name'] . ' ' . $seller_data ['last_name'],
+				'account_number' => $seller_data ['account_number'],
+				'routing_number' => $seller_data ['routing_number'],
+				'tax_ssn_ein' => $seller_data ['tax_ssn_ein'],
+				'keys' => json_encode ( $keys ) 
+		) );
+		$bank_account_id = $this->memreasStripeTables->getBankAccountTable ()->saveBankAccount ( $bank_account );
 		
 		// Return a success message:
 		$result = array (
@@ -655,7 +686,7 @@ class StripeInstance {
 				"account_id" => $account_id,
 				"account_detail_id" => $account_detail_id,
 				"transaction_id" => $transaction_id,
-				"account_balances_id" => $account_balances_id, 
+				"account_balances_id" => $account_balances_id,
 				"bank_account_id" => $bank_account_id 
 		);
 		
@@ -736,7 +767,7 @@ class StripeInstance {
 			 * -
 			 * Store transaction data prior to sending to Stripe
 			 */
-			$now = date ( 'Y-m-d H:i:s' );
+			
 			// Begin storing transaction to DB
 			$transactionRequest = $stripeChargeParams;
 			$transactionRequest ['account_id'] = $account->account_id;
@@ -752,7 +783,7 @@ class StripeInstance {
 					'transaction_request' => json_encode ( $transactionRequest ),
 					'amount' => $data ['amount'],
 					'currency' => $currency,
-					'transaction_sent' => $now 
+					'transaction_sent' => self::now () 
 			) );
 			$activeCreditToken = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 			
@@ -776,14 +807,14 @@ class StripeInstance {
 				 * - Store the account balance
 				 * - Update the account
 				 */
-				$now = date ( 'Y-m-d H:i:s' );
+				
 				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '$chargeResult-->', $chargeResult );
 				$transactionDetail = array (
 						'transaction_id' => $transaction_id,
 						'account_id' => $account->account_id,
 						'pass_fail' => 1,
 						'transaction_response' => json_encode ( $chargeResult ),
-						'transaction_receive' => $now,
+						'transaction_receive' => self::now (),
 						'transaction_status' => 'buy_credit_email' 
 				);
 				$memreas_transaction->exchangeArray ( $transactionDetail );
@@ -945,7 +976,6 @@ class StripeInstance {
 				);
 			}
 			
-			$now = date ( 'Y-m-d H:i:s' );
 			$memreas_transaction = new Memreas_Transaction ();
 			$memreas_transaction->exchangeArray ( array (
 					'account_id' => $accountId,
@@ -955,9 +985,9 @@ class StripeInstance {
 					'currency' => 'USD',
 					'transaction_status' => 'success',
 					'transaction_request' => "N/a",
-					'transaction_sent' => $now,
+					'transaction_sent' => self::now (),
 					'transaction_response' => "N/a",
-					'transaction_receive' => $now 
+					'transaction_receive' => self::now () 
 			) );
 			$account_purchase_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 			
@@ -966,7 +996,7 @@ class StripeInstance {
 			$endingBalance = $startingBalance - $amount;
 			
 			// Insert the new account balance for the buyer
-			$now = date ( 'Y-m-d H:i:s' );
+			
 			$endingAccountBalance = new AccountBalances ();
 			$endingAccountBalance->exchangeArray ( array (
 					'account_id' => $accountId,
@@ -975,16 +1005,16 @@ class StripeInstance {
 					'starting_balance' => $startingBalance,
 					'amount' => "-$amount",
 					'ending_balance' => $endingBalance,
-					'create_time' => $now 
+					'create_time' => self::now () 
 			) );
 			$accountBalanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
 			
 			// Update the account table
-			$now = date ( 'Y-m-d H:i:s' );
+			
 			$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $accountId );
 			$account->exchangeArray ( array (
 					'balance' => $endingBalance,
-					'update_time' => $now 
+					'update_time' => self::now () 
 			) );
 			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
 			
@@ -996,7 +1026,7 @@ class StripeInstance {
 					'amount' => $amount,
 					'transaction_id' => $transaction_id,
 					'transaction_type' => 'buy_media_purchase',
-					'create_time' => $now,
+					'create_time' => self::now (),
 					'start_date' => $duration_from,
 					'end_date' => $duration_to 
 			) );
@@ -1021,7 +1051,6 @@ class StripeInstance {
 			
 			$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $accountId );
 			
-			$now = date ( 'Y-m-d H:i:s' );
 			$memreas_transaction = new Memreas_Transaction ();
 			$memreas_transaction->exchangeArray ( array (
 					'account_id' => $accountId,
@@ -1033,11 +1062,11 @@ class StripeInstance {
 							"transaction_id" => $account_purchase_transaction_id 
 					) ),
 					'transaction_status' => 'success',
-					'transaction_sent' => $now,
+					'transaction_sent' => self::now (),
 					'transaction_response' => json_encode ( array (
 							"transaction_id" => $account_purchase_transaction_id 
 					) ),
-					'transaction_receive' => $now 
+					'transaction_receive' => self::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 			
@@ -1046,7 +1075,7 @@ class StripeInstance {
 			$endingBalance = $startingBalance + $amount;
 			
 			// Insert the new account balance
-			$now = date ( 'Y-m-d H:i:s' );
+			
 			$endingAccountBalance = new AccountBalances ();
 			$endingAccountBalance->exchangeArray ( array (
 					'account_id' => $accountId,
@@ -1055,16 +1084,16 @@ class StripeInstance {
 					'starting_balance' => $startingBalance,
 					'amount' => "+$seller_amount",
 					'ending_balance' => $endingBalance,
-					'create_time' => $now 
+					'create_time' => self::now () 
 			) );
 			$accountBalanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
 			
 			// Update the account table
-			$now = date ( 'Y-m-d H:i:s' );
+			
 			$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $accountId, 'seller' );
 			$account->exchangeArray ( array (
 					'balance' => $endingBalance,
-					'update_time' => $now 
+					'update_time' => self::now () 
 			) );
 			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
 			
@@ -1093,7 +1122,7 @@ class StripeInstance {
 			// Fetch Account_Balances
 			$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $memreas_master_account_id );
 			// Log the transaction
-			$now = date ( 'Y-m-d H:i:s' );
+			
 			$memreas_transaction = new Memreas_Transaction ();
 			
 			$memreas_transaction->exchangeArray ( array (
@@ -1106,11 +1135,11 @@ class StripeInstance {
 					'transaction_request' => json_encode ( array (
 							"transaction_id" => $account_purchase_transaction_id 
 					) ),
-					'transaction_sent' => $now,
+					'transaction_sent' => self::now (),
 					'transaction_response' => json_encode ( array (
 							"transaction_id" => $account_purchase_transaction_id 
 					) ),
-					'transaction_receive' => $now 
+					'transaction_receive' => self::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 			
@@ -1120,7 +1149,7 @@ class StripeInstance {
 			$ending_balance = $starting_balance + $memreas_master_amount;
 			
 			// Insert the new account balance
-			$now = date ( 'Y-m-d H:i:s' );
+			
 			$endingAccountBalance = new AccountBalances ();
 			$endingAccountBalance->exchangeArray ( array (
 					'account_id' => $memreas_master_account_id,
@@ -1129,16 +1158,16 @@ class StripeInstance {
 					'starting_balance' => $starting_balance,
 					'amount' => "+$memreas_master_amount",
 					'ending_balance' => $ending_balance,
-					'create_time' => $now 
+					'create_time' => self::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
 			
 			// Update the account table
-			$now = date ( 'Y-m-d H:i:s' );
+			
 			// $account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $memreas_master_account_id );
 			$memreas_master_account->exchangeArray ( array (
 					'balance' => $ending_balance,
-					'update_time' => $now 
+					'update_time' => self::now () 
 			) );
 			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
 			
@@ -1169,7 +1198,7 @@ class StripeInstance {
 			// Fetch Account_Balances
 			$currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $memreas_float_account_id );
 			// Log the transaction
-			$now = date ( 'Y-m-d H:i:s' );
+			
 			$memreas_transaction = new Memreas_Transaction ();
 			
 			$memreas_transaction->exchangeArray ( array (
@@ -1182,11 +1211,11 @@ class StripeInstance {
 					'transaction_request' => json_encode ( array (
 							"transaction_id" => $account_purchase_transaction_id 
 					) ),
-					'transaction_sent' => $now,
+					'transaction_sent' => self::now (),
 					'transaction_response' => json_encode ( array (
 							"transaction_id" => $account_purchase_transaction_id 
 					) ),
-					'transaction_receive' => $now 
+					'transaction_receive' => self::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 			
@@ -1196,7 +1225,7 @@ class StripeInstance {
 			$ending_balance = $starting_balance - $amount;
 			
 			// Insert the new account balance
-			$now = date ( 'Y-m-d H:i:s' );
+			
 			$endingAccountBalance = new AccountBalances ();
 			$endingAccountBalance->exchangeArray ( array (
 					'account_id' => $memreas_float_account_id,
@@ -1205,16 +1234,16 @@ class StripeInstance {
 					'starting_balance' => $starting_balance,
 					'amount' => "-$amount",
 					'ending_balance' => $ending_balance,
-					'create_time' => $now 
+					'create_time' => self::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
 			
 			// Update the account table
-			$now = date ( 'Y-m-d H:i:s' );
+			
 			// $account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $memreas_float_account_id );
 			$memreas_float_account->exchangeArray ( array (
 					'balance' => $ending_balance,
-					'update_time' => $now 
+					'update_time' => self::now () 
 			) );
 			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
 			
@@ -1337,7 +1366,7 @@ class StripeInstance {
 		 * -
 		 * Store transaction data prior to sending to Stripe
 		 */
-		$now = date ( 'Y-m-d H:i:s' );
+		
 		// Begin storing transaction to DB
 		// $transactionRequest = $stripeCaptureParams;
 		$transactionRequest ['account_id'] = $Transaction->account_id;
@@ -1352,7 +1381,7 @@ class StripeInstance {
 				'amount' => $Transaction->amount,
 				'currency' => $Transaction->currency,
 				'ref_transaction_id' => $transaction_id,
-				'transaction_sent' => $now 
+				'transaction_sent' => self::now () 
 		) );
 		$capture_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 		
@@ -1390,7 +1419,7 @@ class StripeInstance {
 				'starting_balance' => $startingAccountBalance,
 				'amount' => $amount,
 				'ending_balance' => $endingAccountBalance,
-				'create_time' => $now 
+				'create_time' => self::now () 
 		) );
 		$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $accountBalance );
 		
@@ -1399,11 +1428,11 @@ class StripeInstance {
 		 * Update Account to reflect the latest balance
 		 */
 		// Update the account table
-		$now = date ( 'Y-m-d H:i:s' );
+		
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $account_id );
 		$account->exchangeArray ( array (
 				'balance' => $endingAccountBalance,
-				'update_time' => $now 
+				'update_time' => self::now () 
 		) );
 		$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
 		
@@ -1420,7 +1449,7 @@ class StripeInstance {
 		 */
 		$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
 		// Get the last balance - Insert the new account balance
-		$now = date ( 'Y-m-d H:i:s' );
+		
 		$starting_balance = (isset ( $account_memreas_float )) ? $account_memreas_float->balance : '0.00';
 		$ending_balance = $starting_balance + $amount;
 		
@@ -1440,8 +1469,8 @@ class StripeInstance {
 				'transaction_response' => json_encode ( array (
 						'correlated_transaction_id' => $transaction_id 
 				) ),
-				'transaction_sent' => $now,
-				'transaction_receive' => $now 
+				'transaction_sent' => self::now (),
+				'transaction_receive' => self::now () 
 		) );
 		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 		
@@ -1454,16 +1483,16 @@ class StripeInstance {
 				'starting_balance' => $startingAccountBalance,
 				'amount' => $amount,
 				'ending_balance' => $endingAccountBalance,
-				'create_time' => $now 
+				'create_time' => self::now () 
 		) );
 		$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $memreasFloatAccountBalance );
 		Mlog::addone ( $cm, __LINE__ );
 		
 		// Update the account table
-		$now = date ( 'Y-m-d H:i:s' );
+		
 		$account_memreas_float->exchangeArray ( array (
 				'balance' => $endingAccountBalance,
-				'update_time' => $now 
+				'update_time' => self::now () 
 		) );
 		$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
 		Mlog::addone ( $cm, __LINE__ );
@@ -1482,13 +1511,13 @@ class StripeInstance {
 		 * -
 		 * Store balance transaction fee request prior to sending to stripe
 		 */
-		$now = date ( 'Y-m-d H:i:s' );
+		
 		$memreas_transaction = new Memreas_Transaction ();
 		$memreas_transaction->exchangeArray ( array (
 				'account_id' => $account_id,
 				'transaction_type' => 'add_value_to_account_memreas_float_account_fees',
 				'transaction_request' => json_encode ( $stripeBalanceTransactionParams ),
-				'transaction_sent' => $now 
+				'transaction_sent' => self::now () 
 		) );
 		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 		Mlog::addone ( $cm, __LINE__ );
@@ -1506,7 +1535,7 @@ class StripeInstance {
 		 * -
 		 * Store balance transaction fee response from stripe
 		 */
-		$now = date ( 'Y-m-d H:i:s' );
+		
 		$memreas_transaction->exchangeArray ( array (
 				'transaction_id' => $transaction_id,
 				'amount' => "-$fees",
@@ -1514,7 +1543,7 @@ class StripeInstance {
 				'pass_fail' => 1,
 				'transaction_status' => 'success',
 				'transaction_response' => json_encode ( $balance_transaction ),
-				'transaction_receive' => $now 
+				'transaction_receive' => self::now () 
 		) );
 		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 		Mlog::addone ( $cm, __LINE__ );
@@ -1529,7 +1558,7 @@ class StripeInstance {
 		$ending_balance = $starting_balance - $fees;
 		
 		// Insert the new account balance
-		$now = date ( 'Y-m-d H:i:s' );
+		
 		$endingAccountBalance = new AccountBalances ();
 		$endingAccountBalance->exchangeArray ( array (
 				'account_id' => $account_memreas_float->account_id,
@@ -1538,16 +1567,16 @@ class StripeInstance {
 				'starting_balance' => $starting_balance,
 				'amount' => "-$fees",
 				'ending_balance' => $ending_balance,
-				'create_time' => $now 
+				'create_time' => self::now () 
 		) );
 		$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
 		Mlog::addone ( $cm, __LINE__ );
 		
 		// Update the account table
-		$now = date ( 'Y-m-d H:i:s' );
+		
 		$account_memreas_float->exchangeArray ( array (
 				'balance' => $ending_balance,
-				'update_time' => $now 
+				'update_time' => self::now () 
 		) );
 		$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
 		Mlog::addone ( $cm, __LINE__ );
@@ -1566,23 +1595,23 @@ class StripeInstance {
 				'starting_balance' => $starting_balance,
 				'amount' => - $fees,
 				'ending_balance' => $ending_balance,
-				'create_time' => $now 
+				'create_time' => self::now () 
 		) );
 		$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $memreasMasterAccountBalance );
 		Mlog::addone ( $cm, __LINE__ );
 		
 		// Update the account table
-		$now = date ( 'Y-m-d H:i:s' );
+		
 		$account_memreas_master->exchangeArray ( array (
 				'balance' => $ending_balance,
-				'update_time' => $now 
+				'update_time' => self::now () 
 		) );
 		$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_master );
 		Mlog::addone ( $cm, __LINE__ );
 		
 		/*
 		 *
-		 * $now = date ( 'Y-m-d H:i:s' );
+		 *
 		 *
 		 * // Update Account Balance
 		 * $currentAccountBalance = $this->memreasStripeTables->getAccountTable ()->getAccount ( $Transaction->account_id );
@@ -1593,7 +1622,7 @@ class StripeInstance {
 		 * $account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $Transaction->account_id );
 		 * $account->exchangeArray ( array (
 		 * 'balance' => $endingAccountBalance,
-		 * 'update_time' => $now
+		 * 'update_time' => self::now()
 		 * ) );
 		 * $accountId = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
 		 */
@@ -1602,7 +1631,7 @@ class StripeInstance {
 		$Transaction->transaction_status = 'buy_credit_email, buy_credit_verified, buy_credit_activated';
 		$metadata = array (
 				'IP' => $_SERVER ['REMOTE_ADDR'],
-				'date' => $now,
+				'date' => self::now (),
 				'url' => $_SERVER ['SERVER_NAME'] . $_SERVER ['REQUEST_URI'] 
 		);
 		$Transaction->metadata = json_encode ( $metadata );
@@ -1614,10 +1643,9 @@ class StripeInstance {
 		);
 	}
 	public function AccountHistory($data) {
-		$now = date ( "Y-m-d H:i:s" );
 		$userName = $data ['user_name'];
 		$date_from = isset ( $data ['date_from'] ) ? $data ['date_from'] : '';
-		$date_to = isset ( $data ['date_to'] ) ? $data ['date_to'] : $now;
+		$date_to = isset ( $data ['date_to'] ) ? $data ['date_to'] : self::now ();
 		$user = $this->memreasStripeTables->getUserTable ()->getUserByUsername ( $userName );
 		
 		if ($date_from > $date_to) {
@@ -1710,14 +1738,8 @@ class StripeInstance {
 					'user_id' => $user_id 
 			);
 			$data ['plan'] = ( string ) MemreasConstants::PLAN_ID_A;
-			$this->createCustomer ( $data );
+			$result = $this->createCustomer ( $data );
 			$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
-			/*
-			 * return array (
-			 * 'status' => 'Failure',
-			 * 'message' => "registered user is missing account"
-			 * );
-			 */
 		}
 		
 		// fetch data for card
@@ -1730,7 +1752,7 @@ class StripeInstance {
 		 * -
 		 * Store the request transaction
 		 */
-		$now = date ( 'Y-m-d H:i:s' );
+		
 		$transaction = new Memreas_Transaction ();
 		// Copy the card and obfuscate the card number before storing the transaction
 		$obfuscated_card = json_decode ( json_encode ( $card_data ), true );
@@ -1741,7 +1763,7 @@ class StripeInstance {
 				'account_id' => $account_id,
 				'transaction_type' => 'store_credit_card',
 				'transaction_request' => json_encode ( $obfuscated_card ),
-				'transaction_sent' => $now 
+				'transaction_sent' => self::now () 
 		) );
 		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 		
@@ -1771,13 +1793,13 @@ class StripeInstance {
 			 * -
 			 * Handle error and store
 			 */
-			$now = date ( 'Y-m-d H:i:s' );
+			
 			$transaction->exchangeArray ( array (
 					'account_id' => $account_id,
 					'pass_fail' => 0,
 					'transaction_type' => 'store_credit_card_failed',
 					'transaction_response' => $stripeCard,
-					'transaction_receive' => $now 
+					'transaction_receive' => self::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 			
@@ -1796,7 +1818,7 @@ class StripeInstance {
 				'pass_fail' => 1,
 				'transaction_status' => 'store_credit_card_passed',
 				'transaction_response' => json_encode ( $stripeCard ),
-				'transaction_receive' => $now 
+				'transaction_receive' => self::now () 
 		) );
 		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 		
@@ -1829,8 +1851,8 @@ class StripeInstance {
 				'exp_month' => $stripeCard ['exp_month'],
 				'exp_year' => $stripeCard ['exp_year'],
 				'valid_until' => $stripeCard ['exp_month'] . '/' . $stripeCard ['exp_year'],
-				'create_time' => $now,
-				'update_time' => $now 
+				'create_time' => self::now (),
+				'update_time' => self::now () 
 		) );
 		$payment_method_id = $this->memreasStripeTables->getPaymentMethodTable ()->savePaymentMethod ( $payment_method );
 		
@@ -2085,7 +2107,7 @@ class StripeInstance {
 			 */
 			
 			Mlog::addone ( $cm, __LINE__ );
-			$now = date ( 'Y-m-d H:i:s' );
+			
 			// Save transaction table
 			$transaction = new Memreas_Transaction ();
 			
@@ -2094,7 +2116,7 @@ class StripeInstance {
 					'transaction_type' => 'buy_subscription',
 					'amount' => $data ['amount'],
 					'transaction_request' => json_encode ( $paymentMethod ),
-					'transaction_sent' => $now 
+					'transaction_sent' => self::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 			
@@ -2103,7 +2125,7 @@ class StripeInstance {
 					'transaction_id' => $transaction_id,
 					'pass_fail' => 1,
 					'transaction_response' => json_encode ( $createSubscribe ),
-					'transaction_receive' => $now 
+					'transaction_receive' => self::now () 
 			) );
 			$this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 			
@@ -2118,12 +2140,12 @@ class StripeInstance {
 					'plan_description' => $plan ['plan'] ['name'],
 					'gb_storage_amount' => '',
 					'billing_frequency' => MemreasConstants::PLAN_BILLINGFREQUENCY,
-					'start_date' => $now,
+					'start_date' => self::now (),
 					'end_date' => null,
 					'subscription_profile_id' => $createSubscribe ['id'],
 					'subscription_profile_status' => 'Active',
-					'create_date' => $now,
-					'update_time' => $now 
+					'create_date' => self::now (),
+					'update_time' => self::now () 
 			) );
 			$this->memreasStripeTables->getSubscriptionTable ()->saveSubscription ( $memreasSubscription );
 			
@@ -2136,7 +2158,7 @@ class StripeInstance {
 					'plan' => $data ['plan'],
 					'name' => $planDetail ['plan_name'],
 					'storage' => $planDetail ['storage'],
-					'date_active' => $now,
+					'date_active' => self::now (),
 					'billing_frequency' => MemreasConstants::PLAN_BILLINGFREQUENCY 
 			);
 			$user->metadata = json_encode ( $metadata );
@@ -2306,7 +2328,6 @@ class StripeInstance {
 				);
 			}
 			
-			$now = date ( 'Y-m-d H:i:s' );
 			// Update transaction
 			Mlog::addone ( $cm, __LINE__ );
 			$transaction = new Memreas_Transaction ();
@@ -2315,10 +2336,10 @@ class StripeInstance {
 					'account_id' => $account->account_id,
 					'transaction_type' => 'make_payout_seller',
 					'transaction_request' => '',
-					'transaction_sent' => $now,
+					'transaction_sent' => self::now (),
 					'pass_fail' => 1,
 					'transaction_response' => json_encode ( $transferResponse ),
-					'transaction_receive' => $now 
+					'transaction_receive' => self::now () 
 			) );
 			Mlog::addone ( $cm, __LINE__ );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
@@ -2341,7 +2362,7 @@ class StripeInstance {
 					'starting_balance' => $startingAccountBalance,
 					'amount' => $payee ['amount'],
 					'ending_balance' => $endingAccountBalance,
-					'create_time' => $now 
+					'create_time' => self::now () 
 			) );
 			Mlog::addone ( $cm, __LINE__ );
 			$balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $accountBalance );
@@ -2352,7 +2373,7 @@ class StripeInstance {
 			Mlog::addone ( $cm, __LINE__ );
 			$account->exchangeArray ( array (
 					'balance' => $endingAccountBalance,
-					'update_time' => $now 
+					'update_time' => self::now () 
 			) );
 			Mlog::addone ( $cm, __LINE__ );
 			$accountId = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
@@ -3423,63 +3444,20 @@ class StripeClient {
 	/**
 	 * function createManagedAccount
 	 * stripe arguments $data
+	 * - this function is meant to create an account and bank account at Stripe for a seller
 	 */
-	public function createManagedAccount( $stripe_customer_id, $basic_info, $bank_info, $extended_info) {
+	public function createManagedAccount($data) {
 		try {
 			$cm = __CLASS__ . __METHOD__;
-			$now = date ( 'Y-m-d H:i:s' );
 			Mlog::addone ( $cm, __LINE__ );
 			
 			// create account
 			$managedAccount = [ ];
-			$collection = \Stripe\Account::create ( $basic_info );
+			$collection = \Stripe\Account::create ( $data );
 			$result = $collection->__toArray ( true );
-			$managedAccount ['account_id'] = $result ['id'];
-			$managedAccount ['keys'] = $result ['keys'];
-			$managedAccount ['account_response'] = $result;
 			Mlog::addone ( $cm . __LINE__ . '::\Stripe\Account::create::$result--->', $result );
 			
-			// create a stripe bank account
-			\Stripe\Stripe::setApiKey($managedAccount ['keys']['secret']);
-			$stripeAccount = \Stripe\Account::retrieve($managedAccount ['account_id']);
-			$collection = $stripeAccount->external_accounts->create($bank_info);
-			$result = $collection->__toArray ( true );
-				
-			//$customer = \Stripe\Customer::retrieve ( $stripe_customer_id );
-			//$collection = $customer->sources->create ( $bank_info );
-			//$result = $collection->__toArray ( true );
-			$managedAccount ['bank_account_id'] = $result ['id'];
-			$managedAccount ['bank_response'] = $result;
-			Mlog::addone ( $cm . __LINE__ . '::$customer->sources->create($bank_info);--->', $result );
-			
-			// update account to add additional details
-			$stripe_account_id = $result ['id'];
-			Mlog::addone ( $cm , __LINE__);
-			$account = \Stripe\Account::retrieve ( $stripe_account_id );
-			Mlog::addone ( $cm , __LINE__);
-			$account->default_currency = "USD";
-			Mlog::addone ( $cm , __LINE__);
-			$account->metadata = array (
-					'user_id' => $extended_info ['user_id'],
-					'username' => $extended_info ['username'] 
-			);
-			Mlog::addone ( $cm , __LINE__);
-			$account->tos_acceptance = array (
-					'date' => $now,
-					'ip' => $extended_info ['ip_address'],
-					'user_agent' => $extended_info ['user_agent'] 
-			);
-			Mlog::addone ( $cm , __LINE__);
-			$collection = $account->save ();
-			Mlog::addone ( $cm , __LINE__);
-			$result = $collection->__toArray ( true );
-			Mlog::addone ( $cm , __LINE__);
-			$managedAccount ['account_extended_response'] = $result;
-			Mlog::addone ( $cm , __LINE__);
-			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
-			Mlog::addone ( $cm , __LINE__);
-				
-			return $managedAccount;
+			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
 			// Display a very generic error to the user, and maybe send
 			// yourself an email
@@ -3494,7 +3472,6 @@ class StripeClient {
 	
 	/**
 	 * function cancelSubscription
-	 *
 	 * stripe arguments $data
 	 */
 	public function cancelSubscription($stripe_customer_id, $subscription_id) {
@@ -3522,7 +3499,6 @@ class StripeClient {
 	
 	/**
 	 * function createSubscription
-	 *
 	 * stripe arguments $data
 	 */
 	public function createSubscription($data) {
@@ -3550,7 +3526,6 @@ class StripeClient {
 	
 	/**
 	 * function deleteCustomer
-	 *
 	 * stripe arguments $data
 	 */
 	public function deleteCustomer($data) {
@@ -3673,7 +3648,6 @@ class StripeClient {
 	public function createCustomer($data) {
 		try {
 			$cm = __CLASS__ . __METHOD__;
-			$now = date ( 'Y-m-d H:i:s' );
 			
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
@@ -3695,7 +3669,6 @@ class StripeClient {
 	
 	/**
 	 * function createPlan
-	 *
 	 * stripe arguments $data
 	 */
 	public function createPlan($data) {
@@ -3766,7 +3739,6 @@ class StripeClient {
 	
 	/**
 	 * function deletePlan
-	 *
 	 * stripe arguments $data
 	 */
 	public function deletePlan($data) {
