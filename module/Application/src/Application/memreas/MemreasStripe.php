@@ -14,6 +14,7 @@ use Application\Model\Account;
 use Application\Model\AccountBalances;
 use Application\Model\AccountDetail;
 use Application\Model\AccountPurchases;
+use Application\Model\BankAccount;
 use Application\Model\MemreasConstants;
 use Application\Model\PaymentMethod;
 use Application\Model\Subscription;
@@ -22,11 +23,6 @@ use Aws\Ses\Exception\SesException;
 use Guzzle\Http\Client;
 use Guzzle\Service\Exception\ValidationException;
 use Zend\View\Model\ViewModel;
-// use ZfrStripe;
-// use ZfrStripe\Client\StripeClient;
-// use ZfrStripe\Exception\BadRequestException;
-// use ZfrStripe\Exception\CardErrorException;
-// use ZfrStripe\Exception\NotFoundException;
 class MemreasStripe extends StripeInstance {
 	public $stripeClient;
 	public $stripeInstance;
@@ -87,9 +83,9 @@ class MemreasStripe extends StripeInstance {
 class StripeInstance {
 	public $service_locator;
 	// private $stripeCustomer;
-	private $stripeRecipient;
-	private $stripeCard;
-	private $stripePlan;
+	// private $stripeRecipient;
+	// private $stripeCard;
+	// private $stripePlan;
 	private $stripeClient;
 	protected $session;
 	protected $memreasStripeTables;
@@ -101,8 +97,8 @@ class StripeInstance {
 	public function __construct($stripeClient, $memreasStripeTables) {
 		// $this->stripeCustomer = new StripeCustomer ( $stripeClient );
 		$this->stripeClient = $stripeClient;
-		$this->stripeRecipient = new StripeRecipient ( $stripeClient );
-		$this->stripeCard = new StripeCard ( $stripeClient );
+		// $this->stripeRecipient = new StripeRecipient ( $stripeClient );
+		// $this->stripeCard = new StripeCard ( $stripeClient );
 		$this->stripePlan = new StripePlansConfig ( $stripeClient );
 		$this->memreasStripeTables = $memreasStripeTables;
 	}
@@ -224,7 +220,7 @@ class StripeInstance {
 		if (! empty ( $account )) {
 			$account_found = true;
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-			$accounts ['account'] ['customer'] = ($stripe) ? $this->stripeClient->getCustomer ( $accountDetail->stripe_customer_id ) : null;
+			$accounts ['account'] ['customer'] = ($stripe) ? $this->stripeClient->getCustomer ( $account->stripe_customer_id ) : null;
 			$accounts ['buyer_account'] ['accountHeader'] = $account;
 			$accounts ['buyer_account'] ['accountDetail'] = $accountDetail;
 		}
@@ -236,7 +232,7 @@ class StripeInstance {
 		if (! empty ( $account )) {
 			$account_found = true;
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-			$accounts ['account'] ['customer'] = ($stripe) ? $this->stripeClient->getCustomer ( $accountDetail->stripe_customer_id ) : null;
+			$accounts ['account'] ['customer'] = ($stripe) ? $this->stripeClient->getCustomer ( $account->stripe_customer_id ) : null;
 			$accounts ['seller_account'] ['accountHeader'] = $account;
 			$accounts ['seller_account'] ['accountDetail'] = $accountDetail;
 		}
@@ -331,7 +327,7 @@ class StripeInstance {
 			);
 		
 		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-		$customer = $this->stripeClient->getCustomer ( $accountDetail->stripe_customer_id );
+		$customer = $this->stripeClient->getCustomer ( $account->stripe_customer_id );
 		$customerPlans = $customer ['info'] ['subscriptions'] ['data'];
 		return array (
 				'status' => 'Success',
@@ -504,48 +500,85 @@ class StripeInstance {
 		// Get memreas user name
 		$user_name = $seller_data ['user_name'];
 		$user = $this->memreasStripeTables->getUserTable ()->getUserByUsername ( $user_name );
-		
-		if (! $user)
+		if (! $user) {
 			return array (
 					'status' => 'Failure',
 					'message' => 'No user related to this username' 
 			);
+		}
 		
-		/**
-		 * Get $stripe_email_address email address
-		 */
-		$stripe_email_address = $seller_data ['stripe_email_address'];
-		
-		// Fetch the Account
-		$row = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user->user_id, 'seller' );
-		if (! $row) {
-			
-			$bankData = array (
-					'country' => 'US',
-					'routing_number' => $seller_data ['bank_routing'],
-					'account_number' => $seller_data ['account_number'] 
-			);
-			
-			/**
-			 * Create Recipient for Seller
+		// Fetch User, Account
+		$user = $this->memreasStripeTables->getUserTable ()->getUserByUsername ( $user_name );
+		$stripe_email_address = $user->email_address;
+		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user->user_id, 'seller' );
+		if (!$account) {
+			/*
+			 * -
+			 * Call Stripe and create account
 			 */
-			$recipientParams = array (
-					'name' => $seller_data ['first_name'] . ' ' . $seller_data ['last_name'],
-					'email' => $stripe_email_address,
-					'description' => 1,
-					'bank_account' => $bankData 
-			);
-			$this->stripeRecipient->setRecipientInfo ( $recipientParams );
-			$recipientResponse = $this->stripeRecipient->createRecipient ();
 			
+			//create customer for seller
+			$data = [ ];
+			$data ['email'] = $user->email_address;
+			$data ['description'] = "stripe seller account for email: " . $user->email_address;
+			$data ['metadata'] = array('user_id' => $user->user_id);
+			$result = $this->stripeClient->createCustomer($data);
+			Mlog::addone($cm.__LINE__.'::$this->stripeClient->createCustomer($data)-->', $result);
+			$stripe_customer_id = $result['id'];
+			$keys = $result['keys'];
+			
+			// build basic info to create account
+			$basic_info = [ ];
+			$basic_info ['managed'] = true;
+			$basic_info ['country'] = 'US'; // US accounts only for now
+			$basic_info ['email'] = $user->email_address; // email address on file.
+			                                             
+			// build basic info to create bank account
+			$bank_info = [ ];
+			$bank_info ['external_account']['object'] = "bank_account";
+			$bank_info ['external_account']['account_number'] = $seller_data ['account_number'];
+			$bank_info ['external_account']['routing_number'] = $seller_data ['routing_number'];
+			$bank_info ['external_account']['account_holder_name'] = $seller_data ['first_name'] . ' ' . $seller_data ['last_name'];
+			$bank_info ['external_account']['account_holder_type'] = "individual"; // "company" later
+			$bank_info ['external_account']['country'] = 'US'; // US accounts only for now
+			$bank_info ['external_account']['currency'] = "USD";
+			
+			// build extended data for account
+			$extended_info = [ ];
+			$extended_info ['user_id'] = $user->user_id;
+			$extended_info ['username'] = $user->username;
+			$extended_info ['ip_address'] = $seller_data ['ip_address'];
+			$extended_info ['user_agent'] = $seller_data ['user_agent'];
+			
+			$managedAccount = $response = $this->stripeClient->createManagedAccount ( $stripe_customer_id, $basic_info, $bank_info, $extended_info );
+			// Store the transaction that is sent to Stripe
+			$now = date ( 'Y-m-d H:i:s' );
+			$transaction = new Memreas_Transaction ();
+			$request = [];
+			$request['basic_info'] = $basic_info;
+			$request['bank_info'] = $bank_info;
+			$request['extended_info'] = $extended_info;
+				
+			$transaction->exchangeArray ( array (
+					'account_id' => $account_id,
+					'transaction_type' => 'add_seller',
+					'transaction_request' => json_encode ( $request ),
+					'transaction_request' => json_encode ( $response ),
+					'pass_fail' => 1,
+					'transaction_status' => 'add_seller_passed',
+					'transaction_sent' => $now,
+					'transaction_receive' => $now
+			) );
+			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+			
+				
 			/**
 			 * Create Account for Seller
 			 */
-			
-			if (array_key_exists ( 'error', $recipientResponse )) {
+			if (empty ( $managedAccount ['account_id'] )) {
 				return array (
 						'status' => 'Failure',
-						'message' => $recipientResponse ['message'] 
+						'message' => "failed to create seller account" 
 				);
 			}
 			
@@ -563,7 +596,7 @@ class StripeInstance {
 			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
 		} else {
 			// If user has an account with type is buyer, register a new seller account
-			$account_id = $row->account_id;
+			$account_id = $account->account_id;
 			// Return a success message:
 			$result = array (
 					"status" => "Failure",
@@ -576,8 +609,6 @@ class StripeInstance {
 		$accountDetail = new AccountDetail ();
 		$accountDetail->exchangeArray ( array (
 				'account_id' => $account_id,
-				'stripe_customer_id' => $recipientResponse ['id'],
-				'tax_ssn_ein' => $seller_data ['tax_ssn_ein'],
 				'first_name' => $seller_data ['first_name'],
 				'last_name' => $seller_data ['last_name'],
 				'address_line_1' => $seller_data ['address_line_1'],
@@ -589,21 +620,6 @@ class StripeInstance {
 				'stripe_email_address' => $seller_data ['stripe_email_address'] 
 		) );
 		$account_detail_id = $this->memreasStripeTables->getAccountDetailTable ()->saveAccountDetail ( $accountDetail );
-		
-		// Store the transaction that is sent to Stripe
-		$now = date ( 'Y-m-d H:i:s' );
-		$transaction = new Memreas_Transaction ();
-		$transaction->exchangeArray ( array (
-				'account_id' => $account_id,
-				'transaction_type' => 'add_seller',
-				'transaction_request' => json_encode ( $recipientParams ),
-				'transaction_request' => json_encode ( $recipientResponse ),
-				'pass_fail' => 1,
-				'transaction_status' => 'add_seller_passed',
-				'transaction_sent' => $now,
-				'transaction_receive' => $now 
-		) );
-		$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 		
 		// Insert account balances as needed
 		$account_balances = new AccountBalances ();
@@ -618,13 +634,29 @@ class StripeInstance {
 		) );
 		$account_balances_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $account_balances );
 		
+		// Insert bank account
+		$bank_account = new BankAccount();
+		$bank_account->exchangeArray(array(
+				'account_id' => $account_id,
+				'account_detail_id' => $account_detail_id,
+				'stripe_bank_acount_id' => $managedAccount['bank_account_id'],
+				'account_holder_name' => $seller_data['first_name'] . ' ' . $seller_data['last_name'],
+				'account_number' => $seller_data['account_number'],
+				'routing_number' => $seller_data['routing_number'],
+				'tax_ssn_ein' => $seller_data['tax_ssn_ein'],
+				'keys' => json_encode($keys)
+		));
+		$bank_account_id = $this->memreasStripeTables->getBankAccountTable()->saveBankAccount($bank_account);
+		
+		
 		// Return a success message:
 		$result = array (
 				"status" => "Success",
 				"account_id" => $account_id,
 				"account_detail_id" => $account_detail_id,
 				"transaction_id" => $transaction_id,
-				"account_balances_id" => $account_balances_id 
+				"account_balances_id" => $account_balances_id, 
+				"bank_account_id" => $bank_account_id 
 		);
 		
 		return $result;
@@ -685,9 +717,8 @@ class StripeInstance {
 			 * -
 			 * Send transaction to Stripe
 			 */
-			$cardToken = $paymentMethod->stripe_card_token;
 			$cardId = $paymentMethod->stripe_card_reference_id;
-			$customerId = $accountDetail->stripe_customer_id;
+			$customerId = $account->stripe_customer_id;
 			$amount = $data ['amount'];
 			$transactionAmount = ( int ) ($data ['amount'] * 100); // Stripe use minimum amount conver for transaction. Eg: input $5
 			                                                       // convert request to stripe value is 500
@@ -725,7 +756,7 @@ class StripeInstance {
 			) );
 			$activeCreditToken = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 			
-			$chargeResult = $this->stripeCard->createCharge ( $stripeChargeParams );
+			$chargeResult = $this->stripeClient->createCharge ( $stripeChargeParams );
 			// Mlog::addone($cm.__LINE__.'::$chargeResult', $chargeResult);
 			$charge_authorization_id = $chargeResult ['id'];
 			// Mlog::addone($cm.__LINE__.'::$chargeResult', $chargeResult);
@@ -1329,7 +1360,7 @@ class StripeInstance {
 		 * -
 		 * Make Capture call to Stripe
 		 */
-		$chargeResult = $this->stripeCard->captureCharge ( $stripeCaptureParams );
+		$chargeResult = $this->stripeClient->captureCharge ( $stripeCaptureParams );
 		if ($chargeResult) {
 			// Check if Charge is successful or not
 			if (! $chargeResult ['paid']) {
@@ -1466,7 +1497,7 @@ class StripeInstance {
 		 * -
 		 * Make call to Stripe
 		 */
-		$balance_transaction = $this->stripeCard->getBalanceTransaction ( $stripeBalanceTransactionParams );
+		$balance_transaction = $this->stripeClient->getBalanceTransaction ( $stripeBalanceTransactionParams );
 		Mlog::addone ( $cm . 'addValueToAccount()->$balance_transaction::', $balance_transaction );
 		$fees = $balance_transaction ['fee'] / 100; // stripe stores in cents
 		Mlog::addone ( $cm, __LINE__ );
@@ -1669,29 +1700,31 @@ class StripeInstance {
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
 		if (! $account) {
 			
-			//for testing
+			// for testing
 			$data = [ ];
 			$data ['user_id'] = $user->user_id;
 			$data ['username'] = $user->username;
 			$data ['email'] = $user->email_address;
 			$data ['description'] = "Stripe account for email: " . $user->email_address;
-			$data ['metadata'] = array('user_id' => $user_id );
+			$data ['metadata'] = array (
+					'user_id' => $user_id 
+			);
 			$data ['plan'] = ( string ) MemreasConstants::PLAN_ID_A;
-			$this->createCustomer($data);
+			$this->createCustomer ( $data );
 			$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
 			/*
-			return array (
-					'status' => 'Failure',
-					'message' => "registered user is missing account" 
-			);
-			*/
+			 * return array (
+			 * 'status' => 'Failure',
+			 * 'message' => "registered user is missing account"
+			 * );
+			 */
 		}
 		
 		// fetch data for card
 		$account_id = $account->account_id;
 		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account_id );
 		$stripe_customer_id = $account->stripe_customer_id;
-		$this->stripeCard->setCardAttribute ( 'customer', $stripe_customer_id );
+		// $this->stripeCard->setCardAttribute ( 'customer', $stripe_customer_id );
 		
 		/*
 		 * -
@@ -1716,24 +1749,24 @@ class StripeInstance {
 		 * -
 		 * Call Stripe - Save customer card
 		 */
-		//$stripeCard = $this->stripeCard->storeCard ( $card_data );
-		//new array - api complains about user_id
-		$cardForStripe['source']['object'] = "card";
-		$cardForStripe['source']['name'] = $card_data['name'];
-		$cardForStripe['source']['number'] = $card_data['number'];
-		$cardForStripe['source']['cvc'] = $card_data['cvc'];
-		$cardForStripe['source']['exp_month'] = $card_data['exp_month'];
-		$cardForStripe['source']['exp_year'] = $card_data['exp_year'];
-		$cardForStripe['source']['address_line1'] = $card_data['address_line1'];
-		$cardForStripe['source']['address_line2'] = $card_data['address_line2'];
-		$cardForStripe['source']['address_city'] = $card_data['address_city'];
-		$cardForStripe['source']['address_state'] = $card_data['address_state'];
-		$cardForStripe['source']['address_zip'] = $card_data['address_zip'];
-		$cardForStripe['source']['address_country'] = $card_data['address_country'];
+		// $stripeCard = $this->stripeCard->storeCard ( $card_data );
+		// new array - api complains about user_id
+		$cardForStripe ['source'] ['object'] = "card";
+		$cardForStripe ['source'] ['name'] = $card_data ['name'];
+		$cardForStripe ['source'] ['number'] = $card_data ['number'];
+		$cardForStripe ['source'] ['cvc'] = $card_data ['cvc'];
+		$cardForStripe ['source'] ['exp_month'] = $card_data ['exp_month'];
+		$cardForStripe ['source'] ['exp_year'] = $card_data ['exp_year'];
+		$cardForStripe ['source'] ['address_line1'] = $card_data ['address_line1'];
+		$cardForStripe ['source'] ['address_line2'] = $card_data ['address_line2'];
+		$cardForStripe ['source'] ['address_city'] = $card_data ['address_city'];
+		$cardForStripe ['source'] ['address_state'] = $card_data ['address_state'];
+		$cardForStripe ['source'] ['address_zip'] = $card_data ['address_zip'];
+		$cardForStripe ['source'] ['address_country'] = $card_data ['address_country'];
 		$stripeCard = $this->stripeClient->createCard ( $stripe_customer_id, $cardForStripe );
-		$card_id = $stripeCard['id'];
+		$card_id = $stripeCard ['id'];
 		Mlog::addone ( __CLASS__ . __METHOD__ . '::$stripeCard', $stripeCard );
-		if (empty($card_id)) {
+		if (empty ( $card_id )) {
 			/*
 			 * -
 			 * Handle error and store
@@ -1860,7 +1893,7 @@ class StripeInstance {
 		}
 		Mlog::addone ( $cm, __LINE__ );
 		
-		$stripeCustomerId = $accountDetail->stripe_customer_id;
+		$stripeCustomerId = $account->stripe_customer_id;
 		
 		// Create a charge for this subscription
 		$paymentMethod = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodByStripeReferenceId ( $card );
@@ -1970,7 +2003,7 @@ class StripeInstance {
 			Mlog::addone ( $cm, __LINE__ );
 			// Begin going to charge on Stripe
 			$cardId = $paymentMethod->stripe_card_reference_id;
-			$customerId = $accountDetail->stripe_customer_id;
+			$customerId = $account->stripe_customer_id;
 			$transactionAmount = ( int ) ($data ['amount'] * 100); // Stripe use minimum amount convert for transaction. Eg: input $5
 			                                                       // convert request to stripe value is 500
 			$stripeChargeParams = array (
@@ -1982,7 +2015,7 @@ class StripeInstance {
 			); // Set description more details later
 			
 			if ($transactionAmount > 0) {
-				$chargeResult = $this->stripeCard->createCharge ( $stripeChargeParams );
+				$chargeResult = $this->stripeClient->createCharge ( $stripeChargeParams );
 			} else {
 				$chargeResult = false;
 			}
@@ -2245,7 +2278,7 @@ class StripeInstance {
 			
 			// Check if stripe customer / recipient is set
 			Mlog::addone ( $cm, __LINE__ );
-			if (empty ( $accountDetail->stripe_customer_id )) {
+			if (empty ( $account->stripe_customer_id )) {
 				Mlog::addone ( $cm, __LINE__ );
 				return array (
 						'status' => 'Failure',
@@ -2257,7 +2290,7 @@ class StripeInstance {
 			$transferParams = array (
 					'amount' => $payee ['amount'] * 100, // stripe stores in cents
 					'currency' => 'USD',
-					'recipient' => $accountDetail->stripe_customer_id,
+					'recipient' => $account->stripe_customer_id,
 					'description' => $payee ['description'] 
 			);
 			
@@ -2337,10 +2370,11 @@ class StripeInstance {
 	 * List card by user_id
 	 */
 	public function listCards($user_id) {
-		Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
-		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
+		$cm = __CLASS__ . __METHOD__;
+		Mlog::addone ( $cm, __LINE__ );
 		
 		// Check if exist account
+		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
 		if (empty ( $account )) {
 			Mlog::addone ( "listCards", "empty account" );
 			return array (
@@ -2349,9 +2383,8 @@ class StripeInstance {
 			);
 		}
 		
-		$paymentMethods = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodsByAccountId ( $account->account_id );
-		
 		// Check if account has payment method
+		$paymentMethods = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodsByAccountId ( $account->account_id );
 		if (empty ( $paymentMethods )) {
 			Mlog::addone ( "listCards", "empty payment methods" );
 			
@@ -2375,11 +2408,12 @@ class StripeInstance {
 				);
 				
 				// Check if this card has exist at Stripe
-			$stripeCard = $this->stripeCard->getCard ( $accountDetail->stripe_customer_id, $paymentMethod ['stripe_card_reference_id'] );
-			if (! $stripeCard ['exist']) {
+			$stripeCard = $this->stripeClient->getCard ( $account->stripe_customer_id, $paymentMethod ['stripe_card_reference_id'] );
+			// Mlog::addone ( "listCards for loop ", $paymentMethod, 'p' );
+			if (empty ( $stripeCard ['id'] )) {
 				// Mlog::addone ( "listCards for loop - stripe card does not exist ", $stripeCard ['message'] );
 				$listPayments [$index] ['stripe_card'] = 'Failure';
-				$listPayments [$index] ['stripe_card_respone'] = $stripeCard ['message'];
+				$listPayments [$index] ['stripe_card_response'] = $stripeCard ['message'];
 			} else {
 				// Mlog::addone ( "listCards for loop - stripe card does exist ", $stripeCard ['info'] );
 				// $listPayments [$index] ['stripe_card'] = 'Success';
@@ -2420,18 +2454,17 @@ class StripeInstance {
 			$user_id = $_SESSION ['user_id'];
 		else
 			$user_id = $data ['user_id'];
+			
+			// Check if exist account
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
-		
-		// Check if exist account
 		if (empty ( $account ))
 			return array (
 					'status' => 'Failure',
 					'message' => 'You have no any payment method at this time. please try to add card first' 
 			);
-		
+			
+			// Check if account has payment method
 		$paymentMethods = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodsByAccountId ( $account->account_id );
-		
-		// Check if account has payment method
 		if (empty ( $paymentMethods ))
 			return array (
 					'status' => 'Failure',
@@ -2447,7 +2480,7 @@ class StripeInstance {
 			);
 			
 			// Check if this card has exist at Stripe
-		$stripeCard = $this->stripeCard->getCard ( $accountDetail->stripe_customer_id, $data ['card_id'] );
+		$stripeCard = $this->stripeClient->getCard ( $account->stripe_customer_id, $data ['card_id'] );
 		if (! $stripeCard ['exist'])
 			return array (
 					'status' => 'Failure',
@@ -2474,9 +2507,9 @@ class StripeInstance {
 			);
 		
 		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-		$card_data ['customer'] = $accountDetail->stripe_customer_id;
+		$card_data ['customer'] = $account->stripe_customer_id;
 		
-		return $this->stripeCard->updateCard ( $card_data );
+		return $this->stripeClient->updateCard ( $card_data );
 	}
 	/*
 	 * Delete cards
@@ -2493,11 +2526,11 @@ class StripeInstance {
 			if (! empty ( $card )) {
 				$paymentMethod = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodByStripeReferenceId ( $card );
 				$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $paymentMethod->account_id );
-				$stripeCustomerId = $accountDetail->stripe_customer_id;
+				$stripeCustomerId = $account->stripe_customer_id;
 				$deleteCardDB = $this->memreasStripeTables->getPaymentMethodTable ()->deletePaymentMethodByStripeCardReferenceId ( $card );
 				if ($deleteCardDB) {
 					// Remove this card from Stripe
-					$deleteStripeCard = $this->stripeCard->deleteCard ( $stripeCustomerId, $card );
+					$deleteStripeCard = $this->stripeClient->deleteCard ( $stripeCustomerId, $card );
 					if (! $deleteStripeCard ['deleted'])
 						return array (
 								'status' => 'Failure',
@@ -2731,439 +2764,440 @@ class StripeInstance {
  * Inherit Main Stripe Class
  * Process all requests under Recipient
  */
-class StripeRecipient {
-	private $stripeClient;
-	
-	/*
-	 * Defone member variables
-	 */
-	private $id; // Recipient id
-	private $name; // Recipient name
-	private $type = 'individual'; // individual or corporation
-	private $tax_id = null; // The recipient's tax ID
-	private $bank_account = array (); // Bank account
-	private $email; // Email
-	private $description = ''; // Description
-	private $metadata = array (); // Meta data, optional value
-	public function __construct($stripeClient) {
-		$this->stripeClient = $stripeClient;
-	}
-	
-	/*
-	 * Set recipient's info
-	 * @params: $data
-	 * @return: TRUE if data is set - FAIL if data set failed
-	 */
-	public function setRecipientInfo($data) {
-		if (is_array ( $data )) {
-			foreach ( $data as $key => $value )
-				$this->{$key} = $value;
-			return true;
-		} else {
-			if (is_object ( $data )) {
-				$this->name = $data->name;
-				$this->type = isset ( $data->type ) ? $data->type : $this->type;
-				$this->tax_id = isset ( $data->tax_id ) ? $data->tax_id : $this->tax_id;
-				$this->bank_account = isset ( $data->bank_account ) ? $data->bank_account : $this->bank_account;
-				$this->email = $data->email;
-				$this->description = $data->description;
-				$this->metadata = isset ( $data->metadata ) ? $data->metadata : $this->metadata;
-				return true;
-			} else
-				return false;
-		}
-	}
-	
-	/*
-	 * Create a new recipient account
-	 * @params: $data - If $data is not null, this will use this data to create instead of class's members
-	 * @return: result in JSON
-	 */
-	public function createRecipient($data = null) {
-		if ($data) {
-			try {
-				return $customer = $this->stripeClient->createRecipient ( $data );
-				$this->id = $customer ['id'];
-			} catch ( ZfrStripe\Exception\BadRequestException $e ) {
-				return array (
-						'error' => true,
-						'message' => $e->getMessage () 
-				);
-			}
-		} else {
-			try {
-				return $customer = $this->stripeClient->createRecipient ( $this->getRecipientValues () );
-				$this->id = $customer ['id'];
-			} catch ( ZfrStripe\Exception\BadRequestException $e ) {
-				return array (
-						'error' => true,
-						'message' => $e->getMessage () 
-				);
-			}
-		}
-		return $this->updateCustomer ( array (
-				'id' => $this->id,
-				'email' => $this->email,
-				'description' => $this->description 
-		) );
-	}
-	
-	/*
-	 * Retrieve current recipient instance
-	 * @params: $outputFormat : 1 - ARRAY, 0 - OBJECT
-	 */
-	public function getRecipientValues($outputFormat = 1) {
-		if ($outputFormat) {
-			$recipient = array (
-					'id' => $this->id,
-					'name' => $this->name,
-					'type' => $this->type,
-					'bank_account' => $this->bank_account,
-					'email' => $this->email,
-					'description' => $this->description,
-					'metadata' => $this->metadata 
-			);
-			if (! empty ( $this->tax_id ))
-				$recipient ['tax_id'] = $this->tax_id;
-			return $recipient;
-		} else {
-			$recipientObject = new StripeRecipient ( $this->stripeClient );
-			$recipientObject->id = $this->id;
-			$recipientObject->name = $this->name;
-			$recipientObject->type = $this->type;
-			if (! empty ( $this->tax_id ))
-				$recipientObject->tax_id = $this->tax_id;
-			$recipientObject->bank_account = $this->bank_account;
-			$recipientObject->email = $this->email;
-			$recipientObject->description = $this->description;
-			$recipientObject->metadata = $this->metadata;
-			return $recipientObject;
-		}
-	}
-	
-	/*
-	 * Make payout amount to Recipient
-	 * params : $transferParams
-	 */
-	public function stripePayout($transferParams) {
-		$cm = __CLASS__ . __METHOD__;
-		Mlog::addone ( $cm . __LINE__ . '$transferParams--->', $transferParams );
-		// $result = \Stripe\Transfer::create($transferParams);
-		$result = $this->stripeClient->createTransfer ( $transferParams );
-		Mlog::addone ( $cm . __LINE__ . '$result--->', $result );
-		return $result;
-	}
-}
+
+// class StripeRecipient {
+// private $stripeClient;
+
+// /*
+// * Defone member variables
+// */
+// private $id; // Recipient id
+// private $name; // Recipient name
+// private $type = 'individual'; // individual or corporation
+// private $tax_id = null; // The recipient's tax ID
+// private $bank_account = array (); // Bank account
+// private $email; // Email
+// private $description = ''; // Description
+// private $metadata = array (); // Meta data, optional value
+// public function __construct($stripeClient) {
+// $this->stripeClient = $stripeClient;
+// }
+
+// /*
+// * Set recipient's info
+// * @params: $data
+// * @return: TRUE if data is set - FAIL if data set failed
+// */
+// public function setRecipientInfo($data) {
+// if (is_array ( $data )) {
+// foreach ( $data as $key => $value )
+// $this->{$key} = $value;
+// return true;
+// } else {
+// if (is_object ( $data )) {
+// $this->name = $data->name;
+// $this->type = isset ( $data->type ) ? $data->type : $this->type;
+// $this->tax_id = isset ( $data->tax_id ) ? $data->tax_id : $this->tax_id;
+// $this->bank_account = isset ( $data->bank_account ) ? $data->bank_account : $this->bank_account;
+// $this->email = $data->email;
+// $this->description = $data->description;
+// $this->metadata = isset ( $data->metadata ) ? $data->metadata : $this->metadata;
+// return true;
+// } else
+// return false;
+// }
+// }
+
+// /*
+// * Create a new recipient account
+// * @params: $data - If $data is not null, this will use this data to create instead of class's members
+// * @return: result in JSON
+// */
+// public function createRecipient($data = null) {
+// if ($data) {
+// try {
+// return $customer = $this->stripeClient->createRecipient ( $data );
+// $this->id = $customer ['id'];
+// } catch ( ZfrStripe\Exception\BadRequestException $e ) {
+// return array (
+// 'error' => true,
+// 'message' => $e->getMessage ()
+// );
+// }
+// } else {
+// try {
+// return $customer = $this->stripeClient->createRecipient ( $this->getRecipientValues () );
+// $this->id = $customer ['id'];
+// } catch ( ZfrStripe\Exception\BadRequestException $e ) {
+// return array (
+// 'error' => true,
+// 'message' => $e->getMessage ()
+// );
+// }
+// }
+// return $this->updateCustomer ( array (
+// 'id' => $this->id,
+// 'email' => $this->email,
+// 'description' => $this->description
+// ) );
+// }
+
+// /*
+// * Retrieve current recipient instance
+// * @params: $outputFormat : 1 - ARRAY, 0 - OBJECT
+// */
+// public function getRecipientValues($outputFormat = 1) {
+// if ($outputFormat) {
+// $recipient = array (
+// 'id' => $this->id,
+// 'name' => $this->name,
+// 'type' => $this->type,
+// 'bank_account' => $this->bank_account,
+// 'email' => $this->email,
+// 'description' => $this->description,
+// 'metadata' => $this->metadata
+// );
+// if (! empty ( $this->tax_id ))
+// $recipient ['tax_id'] = $this->tax_id;
+// return $recipient;
+// } else {
+// $recipientObject = new StripeRecipient ( $this->stripeClient );
+// $recipientObject->id = $this->id;
+// $recipientObject->name = $this->name;
+// $recipientObject->type = $this->type;
+// if (! empty ( $this->tax_id ))
+// $recipientObject->tax_id = $this->tax_id;
+// $recipientObject->bank_account = $this->bank_account;
+// $recipientObject->email = $this->email;
+// $recipientObject->description = $this->description;
+// $recipientObject->metadata = $this->metadata;
+// return $recipientObject;
+// }
+// }
+
+// /*
+// * Make payout amount to Recipient
+// * params : $transferParams
+// */
+// public function stripePayout($transferParams) {
+// $cm = __CLASS__ . __METHOD__;
+// Mlog::addone ( $cm . __LINE__ . '$transferParams--->', $transferParams );
+// // $result = \Stripe\Transfer::create($transferParams);
+// $result = $this->stripeClient->createTransfer ( $transferParams );
+// Mlog::addone ( $cm . __LINE__ . '$result--->', $result );
+// return $result;
+// }
+// }
 
 /*
  * Inherit Main Stripe Class
  * Proccess all requests under credit card
  */
-class StripeCard {
-	private $stripeClient;
-	
-	/*
-	 * Define member variables
-	 */
-	private $id; // Card id - will get when generate card token
-	private $number; // Credit card number
-	private $exp_month; // Credit card expires month
-	private $exp_year; // Credit card expires year
-	private $cvc; // Credit card secret digits
-	private $type; // Credit card type
-	private $last4; // Last 4 digits
-	private $object = 'card'; // Object is card
-	private $fingerprint = ''; // Stripe card finger print
-	private $customer = null; // Stripe card's customer
-	private $name = null; // Name of card's holder
-	private $country = ''; // Country code. Eg : US, UK,...
-	private $address_line1 = ''; // Billing address no.1
-	private $address_line2 = ''; // Billing address no.2
-	private $address_city = ''; // Address city
-	private $address_state = ''; // Address state
-	private $address_zip = ''; // Address zip
-	private $address_country = ''; // Address country
-	private $cvc_check = 0; // Card verification credential
-	private $address_line1_check = 0; // Check credit card address no.1
-	private $address_zip_check = 0; // Check credit card zipcode
-	protected $card_token;
-	public function __construct($stripeClient) {
-		$this->stripeClient = $stripeClient;
-	}
-	
-	/*
-	 * Charge value
-	 */
-	public function createCharge($data) {
-		return $this->stripeClient->createCharge ( $data );
-	}
-	
-	/*
-	 * Capture value
-	 */
-	public function captureCharge($data) {
-		return $this->stripeClient->captureCharge ( $data );
-	}
-	
-	/*
-	 * Get Balance Transaction (for charge fees)
-	 */
-	public function getBalanceTransaction($data) {
-		return $this->stripeClient->getBalanceTransaction ( $data );
-	}
-	
-	/*
-	 * Construct card class
-	 * @params : $card - an Array or Object contain StripeCard member variables
-	 */
-	public function setCard($card) {
-		if ($card && (is_array ( $card ) || is_object ( $card ))) {
-			if (! $this->setCarddata ( $card ))
-				throw new Exception ( "Credit card set values failed! Please check back credit card's data.", 1 );
-		}
-	}
-	
-	/*
-	 * Return current credit card instance
-	 * @params : 1 - Array, 0 - Object
-	 *
-	 */
-	public function getCardValues($outputFormat = 1) {
-		if ($outputFormat) {
-			return array (
-					'id' => $this->id,
-					'number' => $this->number,
-					'exp_month' => $this->exp_month,
-					'exp_year' => $this->exp_year,
-					'cvc' => $this->cvc,
-					'type' => $this->type,
-					'last4' => $this->last4,
-					'name' => $this->name,
-					'object' => $this->object,
-					'fingerprint' => $this->fingerprint,
-					'customer' => $this->customer,
-					'country' => $this->country,
-					'address_line1' => $this->address_line1,
-					'address_line2' => $this->address_line2,
-					'address_city' => $this->address_city,
-					'address_state' => $this->address_state,
-					'address_zip' => $this->address_zip,
-					'address_country' => $this->address_country,
-					'cvc_check' => $this->cvc_check,
-					'address_line1_check' => $this->address_line1_check,
-					'address_zip_check' => $this->address_zip_check 
-			);
-		} else {
-			$cardObject = new StripeCard ( $this->stripeClient );
-			$cardObject->id = $this->id;
-			$cardObject->number = $this->number;
-			$cardObject->exp_month = $this->exp_month;
-			$cardObject->exp_year = $this->exp_year;
-			$cardObject->cvc = $this->cvc;
-			$cardObject->type = $this->type;
-			$cardObject->last4 = $this->last4;
-			$cardObject->name = $this->name;
-			$cardObject->object = $this->object;
-			$cardObject->fingerprint = $this->fingerprint;
-			$cardObject->customer = $this->customer;
-			$cardObject->country = $this->country;
-			$cardObject->address_line1 = $this->address_line1;
-			$cardObject->address_line2 = $this->address_line2;
-			$cardObject->address_city = $this->address_city;
-			$cardObject->address_state = $this->address_state;
-			$cardObject->address_zip = $this->address_zip;
-			$cardObject->address_country = $this->address_country;
-			$cardObject->cvc_check = $this->cvc_check;
-			$cardObject->address_line1_check = $this->address_line1_check;
-			$cardObject->address_zip_check = $this->address_zip_check;
-			return $cardObject;
-		}
-	}
-	
-	/*
-	 * Register / Create a new card
-	 * @params: $card_data - predefined credit card's data to be stored
-	 * You can pass data when init class or directly input without data init
-	 * @return: JSON Object result
-	 */
-	public function storeCard($card_data = null) {
-		Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
-		if ($card_data) {
-			/*-
-			 * Only need to call create card per Stripe
-			 */
-			$cardForStripe = [];			
-			
-			$cardForStripe['object'] = "card";
-			$cardForStripe['exp_month'] = $card_data['exp_month'];
-			$cardForStripe['exp_year'] = $card_data['exp_year'];
-			$cardForStripe['number'] = $card_data['number'];
-			$cardForStripe['address_city'] = $card_data['address_city'];
-			$cardForStripe['address_country'] = $card_data['address_country'];
-			$cardForStripe['address_line1'] = $card_data['address_line1'];
-			$cardForStripe['address_line2'] = $card_data['address_line2'];
-			$cardForStripe['address_state'] = $card_data['address_state'];
-			$cardForStripe['address_zip'] = $card_data['address_zip'];
-			$cardForStripe['cvc'] = $card_data['cvc'];
-			$cardForStripe['name'] = $card_data['name'];
-			Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
-			Mlog::addone ( __CLASS__ . __METHOD__. __LINE__ .'::$card_data-->',$card_data);
-			
-		}
-		
-		try {
-			$result ['card_added'] = true;
-			$result ['response'] = $this->stripeClient->createCard ( array (
-					'card' => $args,
-					'customer' => $this->customer 
-			) );
-		} catch ( CardErrorException $exception ) {
-			$result ['card_added'] = false;
-			$result ['message'] = $exception->getMessage ();
-		}
-		return $result;
-	}
-	
-	/*
-	 * Get card's info
-	 * @params: $card_id
-	 * @return:
-	 */
-	public function getCard($customer_id, $card_id) {
-		try {
-			$result ['exist'] = 1;
-			$result ['info'] = $this->stripeClient->getCard ( array (
-					'customer' => $customer_id,
-					'id' => $card_id 
-			) );
-		} catch ( NoFoundException $e ) {
-			$result ['exist'] = 0;
-			$result ['message'] = $e->getMessage ();
-		}
-		return $result;
-	}
-	
-	/*
-	 * Update card's info
-	 */
-	public function updateCard($card_data) {
-		try {
-			$this->stripeClient->updateCard ( array (
-					'id' => $card_data ['id'],
-					'customer' => $card_data ['customer'],
-					'address_city' => $card_data ['address_city'],
-					'address_line1' => $card_data ['address_line1'],
-					'address_line2' => $card_data ['address_line2'],
-					'address_state' => $card_data ['address_state'],
-					'address_zip' => $card_data ['address_zip'],
-					'exp_month' => $card_data ['exp_month'],
-					'exp_year' => $card_data ['exp_year'],
-					'name' => $card_data ['name'] 
-			) );
-			return array (
-					'status' => 'Success' 
-			);
-		} catch ( ValidationException $e ) {
-			return array (
-					'status' => 'Failure',
-					'message' => $e->getMessage () 
-			);
-		}
-	}
-	
-	/*
-	 * Remove a card
-	 */
-	public function deleteCard($customer_id, $card_id) {
-		try {
-			return $this->stripeClient->deleteCard ( array (
-					'customer' => $customer_id,
-					'id' => $card_id 
-			) );
-		} catch ( NoFoundException $e ) {
-			return array (
-					'deleted' => 0,
-					'message' => $e->getMessage () 
-			);
-		}
-	}
-	
-	/*
-	 * Set member variable values
-	 * @params: $card_data
-	 * @return:
-	 * TRUE : All attributes and values are successful set
-	 * FALSE : Input params is failed
-	 */
-	private function setCarddata($card_data) {
-		if (is_array ( $card_data )) {
-			foreach ( $card_data as $cardAttr => $cardValue )
-				$this->{$cardAttr} = $cardValue; // Attributes from array are exactly same name
-			return true;
-		} else {
-			if (is_object ( $card_data )) {
-				$this->number = $card_data->number;
-				$this->exp_month = $card_data->exp_month;
-				$this->exp_year = $card_data->exp_year;
-				$this->cvc = $card_data->cvc;
-				// $this->type = $card_data->type;
-				$this->type = $card_data->brand;
-				$this->last4 = $card_data->last4;
-				$this->name = (isset ( $card_data->name ) ? $card_data->name : null);
-				$this->fingerprint = (isset ( $card_data->finfer_print ) ? $card_data->fingerprint : '');
-				$this->customer = (isset ( $card_data->customer ) ? $card_data->customer : null);
-				$this->country = (isset ( $card_data->country ) ? $card_data->country : '');
-				$this->address_line1 = (isset ( $card_data->address_line1 ) ? $card_data->address_line1 : '');
-				$this->address_line2 = (isset ( $card_data->address_line2 ) ? $card_data->address_line2 : '');
-				$this->address_city = (isset ( $card_data->address_city ) ? $card_data->address_city : '');
-				$this->address_state = (isset ( $card_data->address_state ) ? $card_data->address_state : '');
-				$this->address_zip = (isset ( $card_data->address_zip ) ? $card_data->address_zip : '');
-				$this->address_country = (isset ( $card_data->address_country ) ? $card_data->address_country : '');
-				$this->cvc_check = (isset ( $card_data->cvc_check ) ? $card_data->cvc_check : 0);
-				$this->address_line1_check = (isset ( $card_data->address_line1_check ) ? $card_data->address_line1_check : 0);
-				$this->address_zip_check = (isset ( $card_data->address_zip_check ) ? $card_data->address_zip_check : 0);
-				return true;
-			} else
-				return false;
-		}
-	}
-	
-	/*
-	 * Update card information
-	 */
-	private function updateInfo($card_data) {
-		$this->id = $card_data ['id'];
-		$this->type = $card_data ['brand'];
-		$this->last4 = $card_data ['last4'];
-		$this->fingerprint = $card_data ['fingerprint'];
-		// $this->type = $card_data->type;
-		$this->customer = ! empty ( $card_data ['customer'] ) ? $card_data ['customer'] : $this->customer;
-		$this->country = ! empty ( $card_data ['country'] ) ? $card_data ['country'] : $this->country;
-		$this->name = ! empty ( $card_data ['name'] ) ? $card_data ['name'] : $this->name;
-		$this->address_line1 = ! empty ( $card_data->address_line1 ) ? $card_data->address_line1 : $this->address_line1;
-		$this->address_line2 = ! empty ( $card_data->address_line2 ) ? $card_data->address_line2 : $this->address_line2;
-		$this->address_city = ! empty ( $card_data->address_city ) ? $card_data->address_city : $this->address_city;
-		$this->address_state = ! empty ( $card_data->address_state ) ? $card_data->address_state : $this->address_state;
-		$this->address_zip = ! empty ( $card_data->address_zip ) ? $card_data->address_zip : $this->address_zip;
-		$this->address_country = ! empty ( $card_data->address_country ) ? $card_data->address_country : $this->address_country;
-	}
-	
-	/*
-	 * Set custom attribute
-	 * @params: $attribteName
-	 * @params: $attributeValue
-	 */
-	public function setCardAttribute($attributeName, $newValue) {
-		$this->{$attributeName} = $newValue;
-	}
-	
-	/*
-	 * Get custom attribute
-	 */
-	public function getCardAttribute($attributeName) {
-		return $this->{$attributeName};
-	}
-}
+// class StripeCard {
+// private $stripeClient;
+
+// /*
+// * Define member variables
+// */
+// private $id; // Card id - will get when generate card token
+// private $number; // Credit card number
+// private $exp_month; // Credit card expires month
+// private $exp_year; // Credit card expires year
+// private $cvc; // Credit card secret digits
+// private $type; // Credit card type
+// private $last4; // Last 4 digits
+// private $object = 'card'; // Object is card
+// private $fingerprint = ''; // Stripe card finger print
+// private $customer = null; // Stripe card's customer
+// private $name = null; // Name of card's holder
+// private $country = ''; // Country code. Eg : US, UK,...
+// private $address_line1 = ''; // Billing address no.1
+// private $address_line2 = ''; // Billing address no.2
+// private $address_city = ''; // Address city
+// private $address_state = ''; // Address state
+// private $address_zip = ''; // Address zip
+// private $address_country = ''; // Address country
+// private $cvc_check = 0; // Card verification credential
+// private $address_line1_check = 0; // Check credit card address no.1
+// private $address_zip_check = 0; // Check credit card zipcode
+// protected $card_token;
+// public function __construct($stripeClient) {
+// $this->stripeClient = $stripeClient;
+// }
+
+// /*
+// * Charge value
+// */
+// public function createCharge($data) {
+// return $this->stripeClient->createCharge ( $data );
+// }
+
+// /*
+// * Capture value
+// */
+// public function captureCharge($data) {
+// return $this->stripeClient->captureCharge ( $data );
+// }
+
+// /*
+// * Get Balance Transaction (for charge fees)
+// */
+// public function getBalanceTransaction($data) {
+// return $this->stripeClient->getBalanceTransaction ( $data );
+// }
+
+// /*
+// * Construct card class
+// * @params : $card - an Array or Object contain StripeCard member variables
+// */
+// public function setCard($card) {
+// if ($card && (is_array ( $card ) || is_object ( $card ))) {
+// if (! $this->setCarddata ( $card ))
+// throw new Exception ( "Credit card set values failed! Please check back credit card's data.", 1 );
+// }
+// }
+
+// /*
+// * Return current credit card instance
+// * @params : 1 - Array, 0 - Object
+// *
+// */
+// public function getCardValues($outputFormat = 1) {
+// if ($outputFormat) {
+// return array (
+// 'id' => $this->id,
+// 'number' => $this->number,
+// 'exp_month' => $this->exp_month,
+// 'exp_year' => $this->exp_year,
+// 'cvc' => $this->cvc,
+// 'type' => $this->type,
+// 'last4' => $this->last4,
+// 'name' => $this->name,
+// 'object' => $this->object,
+// 'fingerprint' => $this->fingerprint,
+// 'customer' => $this->customer,
+// 'country' => $this->country,
+// 'address_line1' => $this->address_line1,
+// 'address_line2' => $this->address_line2,
+// 'address_city' => $this->address_city,
+// 'address_state' => $this->address_state,
+// 'address_zip' => $this->address_zip,
+// 'address_country' => $this->address_country,
+// 'cvc_check' => $this->cvc_check,
+// 'address_line1_check' => $this->address_line1_check,
+// 'address_zip_check' => $this->address_zip_check
+// );
+// } else {
+// $cardObject = new StripeCard ( $this->stripeClient );
+// $cardObject->id = $this->id;
+// $cardObject->number = $this->number;
+// $cardObject->exp_month = $this->exp_month;
+// $cardObject->exp_year = $this->exp_year;
+// $cardObject->cvc = $this->cvc;
+// $cardObject->type = $this->type;
+// $cardObject->last4 = $this->last4;
+// $cardObject->name = $this->name;
+// $cardObject->object = $this->object;
+// $cardObject->fingerprint = $this->fingerprint;
+// $cardObject->customer = $this->customer;
+// $cardObject->country = $this->country;
+// $cardObject->address_line1 = $this->address_line1;
+// $cardObject->address_line2 = $this->address_line2;
+// $cardObject->address_city = $this->address_city;
+// $cardObject->address_state = $this->address_state;
+// $cardObject->address_zip = $this->address_zip;
+// $cardObject->address_country = $this->address_country;
+// $cardObject->cvc_check = $this->cvc_check;
+// $cardObject->address_line1_check = $this->address_line1_check;
+// $cardObject->address_zip_check = $this->address_zip_check;
+// return $cardObject;
+// }
+// }
+
+// /*
+// * Register / Create a new card
+// * @params: $card_data - predefined credit card's data to be stored
+// * You can pass data when init class or directly input without data init
+// * @return: JSON Object result
+// */
+// public function storeCard($card_data = null) {
+// Mlog::addone ( __CLASS__ . __METHOD__ . '::$card_data', $card_data );
+// if ($card_data) {
+// /*-
+// * Only need to call create card per Stripe
+// */
+// $cardForStripe = [];
+
+// $cardForStripe['object'] = "card";
+// $cardForStripe['exp_month'] = $card_data['exp_month'];
+// $cardForStripe['exp_year'] = $card_data['exp_year'];
+// $cardForStripe['number'] = $card_data['number'];
+// $cardForStripe['address_city'] = $card_data['address_city'];
+// $cardForStripe['address_country'] = $card_data['address_country'];
+// $cardForStripe['address_line1'] = $card_data['address_line1'];
+// $cardForStripe['address_line2'] = $card_data['address_line2'];
+// $cardForStripe['address_state'] = $card_data['address_state'];
+// $cardForStripe['address_zip'] = $card_data['address_zip'];
+// $cardForStripe['cvc'] = $card_data['cvc'];
+// $cardForStripe['name'] = $card_data['name'];
+// Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
+// Mlog::addone ( __CLASS__ . __METHOD__. __LINE__ .'::$card_data-->',$card_data);
+
+// }
+
+// try {
+// $result ['card_added'] = true;
+// $result ['response'] = $this->stripeClient->createCard ( array (
+// 'card' => $args,
+// 'customer' => $this->customer
+// ) );
+// } catch ( CardErrorException $exception ) {
+// $result ['card_added'] = false;
+// $result ['message'] = $exception->getMessage ();
+// }
+// return $result;
+// }
+
+// /*
+// * Get card's info
+// * @params: $card_id
+// * @return:
+// */
+// public function getCard($customer_id, $card_id) {
+// try {
+// $result ['exist'] = 1;
+// $result ['info'] = $this->stripeClient->getCard ( array (
+// 'customer' => $customer_id,
+// 'id' => $card_id
+// ) );
+// } catch ( NoFoundException $e ) {
+// $result ['exist'] = 0;
+// $result ['message'] = $e->getMessage ();
+// }
+// return $result;
+// }
+
+// /*
+// * Update card's info
+// */
+// public function updateCard($card_data) {
+// try {
+// $this->stripeClient->updateCard ( array (
+// 'id' => $card_data ['id'],
+// 'customer' => $card_data ['customer'],
+// 'address_city' => $card_data ['address_city'],
+// 'address_line1' => $card_data ['address_line1'],
+// 'address_line2' => $card_data ['address_line2'],
+// 'address_state' => $card_data ['address_state'],
+// 'address_zip' => $card_data ['address_zip'],
+// 'exp_month' => $card_data ['exp_month'],
+// 'exp_year' => $card_data ['exp_year'],
+// 'name' => $card_data ['name']
+// ) );
+// return array (
+// 'status' => 'Success'
+// );
+// } catch ( ValidationException $e ) {
+// return array (
+// 'status' => 'Failure',
+// 'message' => $e->getMessage ()
+// );
+// }
+// }
+
+// /*
+// * Remove a card
+// */
+// public function deleteCard($customer_id, $card_id) {
+// try {
+// return $this->stripeClient->deleteCard ( array (
+// 'customer' => $customer_id,
+// 'id' => $card_id
+// ) );
+// } catch ( NoFoundException $e ) {
+// return array (
+// 'deleted' => 0,
+// 'message' => $e->getMessage ()
+// );
+// }
+// }
+
+// /*
+// * Set member variable values
+// * @params: $card_data
+// * @return:
+// * TRUE : All attributes and values are successful set
+// * FALSE : Input params is failed
+// */
+// private function setCarddata($card_data) {
+// if (is_array ( $card_data )) {
+// foreach ( $card_data as $cardAttr => $cardValue )
+// $this->{$cardAttr} = $cardValue; // Attributes from array are exactly same name
+// return true;
+// } else {
+// if (is_object ( $card_data )) {
+// $this->number = $card_data->number;
+// $this->exp_month = $card_data->exp_month;
+// $this->exp_year = $card_data->exp_year;
+// $this->cvc = $card_data->cvc;
+// // $this->type = $card_data->type;
+// $this->type = $card_data->brand;
+// $this->last4 = $card_data->last4;
+// $this->name = (isset ( $card_data->name ) ? $card_data->name : null);
+// $this->fingerprint = (isset ( $card_data->finfer_print ) ? $card_data->fingerprint : '');
+// $this->customer = (isset ( $card_data->customer ) ? $card_data->customer : null);
+// $this->country = (isset ( $card_data->country ) ? $card_data->country : '');
+// $this->address_line1 = (isset ( $card_data->address_line1 ) ? $card_data->address_line1 : '');
+// $this->address_line2 = (isset ( $card_data->address_line2 ) ? $card_data->address_line2 : '');
+// $this->address_city = (isset ( $card_data->address_city ) ? $card_data->address_city : '');
+// $this->address_state = (isset ( $card_data->address_state ) ? $card_data->address_state : '');
+// $this->address_zip = (isset ( $card_data->address_zip ) ? $card_data->address_zip : '');
+// $this->address_country = (isset ( $card_data->address_country ) ? $card_data->address_country : '');
+// $this->cvc_check = (isset ( $card_data->cvc_check ) ? $card_data->cvc_check : 0);
+// $this->address_line1_check = (isset ( $card_data->address_line1_check ) ? $card_data->address_line1_check : 0);
+// $this->address_zip_check = (isset ( $card_data->address_zip_check ) ? $card_data->address_zip_check : 0);
+// return true;
+// } else
+// return false;
+// }
+// }
+
+// /*
+// * Update card information
+// */
+// private function updateInfo($card_data) {
+// $this->id = $card_data ['id'];
+// $this->type = $card_data ['brand'];
+// $this->last4 = $card_data ['last4'];
+// $this->fingerprint = $card_data ['fingerprint'];
+// // $this->type = $card_data->type;
+// $this->customer = ! empty ( $card_data ['customer'] ) ? $card_data ['customer'] : $this->customer;
+// $this->country = ! empty ( $card_data ['country'] ) ? $card_data ['country'] : $this->country;
+// $this->name = ! empty ( $card_data ['name'] ) ? $card_data ['name'] : $this->name;
+// $this->address_line1 = ! empty ( $card_data->address_line1 ) ? $card_data->address_line1 : $this->address_line1;
+// $this->address_line2 = ! empty ( $card_data->address_line2 ) ? $card_data->address_line2 : $this->address_line2;
+// $this->address_city = ! empty ( $card_data->address_city ) ? $card_data->address_city : $this->address_city;
+// $this->address_state = ! empty ( $card_data->address_state ) ? $card_data->address_state : $this->address_state;
+// $this->address_zip = ! empty ( $card_data->address_zip ) ? $card_data->address_zip : $this->address_zip;
+// $this->address_country = ! empty ( $card_data->address_country ) ? $card_data->address_country : $this->address_country;
+// }
+
+// /*
+// * Set custom attribute
+// * @params: $attribteName
+// * @params: $attributeValue
+// */
+// public function setCardAttribute($attributeName, $newValue) {
+// $this->{$attributeName} = $newValue;
+// }
+
+// /*
+// * Get custom attribute
+// */
+// public function getCardAttribute($attributeName) {
+// return $this->{$attributeName};
+// }
+// }
 
 /*
  * Inherit Main Stripe Class
@@ -3217,7 +3251,7 @@ class StripeClient {
 			/**
 			 * TODO - updated fields
 			 */
-			//$card->name = "Jane Austen";
+			// $card->name = "Jane Austen";
 			$collection = $card->save ();
 			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
@@ -3387,19 +3421,65 @@ class StripeClient {
 	}
 	
 	/**
-	 * function createRecipient
-	 *
+	 * function createManagedAccount
 	 * stripe arguments $data
 	 */
-	public function createRecipient($data) {
+	public function createManagedAccount( $stripe_customer_id, $basic_info, $bank_info, $extended_info) {
 		try {
 			$cm = __CLASS__ . __METHOD__;
+			$now = date ( 'Y-m-d H:i:s' );
 			Mlog::addone ( $cm, __LINE__ );
-			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
-			$result = \Stripe\Recipient::create ( $data );
-			$collection = $collection->__toArray ( true );
+			
+			// create account
+			$managedAccount = [ ];
+			$collection = \Stripe\Account::create ( $basic_info );
+			$result = $collection->__toArray ( true );
+			$managedAccount ['account_id'] = $result ['id'];
+			$managedAccount ['keys'] = $result ['keys'];
+			$managedAccount ['account_response'] = $result;
+			Mlog::addone ( $cm . __LINE__ . '::\Stripe\Account::create::$result--->', $result );
+			
+			// create a stripe bank account
+			\Stripe\Stripe::setApiKey($managedAccount ['keys']['secret']);
+			$stripeAccount = \Stripe\Account::retrieve($managedAccount ['account_id']);
+			$collection = $stripeAccount->external_accounts->create($bank_info);
+			$result = $collection->__toArray ( true );
+				
+			//$customer = \Stripe\Customer::retrieve ( $stripe_customer_id );
+			//$collection = $customer->sources->create ( $bank_info );
+			//$result = $collection->__toArray ( true );
+			$managedAccount ['bank_account_id'] = $result ['id'];
+			$managedAccount ['bank_response'] = $result;
+			Mlog::addone ( $cm . __LINE__ . '::$customer->sources->create($bank_info);--->', $result );
+			
+			// update account to add additional details
+			$stripe_account_id = $result ['id'];
+			Mlog::addone ( $cm , __LINE__);
+			$account = \Stripe\Account::retrieve ( $stripe_account_id );
+			Mlog::addone ( $cm , __LINE__);
+			$account->default_currency = "USD";
+			Mlog::addone ( $cm , __LINE__);
+			$account->metadata = array (
+					'user_id' => $extended_info ['user_id'],
+					'username' => $extended_info ['username'] 
+			);
+			Mlog::addone ( $cm , __LINE__);
+			$account->tos_acceptance = array (
+					'date' => $now,
+					'ip' => $extended_info ['ip_address'],
+					'user_agent' => $extended_info ['user_agent'] 
+			);
+			Mlog::addone ( $cm , __LINE__);
+			$collection = $account->save ();
+			Mlog::addone ( $cm , __LINE__);
+			$result = $collection->__toArray ( true );
+			Mlog::addone ( $cm , __LINE__);
+			$managedAccount ['account_extended_response'] = $result;
+			Mlog::addone ( $cm , __LINE__);
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
-			return $result;
+			Mlog::addone ( $cm , __LINE__);
+				
+			return $managedAccount;
 		} catch ( \Stripe\Error\Base $e ) {
 			// Display a very generic error to the user, and maybe send
 			// yourself an email
@@ -3453,7 +3533,7 @@ class StripeClient {
 			$cu = \Stripe\Customer::retrieve ( $data ['stripe_customer_id'] );
 			$collection = $cu->subscriptions->create ( $data ['plan'] );
 			$result = $collection->__toArray ( true );
-				
+			
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
 			return $result;
 		} catch ( \Stripe\Error\Base $e ) {
