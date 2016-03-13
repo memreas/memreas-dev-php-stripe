@@ -85,7 +85,7 @@ class PaymentMethodTable {
 		) );
 		$row = $rowset->current ();
 		if (! $row) {
-			throw new \Exception ( "Could not find row $payment_method_id" );
+			throw new \Exception ( "Could not find row $stripe_card_reference_id" );
 		}
 		return $row;
 	}

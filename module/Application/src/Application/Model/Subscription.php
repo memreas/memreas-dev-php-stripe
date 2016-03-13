@@ -10,6 +10,7 @@ namespace Application\Model;
 class Subscription {
 	public $subscription_id;
 	public $account_id;
+	public $stripe_subscription_id;
 	public $currency_code;
 	public $plan;
 	public $plan_amount;
@@ -24,6 +25,7 @@ class Subscription {
 	public function exchangeArray($data) {
 		$this->subscription_id = (isset ( $data ['subscription_id'] )) ? $data ['subscription_id'] : null;
 		$this->account_id = (isset ( $data ['account_id'] )) ? $data ['account_id'] : null;
+		$this->stripe_subscription_id = (isset ( $data ['stripe_subscription_id'] )) ? $data ['stripe_subscription_id'] : null;
 		$this->currency_code = (isset ( $data ['currency_code'] )) ? $data ['currency_code'] : null;
 		$this->plan = (isset ( $data ['plan'] )) ? $data ['plan'] : null;
 		$this->plan_amount = (isset ( $data ['plan_amount'] )) ? $data ['plan_amount'] : null;
