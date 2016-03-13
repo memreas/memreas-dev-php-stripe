@@ -90,6 +90,16 @@ class AccountTable {
 		}
 		return $row;
 	}
+	public function getAccountById($account_id) {
+		$rowset = $this->tableGateway->select ( array (
+				'account_id' => $account_id 
+		) );
+		$row = $rowset->current ();
+		if (! $row) {
+			return null;
+		}
+		return $row;
+	}
 	public function saveAccount(Account $account) {
 		Mlog::addone(__CLASS__.__METHOD__,__LINE__);
 		$data = array (

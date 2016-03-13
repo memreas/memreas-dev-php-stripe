@@ -8,6 +8,7 @@
 namespace Application\Model;
 
 use Application\memreas\MUUID;
+use Application\memreas\MNow;
 use Zend\Db\Sql\Sql;
 use Zend\Db\TableGateway\TableGateway;
 
@@ -92,6 +93,7 @@ class BankAccountTable {
 				'routing_number' => $bank_account->routing_number,
 				'tax_ssn_ein' => $bank_account->tax_ssn_ein,
 				'keys' => $bank_account->keys,
+				'delete_flag' => $bank_account->delete_flag,
 				'create_time' => $bank_account->create_time,
 				'update_time' => $bank_account->update_time 
 		);
@@ -113,16 +115,23 @@ class BankAccountTable {
 		return $data ['bank_account_id'];
 	}
 	public function deleteBankAccount($bank_account_id) {
-		$this->tableGateway->delete ( array (
-				'bank_account_id' => $bank_account_id 
+		$rowset = $this->tableGateway->select ( array (
+				'bank_account_id' => $bank_account_id
 		) );
-	}
-	public function deleteBankAccountByStripeBankAccountId($stripe_bank_account_id) {
-		return $this->tableGateway->delete ( array (
-				'stripe_bank_account_id' => $stripe_bank_account_id 
+		$row = $rowset->current ();
+		if (! $row) {
+			throw new \Exception ( "Could not find row $bank_account_id" );
+		}
+		$data = array (
+				'delete_flag' => $row->delete_flag = '1',
+				'update_time' => $row->update_time = MNow::now ()
+		);
+		$this->tableGateway->update ( $data, array (
+				'payment_method_id' => $payment_method_id
 		) );
+		//$this->tableGateway->delete ( array (
+		//		'payment_method_id' => $payment_method_id
+		//) );
 	}
-	public function deleteAll() {
-		$this->tableGateway->delete ( "1" );
-	}
+	
 }

@@ -17,6 +17,7 @@ class BankAccount {
 	public $routing_number;
 	public $tax_ssn_ein;
 	public $keys;
+	public $delete_flag;
 	public $create_time;
 	public $update_time;
 	public function exchangeArray($data) {
@@ -29,6 +30,7 @@ class BankAccount {
 		$this->routing_number = (isset ( $data ['routing_number'] )) ? $data ['routing_number'] : $this->routing_number;
 		$this->tax_ssn_ein = (isset ( $data ['tax_ssn_ein'] )) ? $data ['tax_ssn_ein'] : $this->tax_ssn_ein;
 		$this->keys = (isset ( $data ['keys'] )) ? $data ['keys'] : $this->keys;
+		$this->delete_flag = (isset ( $data ['delete_flag'] )) ? $data ['delete_flag'] : $this->delete_flag;
 		$this->create_time = (isset ( $data ['create_time'] )) ? $data ['create_time'] : $this->create_time;
 		$this->update_time = (isset ( $data ['update_time'] )) ? $data ['update_time'] : $this->update_time;
 	}

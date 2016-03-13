@@ -17,6 +17,7 @@ class PaymentMethod {
 	public $exp_month;
 	public $exp_year;
 	public $valid_until;
+	public $delete_flag;
 	public $create_time;
 	public $update_time;
 	public function exchangeArray($data) {
@@ -29,6 +30,7 @@ class PaymentMethod {
 		$this->exp_month = (isset ( $data ['exp_month'] )) ? $data ['exp_month'] : $this->exp_month;
 		$this->exp_year = (isset ( $data ['exp_year'] )) ? $data ['exp_year'] : $this->exp_year;
 		$this->valid_until = (isset ( $data ['valid_until'] )) ? $data ['valid_until'] : $this->valid_until;
+		$this->delete_flag = (isset ( $data ['delete_flag'] )) ? $data ['delete_flag'] : $this->delete_flag;
 		$this->create_time = (isset ( $data ['create_time'] )) ? $data ['create_time'] : $this->create_time;
 		$this->update_time = (isset ( $data ['update_time'] )) ? $data ['update_time'] : $this->update_time;
 	}

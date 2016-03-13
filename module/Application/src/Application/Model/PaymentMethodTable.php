@@ -13,6 +13,7 @@ use Zend\Db\Adapter\Adapter;
 use Zend\Db\Sql\Sql;
 use Zend\Db\Sql\Where;
 use Application\memreas\MUUID;
+use Application\memreas\MNow;
 
 class PaymentMethodTable {
 	protected $tableGateway;
@@ -36,7 +37,8 @@ class PaymentMethodTable {
 		$select->columns ( array (
 				'*' 
 		) )->where ( array (
-				'account.user_id' => $user_id 
+				'account.user_id' => $user_id,
+				'payment_method.delete_flag' => '0' 
 		) );
 		$sqlString = $sql->getSqlStringForSqlObject ( $select );
 		
@@ -55,7 +57,8 @@ class PaymentMethodTable {
 		$select->from ( $this->tableGateway->table )->columns ( array (
 				'*' 
 		) )->where ( array (
-				'account_id' => $account_id 
+				'account_id' => $account_id,
+				'delete_flag' => '0' 
 		) );
 		$sqlString = $sql->getSqlStringForSqlObject ( $select );
 		
@@ -66,7 +69,8 @@ class PaymentMethodTable {
 	}
 	public function getPaymentMethod($payment_method_id) {
 		$rowset = $this->tableGateway->select ( array (
-				'payment_method_id' => $payment_method_id 
+				'payment_method_id' => $payment_method_id ,
+				'delete_flag' => '0'
 		) );
 		$row = $rowset->current ();
 		if (! $row) {
@@ -76,7 +80,8 @@ class PaymentMethodTable {
 	}
 	public function getPaymentMethodByStripeReferenceId($stripe_card_reference_id) {
 		$rowset = $this->tableGateway->select ( array (
-				'stripe_card_reference_id' => $stripe_card_reference_id 
+				'stripe_card_reference_id' => $stripe_card_reference_id,
+				'delete_flag' => 0
 		) );
 		$row = $rowset->current ();
 		if (! $row) {
@@ -95,6 +100,7 @@ class PaymentMethodTable {
 				'exp_month' => $payment_method->exp_month,
 				'exp_year' => $payment_method->exp_year,
 				'valid_until' => $payment_method->valid_until,
+				'delete_flag' => $payment_method->delete_flag,
 				'create_time' => $payment_method->create_time,
 				'update_time' => $payment_method->update_time 
 		);
@@ -116,14 +122,42 @@ class PaymentMethodTable {
 		return $data ['payment_method_id'];
 	}
 	public function deletePaymentMethod($payment_method_id) {
-		$this->tableGateway->delete ( array (
+		$rowset = $this->tableGateway->select ( array (
 				'payment_method_id' => $payment_method_id 
 		) );
+		$row = $rowset->current ();
+		if (! $row) {
+			throw new \Exception ( "Could not find row $payment_method_id" );
+		}
+		$data = array (
+				'delete_flag' => $row->delete_flag = '1',
+				'update_time' => $row->update_time = MNow::now () 
+		);
+		$this->tableGateway->update ( $data, array (
+				'payment_method_id' => $payment_method_id 
+		) );
+		//$this->tableGateway->delete ( array (
+		//		'payment_method_id' => $payment_method_id 
+		//) );
 	}
 	public function deletePaymentMethodByStripeCardReferenceId($stripe_card_reference_id) {
-		return $this->tableGateway->delete ( array (
+		$rowset = $this->tableGateway->select ( array (
 				'stripe_card_reference_id' => $stripe_card_reference_id 
 		) );
+		$row = $rowset->current ();
+		if (! $row) {
+			throw new \Exception ( "Could not find row $stripe_card_reference_id" );
+		}
+		$data = array (
+				'delete_flag' => $row->delete_flag = '1',
+				'update_time' => $row->update_time = MNow::now () 
+		);
+		return $this->tableGateway->update ( $data, array (
+				'stripe_card_reference_id' => $stripe_card_reference_id 
+		) );
+		//return $this->tableGateway->delete ( array (
+		//		'stripe_card_reference_id' => $stripe_card_reference_id 
+		//) );
 	}
 	public function deleteAll() {
 		$this->tableGateway->delete ( "1" );
