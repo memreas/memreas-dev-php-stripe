@@ -21,46 +21,15 @@ class BankAccountTable {
 		$resultSet = $this->tableGateway->select ();
 		return $resultSet;
 	}
-	public function getBankAccountByUserId($user_id) {
-		
-		// Fetch the adapter...
-		$adapter = $this->tableGateway->getAdapter ();
-		// Setup the query
-		$sql = new Sql ( $adapter );
-		$select = $sql->select ();
-		$select->from ( $this->tableGateway->table )->join ( 'account', 'bank_account.account_id = account.account_id' );
-		
-		// add where on account table for user_id
-		$select->columns ( array (
-				'*' 
-		) )->where ( array (
-				'account.user_id' => $user_id 
-		) );
-		$sqlString = $sql->getSqlStringForSqlObject ( $select );
-		
-		// you can check your query by echo-ing :
-		// error_log("SQL STATEMENT-----> " . $sqlString);
-		$statement = $sql->prepareStatementForSqlObject ( $select );
-		$result = $statement->execute ();
-		
-		return $result;
-	}
 	public function getBankAccountByAccountId($account_id) {
-		$adapter = $this->tableGateway->getAdapter ();
-		// Setup the query
-		$sql = new Sql ( $adapter );
-		$select = $sql->select ();
-		$select->from ( $this->tableGateway->table )->columns ( array (
-				'*' 
-		) )->where ( array (
+		$rowset = $this->tableGateway->select ( array (
 				'account_id' => $account_id 
 		) );
-		$sqlString = $sql->getSqlStringForSqlObject ( $select );
-		
-		$statement = $sql->prepareStatementForSqlObject ( $select );
-		$result = $statement->execute ();
-		
-		return $result;
+		$row = $rowset->current ();
+		if (! $row) {
+			throw new \Exception ( "Could not find row $account_id" );
+		}
+		return $row;
 	}
 	public function getBankAccount($bank_account_id) {
 		$rowset = $this->tableGateway->select ( array (

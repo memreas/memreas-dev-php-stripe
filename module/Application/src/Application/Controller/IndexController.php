@@ -51,15 +51,14 @@ class IndexController extends AbstractActionController {
 		header ( 'Access-Control-Allow-Origin: *' );
 		$this->setupSaveHandler ();
 		try {
-						Mlog::addone ( $cm , __LINE__ );
+			
 			if (! empty ( $_REQUEST ['admin_key'] )) {
-						Mlog::addone ( $cm , __LINE__ );
+				
 				$username = $this->redis->getCache ( 'admin_key' );
-						Mlog::addone ( $cm , __LINE__ );
+				
 				$this->sessHandler->startSessionWithUID ( '', $username );
-						Mlog::addone ( $cm , __LINE__ );
+				
 				$hasSession = true;
-						Mlog::addone ( $cm , __LINE__ );
 			} else if (! empty ( $_REQUEST ['memreascookie'] )) {
 				$sid = $_REQUEST ['memreascookie'];
 				$this->sessHandler->startSessionWithMemreasCookie ( $_REQUEST ['memreascookie'] );
@@ -93,9 +92,9 @@ class IndexController extends AbstractActionController {
 		$cm = __CLASS__ . __METHOD__;
 		Mlog::addone ( $cm . __LINE__ . '::$_REQUEST', $_REQUEST );
 		$action = isset ( $_REQUEST ["action"] ) ? $_REQUEST ["action"] : '';
-						Mlog::addone ( $cm , __LINE__ );
-						Mlog::addone ( $cm , __LINE__ .$action);
-						if ($action == "gitpull") {
+		
+		Mlog::addone ( $cm, __LINE__ . $action );
+		if ($action == "gitpull") {
 			$this->checkGitPull = new CheckGitPull ();
 			$this->checkGitPull->exec ();
 			$gitpull = true;
@@ -115,11 +114,10 @@ class IndexController extends AbstractActionController {
 			exit ();
 		} else if (! empty ( $action )) {
 			
-						Mlog::addone ( $cm , __LINE__ );
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
-						Mlog::addone ( $cm , __LINE__ );
+			
 			if ($this->fetchSession ()) {
-						Mlog::addone ( $cm , __LINE__ );
+				
 				switch ($action) {
 					/*
 					 * Support WS : ListPlans
@@ -197,52 +195,41 @@ class IndexController extends AbstractActionController {
 					 */
 					case 'getorderhistory' :
 						
-						Mlog::addone ( $cm, __LINE__ );
 						$data = json_decode ( $_POST ['data'], true );
-						Mlog::addone ( $cm, __LINE__ );
 						
-						Mlog::addone ( $cm, __LINE__ );
 						$orderHistories = $MemreasStripe->getOrderHistories ( $data ['user_id'], $data ['search_username'], ( int ) $data ['page'], ( int ) $data ['limit'] );
-						Mlog::addone ( $cm, __LINE__ );
 						
-						Mlog::addone ( $cm, __LINE__ );
 						if ($orderHistories ['status'] == "Success") {
-							Mlog::addone ( $cm, __LINE__ );
 							if ($data ['user_id']) {
-								Mlog::addone ( $cm, __LINE__ );
+								
 								$userDetail = $MemreasStripe->getUserById ( $data ['user_id'] );
-						Mlog::addone ( $cm , __LINE__ );
 							} else {
-						Mlog::addone ( $cm , __LINE__ );
+								
 								$userDetail = null;
 							}
 							
-						Mlog::addone ( $cm , __LINE__ );
 							$orders = $orderHistories ['transactions'];
-						Mlog::addone ( $cm , __LINE__ );
+							
 							if (! empty ( $orders )) {
-						Mlog::addone ( $cm , __LINE__ );
+								
 								$result = array (
 										'status' => 'Success',
 										'orders' => $orders,
 										'user' => $userDetail 
 								);
-						Mlog::addone ( $cm , __LINE__ );
 							} else {
-						Mlog::addone ( $cm , __LINE__ );
+								
 								$result = array (
 										'status' => 'Failure',
 										'message' => 'No record found' 
 								);
-						Mlog::addone ( $cm , __LINE__ );
 							}
 						} else {
-						Mlog::addone ( $cm , __LINE__ );
+							
 							$result = array (
 									'status' => 'Failure',
 									'message' => $orderHistories ['message'] 
 							);
-						Mlog::addone ( $cm , __LINE__ );
 						}
 						break;
 					
@@ -344,7 +331,6 @@ class IndexController extends AbstractActionController {
 				Mlog::addone ( $cm . __LINE__ . '::$result', $result );
 				$this->flushResponse ( json_encode ( $result ) );
 				die ();
-				
 			} // end if fetch sesssion
 		} else {
 			$view = new ViewModel ();
