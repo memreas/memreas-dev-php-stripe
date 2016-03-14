@@ -21,8 +21,6 @@ use Application\Model\PaymentMethod;
 use Application\Model\Subscription;
 use Application\Model\Transaction as Memreas_Transaction;
 use Aws\Ses\Exception\SesException;
-use Guzzle\Http\Client;
-use Guzzle\Service\Exception\ValidationException;
 use Zend\View\Model\ViewModel;
 
 class MemreasStripe extends StripeInstance {
@@ -132,7 +130,7 @@ class StripeInstance {
 	
 	/*
 	 * -
-	 * create customer for registration
+	 * create customer for registration (buyer)
 	 */
 	public function createCustomer($data) {
 		$cm = __CLASS__ . __METHOD__;
@@ -174,6 +172,12 @@ class StripeInstance {
 			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
 			Mlog::addone ( $cm . __LINE__ . '::$account_id', $account_id );
 			
+			$data = [ ];
+			$data ['stripe_customer_id'] = $stripe_customer_id;
+			$data ['plan'] = ( string ) MemreasConstants::PLAN_ID_A;
+			$result = $this->stripeClient->createSubscription ( $data );
+			$stripe_subscription_id = $result ['id'];
+			
 			/*
 			 * -
 			 * create subscription entry
@@ -181,6 +185,7 @@ class StripeInstance {
 			$subscription = new Subscription ();
 			$subscription->exchangeArray ( array (
 					'account_id' => $account_id,
+					'stripe_subscription_id' => $stripe_subscription_id,
 					'currency_code' => 'USD',
 					'plan' => MemreasConstants::PLAN_ID_A,
 					'plan_amount' => MemreasConstants::PLAN_AMOUNT_A,
@@ -211,44 +216,62 @@ class StripeInstance {
 	 * get stripe customer data from stripe
 	 */
 	public function getCustomer($data, $stripe = false) {
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$data-->', $data );
 		$account_found = false;
 		$accounts = array ();
 		
 		//
 		// Fetch Buyer Account
 		//
-		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'] );
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
+		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['user_id'] );
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
 		if (! empty ( $account )) {
 			$account_found = true;
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
 			$accounts ['account'] ['customer'] = ($stripe) ? $this->stripeClient->getCustomer ( $account->stripe_customer_id ) : null;
 			$accounts ['buyer_account'] ['accountHeader'] = $account;
 			$accounts ['buyer_account'] ['accountDetail'] = $accountDetail;
-		}
-		
-		//
-		// Fetch Seller Account
-		//
-		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['userid'], 'seller' );
-		if (! empty ( $account )) {
-			$account_found = true;
-			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-			$accounts ['account'] ['customer'] = ($stripe) ? $this->stripeClient->getCustomer ( $account->stripe_customer_id ) : null;
-			$accounts ['seller_account'] ['accountHeader'] = $account;
-			$accounts ['seller_account'] ['accountDetail'] = $accountDetail;
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
+			//
+			// Fetch Subscription
+			//
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$account->account_id-->', $account->account_id );
+			$subscription = $this->memreasStripeTables->getSubscriptionTable ()->getActiveSubscription ( $account->account_id );
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
+			$accounts ['buyer_account'] ['subscription'] = $subscription;
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
 		}
 		
 		// Check if exist account
 		if (! $account_found) {
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
 			return array (
 					'status' => 'Failure',
 					'message' => 'Account not found' 
 			);
 		}
 		
+		//
+		// Fetch Seller Account
+		//
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
+		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['user_id'], 'seller' );
+		if (! empty ( $account )) {
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
+			$account_found = true;
+			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
+			$accounts ['account'] ['customer'] = ($stripe) ? $this->stripeClient->getCustomer ( $account->stripe_customer_id ) : null;
+			$accounts ['seller_account'] ['accountHeader'] = $account;
+			$accounts ['seller_account'] ['accountDetail'] = $accountDetail;
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
+		}
+		
 		// account exists
 		$accounts ['status'] = 'Success';
 		
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$accounts-->', $accounts );
 		return $accounts;
 	}
 	
@@ -736,7 +759,7 @@ class StripeInstance {
 		try {
 			/**
 			 * -
-			 * Send transaction to Stripe
+			 * Generate Stripe paramters
 			 */
 			$cardId = $paymentMethod->stripe_card_reference_id;
 			$customerId = $account->stripe_customer_id;
@@ -744,6 +767,13 @@ class StripeInstance {
 			$transactionAmount = ( int ) ($data ['amount'] * 100); // Stripe use minimum amount conver for transaction. Eg: input $5
 			                                                       // convert request to stripe value is 500
 			
+			/*
+			 * -
+			 * Fethch the memreas float account for charge
+			 * - uses customer id but places funds in memreas float account
+			 * -
+			 */
+			$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
 			$stripeChargeParams = array (
 					'amount' => $transactionAmount,
 					'currency' => $currency,
@@ -751,10 +781,11 @@ class StripeInstance {
 					'capture' => false,
 					'card' => $cardId, // If this card param is null, Stripe will get primary customer card to charge
 					'description' => 'Add value to account',
+					'statement_descriptor' => "memreas purchase",
+					'destination' => $account_memreas_float->stripe_account_id,
 					'metadata' => array (
 							"transaction_id" => "$transaction_id" 
-					),
-					'statement_descriptor' => "memreas purchase" 
+					) 
 			); // Set description more details later
 			
 			/**
@@ -768,7 +799,8 @@ class StripeInstance {
 			$transactionRequest ['stripe_details'] = array (
 					'stripeCustomer' => $customerId,
 					'stripeCardToken' => $cardToken,
-					'stripeCardId' => $cardId 
+					'stripeCardId' => $cardId,
+					'stripeChargeParams' => $stripeChargeParams 
 			);
 			$memreas_transaction = new Memreas_Transaction ();
 			$memreas_transaction->exchangeArray ( array (
@@ -2924,7 +2956,7 @@ class StripeClient {
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
 			// user master key to access account
-			//\Stripe\Stripe::setApiKey ( $memreas_master_key );
+			// \Stripe\Stripe::setApiKey ( $memreas_master_key );
 			$collection = \Stripe\Transfer::create ( $data );
 			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
@@ -3044,7 +3076,9 @@ class StripeClient {
 			Mlog::addone ( $cm, __LINE__ );
 			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
 			$cu = \Stripe\Customer::retrieve ( $data ['stripe_customer_id'] );
-			$collection = $cu->subscriptions->create ( $data ['plan'] );
+			$collection = $cu->subscriptions->create ( array (
+					"plan" => $data ['plan'] 
+			) );
 			$result = $collection->__toArray ( true );
 			
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
