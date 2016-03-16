@@ -549,7 +549,7 @@ class StripeInstance {
 			$stripe_account_id = '';
 			$stripe_bank_account_id = '';
 			$keys = '';
-			$seller_info='';
+			$seller_info = '';
 			$response = $account_type;
 			$bank_account_id = '';
 			
@@ -622,7 +622,7 @@ class StripeInstance {
 			
 			/*
 			 * -
-			 * Create Account 
+			 * Create Account
 			 */
 			$account = new Account ();
 			$account->exchangeArray ( array (
@@ -930,7 +930,7 @@ class StripeInstance {
 					'message' => 'No record found' 
 			);
 		}
-		Mlog::addone($cm.__LINE__.'pendingAccountBalance->auth_transaction_status', $Transaction->transaction_status);
+		Mlog::addone ( $cm . __LINE__ . 'pendingAccountBalance->auth_transaction_status', $Transaction->transaction_status );
 		if (strpos ( $Transaction->transaction_status, 'activated' )) {
 			return array (
 					'status' => 'activated',
@@ -987,13 +987,12 @@ class StripeInstance {
 			}
 		}
 		
-		
 		// update original transaction as activated
 		$authorization_transaction = $this->memreasStripeTables->getTransactionTable ()->getTransaction ( $authorization_transaction_id );
 		$authorization_transaction->exchangeArray ( array (
 				'transaction_status' => 'buy_credit_email, buy_credit_verified, buy_credit_activated',
 				'ref_transaction_id' => $capture_transaction_id,
-				'transaction_receive' => MNow::now ()
+				'transaction_receive' => MNow::now () 
 		) );
 		$authorization_transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $authorization_transaction );
 		
@@ -1150,11 +1149,9 @@ class StripeInstance {
 		// Update the account table with new balance
 		$account_memreas_fees->exchangeArray ( array (
 				'balance' => $ending_balance,
-				'update_time' => MNow::now ()
+				'update_time' => MNow::now () 
 		) );
 		$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_fees );
-		
-		
 		
 		return array (
 				'status' => 'Success',
@@ -1280,7 +1277,7 @@ class StripeInstance {
 					'transaction_receive' => MNow::now () 
 			) );
 			$account_purchase_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-
+			
 			//
 			// Starting decrement account balance
 			//
@@ -1387,7 +1384,7 @@ class StripeInstance {
 					'create_time' => MNow::now () 
 			) );
 			$accountBalanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
-
+			
 			//
 			// Update seller account table
 			//
@@ -1409,7 +1406,7 @@ class StripeInstance {
 			$memreas_payer_user_id = $memreas_payer_user->user_id;
 			
 			$memreas_payer_account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $memreas_payer_user_id, 'tracker' );
-			if (!$memreas_payer_account) {
+			if (! $memreas_payer_account) {
 				$connection->rollback ();
 				$result = array (
 						"Status" => "Error",
@@ -1422,7 +1419,7 @@ class StripeInstance {
 			// Increment the memreas_payer account for the processing fee - see constants
 			// Fetch Account_Balances
 			$payerAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $memreas_payer_account_id );
-
+			
 			// Log the transaction
 			$memreas_transaction = new Memreas_Transaction ();
 			$memreas_transaction->exchangeArray ( array (
@@ -1479,7 +1476,7 @@ class StripeInstance {
 			
 			/**
 			 * -
-			 * Commit the transaction 
+			 * Commit the transaction
 			 */
 			$connection->commit ();
 			
@@ -1569,12 +1566,12 @@ class StripeInstance {
 		);
 	}
 	public function AccountHistory($data) {
-		$cm = __CLASS__.__METHOD__;
+		$cm = __CLASS__ . __METHOD__;
 		$userName = $data ['user_name'];
 		$date_from = isset ( $data ['date_from'] ) ? $data ['date_from'] : '';
 		$date_to = isset ( $data ['date_to'] ) ? $data ['date_to'] : MNow::now ();
 		$user = $this->memreasStripeTables->getUserTable ()->getUserByUsername ( $userName );
-		Mlog::addone ( $cm.__LINE__.'::$user',$user );
+		Mlog::addone ( $cm . __LINE__ . '::$user', $user );
 		if ($date_from > $date_to) {
 			return array (
 					'status' => 'Failure',
@@ -1587,11 +1584,11 @@ class StripeInstance {
 					'message' => 'User is not found' 
 			);
 		}
-		Mlog::addone ( $cm.__LINE__.'','' );
-		Mlog::addone ( $cm.__LINE__.'::$user->user_id',$user->user_id );
+		Mlog::addone ( $cm . __LINE__ . '', '' );
+		Mlog::addone ( $cm . __LINE__ . '::$user->user_id', $user->user_id );
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user->user_id );
-		Mlog::addone ( $cm.__LINE__.'::$account',$account );
-		if (!$account) {
+		Mlog::addone ( $cm . __LINE__ . '::$account', $account );
+		if (! $account) {
 			return array (
 					'status' => 'Failure',
 					'message' => 'Account associated with this user does not exist' 
@@ -2124,9 +2121,9 @@ class StripeInstance {
 		Mlog::addone ( $cm, __LINE__ );
 		/**
 		 * TODO: code needs to log transaction before and after call to Stripe
-		 * code needs to decrement memreas_payer for payout amount and log transactions to memreas_payer for payout and fees
+		 * - code needs to decrement memreas_float and memreas_payer for payout amount and increment memreas_fees for fees
 		 * i.e.
-		 * payout is $8 to seller, memereas master logs transaction for fees (links to transaction_id of seller), and payout - fees
+		 * - payout is $8 to seller, memreas_float and payer are debited for equal amounts and seller is credited with bank transfer and memreas_fees logs fees
 		 */
 		Mlog::addone ( $cm, __LINE__ );
 		
@@ -2135,121 +2132,199 @@ class StripeInstance {
 		
 		/*
 		 * -
-		 * Fetch memreas_payer key for payouts
+		 * Fetch memreas_float, memreas_payer, memreas_fees
 		 */
-		$memreas_payer = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_PAYER );
-		$memreas_master_bank_account = $this->memreasStripeTables->getBankAccountTable ()->getBankAccountByAccountId ( $memreas_master->account_id );
-		Mlog::addone ( $cm . __LINE__ . '::$memreas_master_bank_account--->', $memreas_master_bank_account );
-		$memreas_master_keys = json_decode ( $memreas_master_bank_account->keys, true );
-		Mlog::addone ( $cm . __LINE__ . '::$memreas_master_keys--->', $memreas_master_keys );
+		$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
+		$account_memreas_payer = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_PAYER );
+		$account_memreas_master = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_MASTER );
+		$account_memreas_fees = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FEES );
 		
 		/*
 		 * -
-		 * Now start loop
+		 * Now start loop for payouts
 		 */
 		foreach ( $payees as $payee ) {
 			
-			$payee_account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $payee ['account_id'], 'seller' );
-			Mlog::addone ( $cm, __LINE__ );
+			/*
+			 * -
+			 * seller as payee
+			 */
+			$account_payee = $this->memreasStripeTables->getAccountTable ()->getAccount ( $payee ['account_id'], 'seller' );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
 			
-			if (! $payee_account) {
-				Mlog::addone ( $cm, __LINE__ );
+			if (! $account_payee) {
+				Mlog::addone ( $cm . __LINE__ . '', '...' );
 				return array (
 						'status' => 'Failure',
-						'message' => 'Account is not exist' 
+						'message' => 'Account does not exist' 
 				);
 			}
 			
-			// Check if account has available balance
-			if ($payee_account->balance < $payee ['amount']) {
-				Mlog::addone ( $cm, __LINE__ );
-				return array (
-						'status' => 'Failure',
-						'message' => 'Account balance is smaller than amount you requested' 
-				);
-			}
-			// $accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-			// Mlog::addone ( $cm, __LINE__ );
-			
+			//
 			// Check if stripe customer / recipient is set
-			Mlog::addone ( $cm, __LINE__ );
-			if (empty ( $payee_account->stripe_account_id )) {
+			//
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			if (empty ( $account_payee->stripe_customer_id )) {
 				Mlog::addone ( $cm, __LINE__ );
 				return array (
 						'status' => 'Failure',
-						'message' => 'No stripe ID related to this account' 
+						'message' => 'Stripe customer id related to this account is missing' 
 				);
 			}
+			
+			//
+			// Check if stripeaccount_id is set
+			//
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			if (empty ( $account_payee->stripe_account_id )) {
+				Mlog::addone ( $cm, __LINE__ );
+				return array (
+						'status' => 'Failure',
+						'message' => 'Stripe account id related to this account is missing' 
+				);
+			}
+			
+			//
+			// Check if account has available balance
+			//
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			if ($account_payee->balance < $payee ['amount']) {
+				Mlog::addone ( $cm, __LINE__ );
+				return array (
+						'status' => 'Failure',
+						'message' => 'Account balance has insufficient funds for the amount you requested' 
+				);
+			}
+			
+			// ******************************
+			// Payee Section - start payout
+			// ******************************
+			
+			//
+			// Payee payout - amount logged has transfaction fee factored in
+			//
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			// $payee_amount = (($payee ['amount'] * (1 - MemreasConstants::MEMREAS_PROCESSING_FEE)) * 100);
+			$payee_amount = ($payee ['amount'] * 100); // convert to cents for Stripe
 			
 			/*
 			 * -
-			 * Payee payout
+			 * **********************************************************************
+			 * DEBUGGING - TO BE REMOVED $memreas_payer_amount - temporary until transaction level implemented
+			 * **********************************************************************
 			 */
-			Mlog::addone ( $cm, __LINE__ );
-			$payee_amount = (($payee ['amount'] * (1 - MemreasConstants::MEMREAS_PROCESSING_FEE)) * 100);
+			$memreas_payer_amount = ($payee ['amount'] / 4); // 20% of total is payee_amount/4 = 80% payment to seller
 			$transferParams = array (
 					'amount' => $payee_amount, // stripe stores in cents
 					'currency' => 'USD',
-					'destination' => $payee_account->stripe_account_id,
+					'destination' => $account_payee->stripe_account_id,
 					'description' => $payee ['description'] 
 			);
 			
-			Mlog::addone ( $cm, __LINE__ );
-			// Update transaction
-			Mlog::addone ( $cm, __LINE__ );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			//
+			// Create transaction to log transfer
+			//
 			$transaction = new Memreas_Transaction ();
 			$transaction->exchangeArray ( array (
-					'account_id' => $payee_account->account_id,
+					'account_id' => $account_payee->account_id,
 					'transaction_type' => 'payout_seller',
 					'transaction_status' => 'payout_seller_fail',
-					'transaction_request' => json_encode ( $transferParams ),
 					'pass_fail' => 0,
 					'amount' => $payee_amount,
 					'currency' => "USD",
+					'transaction_request' => json_encode ( $transferParams ),
 					'transaction_sent' => MNow::now () 
 			) );
-			Mlog::addone ( $cm, __LINE__ );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-			Mlog::addone ( $cm, __LINE__ );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
 			
+			//
+			// Make call to stripe for seller payee transfer
+			//
 			try {
-				Mlog::addone ( $cm, __LINE__ );
-				$memreas_master_key = $transferResponse = $this->stripeClient->createTransfer ( $transferParams );
-				Mlog::addone ( $cm, __LINE__ );
+				Mlog::addone ( $cm . __LINE__ . '', '...' );
+				$transferResponse = $this->stripeClient->createTransfer ( $transferParams );
+				Mlog::addone ( $cm . __LINE__ . '', '...' );
 			} catch ( ZfrStripe\Exception\BadRequestException $e ) {
 				return array (
 						'status' => 'Failure',
 						'message' => $e->getMessage () 
 				);
 			}
+			$payee_transfer_id = $transferResponse ['id'];
+			Mlog::addone ( $cm . __LINE__ . '::$payee_transfer_id--->', $payee_transfer_id );
 			
-			// Update transaction
-			Mlog::addone ( $cm, __LINE__ );
+			//
+			// Update transaction for response
+			//
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
 			$transaction->exchangeArray ( array (
 					'transaction_status' => 'payout_seller_success',
 					'pass_fail' => 1,
 					'transaction_response' => json_encode ( $transferResponse ),
 					'transaction_receive' => MNow::now () 
 			) );
-			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-			Mlog::addone ( $cm, __LINE__ );
+			$payee_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			//
+			// Debit seller balance for payout
+			//
+			$starting_balance = $account_payee->balance;
+			$ending_balance = $starting_balance - $payee_amount;
+			$payee_account_balances = new AccountBalances ();
+			$payee_account_balances->exchangeArray ( array (
+					'account_id' => $account_payee->account_id,
+					'transaction_id' => $payee_transaction_id,
+					'transaction_type' => "payout_seller",
+					'starting_balance' => $starting_balance,
+					'amount' => $payee_amount,
+					'ending_balance' => $ending_balance,
+					'create_time' => MNow::now () 
+			) );
+			$account_balances_payee_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $payee_account_balances );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			//
+			// Update the account table with new balance
+			//
+			$account_payee->exchangeArray ( array (
+					'balance' => $ending_balance,
+					'update_time' => MNow::now () 
+			) );
+			$account_payee_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_payee );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			/*
+			 * -
+			 * log results for return array
+			 */
+			$payouts [$account_payee->username] ['account_id'] = $account_payee->account_id;
+			$payouts [$account_payee->username] ['transaction_id'] = $payee_transaction_id;
+			$payouts [$account_payee->username] ['stripe_transfer_id'] = $payee_transfer_id;
+			$payouts [$account_payee->username] ['starting_balance'] = $starting_balance;
+			$payouts [$account_payee->username] ['amount'] = $payee_amount;
+			$payouts [$account_payee->username] ['ending_balance'] = $ending_balance;
+			$payouts [$account_payee->username] ['transaction_date'] = MNow::now ();
+			
+			// ***********************************************
+			// memreas section - start payout and accounting
+			// ***********************************************
 			
 			/*
 			 * -
 			 * memreas_master payout
 			 */
-			Mlog::addone ( $cm, __LINE__ );
-			$memreas_accrual_amount = (($payee ['amount'] * MemreasConstants::MEMREAS_PROCESSING_FEE) * 100);
 			$transferParams = array (
-					'amount' => $memreas_accrual_amount, // stripe stores in cents
+					'amount' => $memreas_payer_amount, // stripe stores in cents
 					'currency' => 'USD',
 					'destination' => $memreas_master->stripe_account_id,
-					'description' => "memreas_master payout for seller account_id: " . $payee_account->account_id 
+					'description' => "memreas_master payout for seller account_id: " . $account_payee->account_id 
 			);
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
 			
-			Mlog::addone ( $cm, __LINE__ );
 			// Update transaction
-			Mlog::addone ( $cm, __LINE__ );
 			$transaction = new Memreas_Transaction ();
 			$transaction->exchangeArray ( array (
 					'account_id' => $memreas_master->account_id,
@@ -2257,130 +2332,283 @@ class StripeInstance {
 					'transaction_status' => 'payout_memreas_master_fail',
 					'transaction_request' => json_encode ( $transferParams ),
 					'pass_fail' => 0,
-					'amount' => $memreas_accrual_amount,
+					'amount' => $memreas_payer_amount,
 					'currency' => $currency,
 					'transaction_sent' => MNow::now () 
 			) );
-			Mlog::addone ( $cm, __LINE__ );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-			Mlog::addone ( $cm, __LINE__ );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
 			
 			try {
-				Mlog::addone ( $cm, __LINE__ );
 				$transferResponse = $this->stripeClient->createTransfer ( $transferParams );
-				Mlog::addone ( $cm, __LINE__ );
-			} catch ( ZfrStripe\Exception\BadRequestException $e ) {
+				Mlog::addone ( $cm . __LINE__ . '', '...' );
+			} catch ( Exception $e ) {
 				return array (
 						'status' => 'Failure',
 						'message' => $e->getMessage () 
 				);
 			}
+			$memreas_master_transfer_id = $transferResponse ['id'];
+			Mlog::addone ( $cm . __LINE__ . '::$memreas_master_transfer_id--->', $memreas_master_transfer_id );
 			
 			// Update transaction
-			Mlog::addone ( $cm, __LINE__ );
 			$transaction->exchangeArray ( array (
-					'transaction_status' => 'payout_seller_success',
+					'transaction_status' => 'payout_memreas_master_success',
 					'pass_fail' => 1,
 					'transaction_response' => json_encode ( $transferResponse ),
 					'transaction_receive' => MNow::now () 
 			) );
-			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-			Mlog::addone ( $cm, __LINE__ );
-			/*
-			 * -
-			 * Deduction took place prior now payout increments seller's actual account
-			 */
+			$memreas_master_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			//
+			// Debit memreas_payer for payout
+			//
+			$starting_balance = $account_memreas_payer->balance;
+			$ending_balance = $starting_balance - $memreas_payer_amount;
+			$account_memreas_payer_balances = new AccountBalances ();
+			$account_memreas_payer_balances->exchangeArray ( array (
+					'account_id' => $account_memreas_payer->account_id,
+					'transaction_id' => $memreas_master_transaction_id,
+					'transaction_type' => "payout_seller",
+					'starting_balance' => $starting_balance,
+					'amount' => - $memreas_payer_amount,
+					'ending_balance' => $ending_balance,
+					'create_time' => MNow::now () 
+			) );
+			$account_balances_memreas_payer_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $account_memreas_payer_balances );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			//
+			// Update the account table with new balance
+			//
+			$account_memreas_payer->exchangeArray ( array (
+					'balance' => $ending_balance,
+					'update_time' => MNow::now () 
+			) );
+			$account_memreas_payer_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_payer );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			//
+			// Debit memreas_float for payout
+			//
+			$starting_balance = $account_memreas_float->balance;
+			$ending_balance = $starting_balance - $memreas_payer_amount;
+			$account_memreas_float_balances = new AccountBalances ();
+			$account_memreas_float_balances->exchangeArray ( array (
+					'account_id' => $account_memreas_float->account_id,
+					'transaction_id' => $memreas_master_transaction_id,
+					'transaction_type' => "payout_seller",
+					'starting_balance' => $starting_balance,
+					'amount' => - $memreas_payer_amount,
+					'ending_balance' => $ending_balance,
+					'create_time' => MNow::now () 
+			) );
+			$account_balances_memreas_float_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $account_memreas_float_balances );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			//
+			// Update the account table with new balance
+			//
+			$account_memreas_float->exchangeArray ( array (
+					'balance' => $ending_balance,
+					'update_time' => MNow::now () 
+			) );
+			$account_memreas_float_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			//
+			// Credit memreas_master for payout
+			//
+			$starting_balance = $account_memreas_master->balance;
+			$ending_balance = $starting_balance + $memreas_payer_amount;
+			$account_memreas_master_balances = new AccountBalances ();
+			$account_memreas_master_balances->exchangeArray ( array (
+					'account_id' => $account_memreas_master->account_id,
+					'transaction_id' => $memreas_master_transaction_id,
+					'transaction_type' => "payout_memreas_master",
+					'starting_balance' => $starting_balance,
+					'amount' => $memreas_payer_amount,
+					'ending_balance' => $ending_balance,
+					'create_time' => MNow::now () 
+			) );
+			$account_balances_memreas_float_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $account_memreas_master_balances );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			//
+			// Update the account table with new balance
+			//
+			$account_memreas_master->exchangeArray ( array (
+					'balance' => $ending_balance,
+					'update_time' => MNow::now () 
+			) );
+			$account_memreas_float_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_master );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
 			
 			/*
-			 * $account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
-			 * // Get the last balance - Insert the new account balance
-			 *
-			 * $starting_balance = (isset ( $account_memreas_float )) ? $account_memreas_float->balance : '0.00';
-			 * $ending_balance = $starting_balance + $amount;
-			 *
-			 * $memreas_transaction = new Memreas_Transaction ();
-			 * $memreas_transaction->exchangeArray ( array (
-			 * 'account_id' => $account_memreas_float->account_id,
-			 * 'transaction_type' => "add_value_to_memreas_float_account",
-			 * 'starting_balance' => $starting_balance,
-			 * 'amount' => $amount,
-			 * 'currency' => $currency,
-			 * 'ending_balance' => $ending_balance,
-			 * 'pass_fail' => 1,
-			 * 'transaction_status' => "success",
-			 * 'transaction_request' => json_encode ( array (
-			 * 'correlated_transaction_id' => $transaction_id
-			 * ) ),
-			 * 'transaction_response' => json_encode ( array (
-			 * 'correlated_transaction_id' => $transaction_id
-			 * ) ),
-			 * 'transaction_sent' => MNow::now (),
-			 * 'transaction_receive' => MNow::now ()
-			 * ) );
-			 * $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-			 *
-			 * // If no account found set the starting balance to zero else use the ending balance.
-			 * $memreasFloatAccountBalance = new AccountBalances ();
-			 * $memreasFloatAccountBalance->exchangeArray ( array (
-			 * 'account_id' => $account_memreas_float->account_id,
-			 * 'transaction_id' => $transaction_id,
-			 * 'transaction_type' => "add_value_to_memreas_float_account",
-			 * 'starting_balance' => $startingAccountBalance,
-			 * 'amount' => $amount,
-			 * 'ending_balance' => $endingAccountBalance,
-			 * 'create_time' => MNow::now ()
-			 * ) );
-			 * $balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $memreasFloatAccountBalance );
-			 * Mlog::addone ( $cm, __LINE__ );
-			 *
-			 * // Update the account table
-			 *
-			 * $account_memreas_float->exchangeArray ( array (
-			 * 'balance' => $endingAccountBalance,
-			 * 'update_time' => MNow::now ()
-			 * ) );
-			 * $account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
-			 * Mlog::addone ( $cm, __LINE__ );
-			 *
-			 *
-			 * //
-			 * // update memreas master balance
-			 * //
-			 *
-			 * // Update Account Balance
-			 * Mlog::addone ( $cm, __LINE__ );
-			 * $currentAccountBalance = $this->memreasStripeTables->getAccountBalancesTable ()->getAccountBalances ( $account->account_id );
-			 * Mlog::addone ( $cm, __LINE__ );
-			 * $startingAccountBalance = (isset ( $currentAccountBalance )) ? $currentAccountBalance->ending_balance : '0.00';
-			 * Mlog::addone ( $cm, __LINE__ );
-			 * $endingAccountBalance = $startingAccountBalance - $payee ['amount'];
-			 * Mlog::addone ( $cm, __LINE__ );
-			 * $accountBalance = new AccountBalances ();
-			 * Mlog::addone ( $cm, __LINE__ );
-			 * $accountBalance->exchangeArray ( array (
-			 * 'account_id' => $account->account_id,
-			 * 'transaction_id' => $transaction_id,
-			 * 'transaction_type' => "seller_payout",
-			 * 'starting_balance' => $startingAccountBalance,
-			 * 'amount' => $payee ['amount'],
-			 * 'ending_balance' => $endingAccountBalance,
-			 * 'create_time' => MNow::now ()
-			 * ) );
-			 * Mlog::addone ( $cm, __LINE__ );
-			 * $balanceId = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $accountBalance );
-			 *
-			 * // Update account table
-			 * Mlog::addone ( $cm, __LINE__ );
-			 * $account = $this->memreasStripeTables->getAccountTable ()->getAccount ( $account->account_id, 'seller' );
-			 * Mlog::addone ( $cm, __LINE__ );
-			 * $account->exchangeArray ( array (
-			 * 'balance' => $endingAccountBalance,
-			 * 'update_time' => MNow::now ()
-			 * ) );
-			 * Mlog::addone ( $cm, __LINE__ );
-			 * $accountId = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account );
-			 * Mlog::addone ( $cm, __LINE__ );
+			 * -
+			 * Call Stripe for payee transfer fees
 			 */
+			$stripeBalanceTransactionParams = array (
+					'id' => $payee_transfer_id 
+			);
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			/**
+			 * -
+			 * Store balance transaction fee request prior to sending to stripe
+			 */
+			
+			$memreas_transaction = new Memreas_Transaction ();
+			$memreas_transaction->exchangeArray ( array (
+					'account_id' => $memreas_fees->account_id,
+					'transaction_type' => 'payout_seller_transfer_fees',
+					'pass_fail' => 0,
+					'ref_transaction_id' => $payee_transaction_id,
+					'transaction_status' => 'payout_seller_transfer_fees_fail',
+					'transaction_request' => json_encode ( $stripeBalanceTransactionParams ),
+					'transaction_sent' => MNow::now () 
+			) );
+			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			//
+			// Make call to Stripe
+			//
+			$balance_transaction = $this->stripeClient->getBalanceTransaction ( $stripeBalanceTransactionParams );
+			// Mlog::addone ( $cm . 'addValueToAccount()->$balance_transaction::', $balance_transaction );
+			$fees = $balance_transaction ['fee'] / 100; // stripe stores in cents
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			/**
+			 * -
+			 * Store balance transaction fee response from stripe
+			 */
+			$memreas_transaction->exchangeArray ( array (
+					'transaction_id' => $transaction_id,
+					'amount' => "-$fees",
+					'currency' => 'USD',
+					'pass_fail' => 1,
+					'transaction_status' => 'payout_memreas_master_fees_success',
+					'transaction_response' => json_encode ( $balance_transaction ),
+					'transaction_receive' => MNow::now () 
+			) );
+			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			/**
+			 * -
+			 * apply fee to fees account
+			 */
+			$starting_balance = (isset ( $account_memreas_fees )) ? $account_memreas_fees->balance : '0.00';
+			$ending_balance = $starting_balance - $fees;
+			
+			// Insert the new account balance
+			$endingAccountBalance = new AccountBalances ();
+			$endingAccountBalance->exchangeArray ( array (
+					'account_id' => $account_memreas_fees->account_id,
+					'transaction_id' => $transaction_id,
+					'transaction_type' => "add_value_to_account_capture_memreas_fees",
+					'starting_balance' => $starting_balance,
+					'amount' => "-$fees",
+					'ending_balance' => $ending_balance,
+					'create_time' => MNow::now () 
+			) );
+			$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			// Update the account table with new balance
+			$account_memreas_fees->exchangeArray ( array (
+					'balance' => $ending_balance,
+					'update_time' => MNow::now () 
+			) );
+			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_fees );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			/*
+			 * -
+			 * Call Stripe for memreas_master transfer fees
+			 */
+			$stripeBalanceTransactionParams = array (
+					'id' => $memreas_master_transfer_id 
+			);
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			/*
+			 * -
+			 * Store balance transaction fee request prior to sending to stripe
+			 */
+			$memreas_transaction = new Memreas_Transaction ();
+			$memreas_transaction->exchangeArray ( array (
+					'account_id' => $memreas_fees->account_id,
+					'transaction_type' => 'payout_memreas_master_fees',
+					'pass_fail' => 0,
+					'ref_transaction_id' => $memreas_master_transaction_id,
+					'transaction_status' => 'payout_memreas_master_fees_fail',
+					'transaction_request' => json_encode ( $stripeBalanceTransactionParams ),
+					'transaction_sent' => MNow::now () 
+			) );
+			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			//
+			// Make call to Stripe
+			//
+			$balance_transaction = $this->stripeClient->getBalanceTransaction ( $stripeBalanceTransactionParams );
+			// Mlog::addone ( $cm . 'addValueToAccount()->$balance_transaction::', $balance_transaction );
+			$fees = $balance_transaction ['fee'] / 100; // stripe stores in cents
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			//
+			// Store balance transaction fee response from stripe
+			//
+			$memreas_transaction->exchangeArray ( array (
+					'transaction_id' => $transaction_id,
+					'amount' => "-$fees",
+					'currency' => 'USD',
+					'pass_fail' => 1,
+					'transaction_status' => 'payout_memreas_master_fees_success',
+					'transaction_response' => json_encode ( $balance_transaction ),
+					'transaction_receive' => MNow::now () 
+			) );
+			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			//
+			// apply fee to fees account
+			//
+			$starting_balance = (isset ( $account_memreas_fees )) ? $account_memreas_fees->balance : '0.00';
+			$ending_balance = $starting_balance - $fees;
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			//
+			// Insert the new account balance
+			//
+			$endingAccountBalance = new AccountBalances ();
+			Mlog::addone ( $cm, __LINE__ );
+			$endingAccountBalance->exchangeArray ( array (
+					'account_id' => $account_memreas_fees->account_id,
+					'transaction_id' => $transaction_id,
+					'transaction_type' => "payout_memreas_master_fees_fees",
+					'starting_balance' => $starting_balance,
+					'amount' => "-$fees",
+					'ending_balance' => $ending_balance,
+					'create_time' => MNow::now () 
+			) );
+			$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			//
+			// Update the account table with new balance
+			//
+			$account_memreas_fees->exchangeArray ( array (
+					'balance' => $ending_balance,
+					'update_time' => MNow::now () 
+			) );
+			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_fees );
+			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
+			Mlog::addone ( $cm . __LINE__ . '::payouts-->', $payouts );
 		} // end foreach($payees as $payee)
 		
 		return array (
@@ -2944,7 +3172,7 @@ class StripeClient {
 		try {
 			$cm = __CLASS__ . __METHOD__;
 			Mlog::addone ( $cm, __LINE__ );
-
+			
 			$customer = \Stripe\Customer::retrieve ( $stripe_customer_id );
 			$subscription = $customer->subscriptions->retrieve ( $stripe_subscription_id );
 			$subscription->plan = $plan_id;
