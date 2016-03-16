@@ -1900,6 +1900,7 @@ class StripeInstance {
 		 * -
 		 * Check for card if plan is > 0
 		 */
+		Mlog::addone ( $cm . __LINE__ . '::$amount--->', $amount );
 		if ($amount > 0) {
 			$paymentMethod = $this->memreasStripeTables->getPaymentMethodTable ()->getPaymentMethodByStripeReferenceId ( $card );
 			Mlog::addone ( $cm . __LINE__ . '', '' );
@@ -2939,12 +2940,7 @@ class StripeClient {
 		try {
 			$cm = __CLASS__ . __METHOD__;
 			Mlog::addone ( $cm, __LINE__ );
-			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
-			
-			// $customer = \Stripe\Customer::retrieve({CUSTOMER_ID});
-			// $subscription = $customer->subscriptions->retrieve({SUBSCRIPTION_ID});
-			// $subscription->plan = {PLAN_ID};
-			
+
 			$customer = \Stripe\Customer::retrieve ( $stripe_customer_id );
 			$subscription = $customer->subscriptions->retrieve ( $stripe_subscription_id );
 			$subscription->plan = $plan_id;
