@@ -1569,11 +1569,12 @@ class StripeInstance {
 		);
 	}
 	public function AccountHistory($data) {
+		$cm = __CLASS__.__METHOD__;
 		$userName = $data ['user_name'];
 		$date_from = isset ( $data ['date_from'] ) ? $data ['date_from'] : '';
 		$date_to = isset ( $data ['date_to'] ) ? $data ['date_to'] : MNow::now ();
 		$user = $this->memreasStripeTables->getUserTable ()->getUserByUsername ( $userName );
-		
+		Mlog::addone ( $cm.__LINE__.'::$user',$user );
 		if ($date_from > $date_to) {
 			return array (
 					'status' => 'Failure',
@@ -1586,11 +1587,14 @@ class StripeInstance {
 					'message' => 'User is not found' 
 			);
 		}
+		Mlog::addone ( $cm.__LINE__.'','' );
+		Mlog::addone ( $cm.__LINE__.'::$user->user_id',$user->user_id );
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user->user_id );
-		if (! $account) {
+		Mlog::addone ( $cm.__LINE__.'::$account',$account );
+		if (!$account) {
 			return array (
 					'status' => 'Failure',
-					'message' => 'Account associate to this user does not exist' 
+					'message' => 'Account associated with this user does not exist' 
 			);
 		}
 		$accountId = $account->account_id;

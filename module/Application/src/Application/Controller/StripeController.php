@@ -70,19 +70,19 @@ class StripeController extends AbstractActionController {
 				$hasSession = true;
 			} else if (! empty ( $_REQUEST ['sid'] )) {
 				$sid = $_REQUEST ['sid'];
-				//Mlog::addone ( $cm . __LINE__ . '$sid', $sid );
+				// Mlog::addone ( $cm . __LINE__ . '$sid', $sid );
 				$this->sessHandler->startSessionWithSID ( $sid );
 				$hasSession = true;
-				//Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
+				// Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
 			} else if (! empty ( $_REQUEST ['json'] )) {
 				$json = $_REQUEST ['json'];
-				//Mlog::addone ( $cm . __LINE__ . '$json', $json );
+				// Mlog::addone ( $cm . __LINE__ . '$json', $json );
 				$jsonArr = json_decode ( $json, true );
 				$memreascookie = $jsonArr ['memreascookie'];
-				//Mlog::addone ( $cm . __LINE__ . '$memreascookie', $memreascookie );
+				// Mlog::addone ( $cm . __LINE__ . '$memreascookie', $memreascookie );
 				$this->sessHandler->startSessionWithMemreasCookie ( $memreascookie );
 				$hasSession = true;
-				//Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
+				// Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
 			}
 		} catch ( \Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session lookup error->', $e->getMessage () );
@@ -156,7 +156,6 @@ class StripeController extends AbstractActionController {
 		 */
 		die ();
 	}
-
 	
 	/*
 	 * Create Customer Action
@@ -169,12 +168,10 @@ class StripeController extends AbstractActionController {
 			$message_data = json_decode ( $json, true );
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$message_data::', $message_data );
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
-			$this->flushResponse ( json_encode ( $MemreasStripe->createCustomer ($message_data) ) );
+			$this->flushResponse ( json_encode ( $MemreasStripe->createCustomer ( $message_data ) ) );
 			die ();
 		}
 	}
-	
-	
 	
 	/*
 	 * List stripe plan
@@ -342,8 +339,8 @@ class StripeController extends AbstractActionController {
 			$message_data = json_decode ( $json, true );
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
 			$customer = $MemreasStripe->getCustomer ( array (
-					//'userid' => $_SESSION ['user_id']
-					'user_id' => $message_data['user_id']
+					// 'userid' => $_SESSION ['user_id']
+					'user_id' => $message_data ['user_id'] 
 			), true );
 			Mlog::addone ( __CLASS__ . __METHOD__ . '', '' );
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$customer', $customer );
@@ -406,30 +403,77 @@ class StripeController extends AbstractActionController {
 	public function listMassPayeeAction() {
 		if ($this->fetchSession ()) {
 			/*
-			if (empty ( $_REQUEST ['admin_key'] )) {
-				// Only admins allowed
-				die ();
-			}
-			*/
+			 * if (empty ( $_REQUEST ['admin_key'] )) {
+			 * // Only admins allowed
+			 * die ();
+			 * }
+			 */
 			Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$message_data-->', $message_data );
-			
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
 			Mlog::addone ( __CLASS__ . __METHOD__, 'About to enter listMassPayee...' );
 			$this->flushResponse ( json_encode ( $MemreasStripe->listMassPayee ( $message_data ) ) );
 			die ();
 		}
 	}
-	public function payeePayoutAction() {
-		/*
-		if (empty ( $_REQUEST ['admin_key'] )) {
-			// Only admins allowed
+	public function getOrderHistoryAction() {
+		if ($this->fetchSession ()) {
+			Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+			$json = $_REQUEST ['json'];
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
+			$message_data = json_decode ( $json, true );
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$message_data-->', $message_data );
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
+			$orderHistories = $MemreasStripe->getOrderHistories ( $message_data ['user_id'], 
+								$message_data ['search_username'], 
+								( int ) $message_data ['page'], 
+								( int ) $message_data ['limit'] );
+			if ($orderHistories ['status'] == "Success") {
+				if ($message_data ['user_id']) {
+					
+					$userDetail = $MemreasStripe->getUserById ( $message_data ['user_id'] );
+				} else {
+					
+					$userDetail = null;
+				}
+				
+				$orders = $orderHistories ['transactions'];
+				
+				if (! empty ( $orders )) {
+					
+					$result = array (
+							'status' => 'Success',
+							'orders' => $orders,
+							'user' => $userDetail 
+					);
+				} else {
+					
+					$result = array (
+							'status' => 'Failure',
+							'message' => 'No record found' 
+					);
+				}
+			} else {
+				
+				$result = array (
+						'status' => 'Failure',
+						'message' => $orderHistories ['message'] 
+				);
+			}
+			$this->flushResponse ( json_encode ( $result ) );
 			die ();
 		}
-		*/
+	}
+	public function payeePayoutAction() {
+		/*
+		 * if (empty ( $_REQUEST ['admin_key'] )) {
+		 * // Only admins allowed
+		 * die ();
+		 * }
+		 */
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 		if ($this->fetchSession ()) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
