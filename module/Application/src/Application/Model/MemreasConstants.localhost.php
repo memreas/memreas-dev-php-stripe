@@ -35,9 +35,11 @@ class MemreasConstants {
 	
 	// Account data
 	const ACCOUNT_MEMREAS_FLOAT = "memreas_float";
+	const ACCOUNT_MEMREAS_FEES = "memreas_fees";
 	const ACCOUNT_MEMREAS_PAYER = "memreas_payer";
 	const ACCOUNT_MEMREAS_MASTER = "memreas_master";
 	const ACCOUNT_TYPE_BUYER = "buyer";
+	const ACCOUNT_TYPE_TRACKER = "tracker";
 	const ACCOUNT_TYPE_SELLER = "seller";
 	const MEMREAS_PROCESSING_FEE = 0.2; // 80 / 20 marketplace
 	const PLAN_BILLINGFREQUENCY = "1";
