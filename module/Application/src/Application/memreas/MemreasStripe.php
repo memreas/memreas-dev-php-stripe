@@ -560,7 +560,8 @@ class StripeInstance {
 				$data ['email'] = $user->email_address;
 				$data ['description'] = "stripe seller account for email: " . $user->email_address;
 				$data ['metadata'] = array (
-						'user_id' => $user->user_id 
+						'user_id' => $user->user_id,
+						'username' => $user->username
 				);
 				$managedAccount ['request'] ['customer'] = $data;
 				$managedAccount ['response'] ['customer'] = $result = $this->stripeClient->createCustomer ( $data );
@@ -576,6 +577,7 @@ class StripeInstance {
 				                                               
 				// extended data
 				$seller_info ['metadata'] ['user_id'] = $user->user_id;
+				$seller_info ['metadata'] ['username'] = $user->username;
 				$seller_info ['tos_acceptance'] ['date'] = strtotime ( MNow::now () );
 				$seller_info ['tos_acceptance'] ['ip'] = $seller_data ['ip_address'];
 				$seller_info ['tos_acceptance'] ['user_agent'] = $seller_data ['user_agent'];
@@ -2117,16 +2119,6 @@ class StripeInstance {
 	}
 	public function MakePayout($data) {
 		$cm = __CLASS__ . __METHOD__;
-		
-		Mlog::addone ( $cm, __LINE__ );
-		/**
-		 * TODO: code needs to log transaction before and after call to Stripe
-		 * - code needs to decrement memreas_float and memreas_payer for payout amount and increment memreas_fees for fees
-		 * i.e.
-		 * - payout is $8 to seller, memreas_float and payer are debited for equal amounts and seller is credited with bank transfer and memreas_fees logs fees
-		 */
-		Mlog::addone ( $cm, __LINE__ );
-		
 		$payees = $data ['payees'];
 		Mlog::addone ( $cm . __LINE__ . '::$payees--->', $payees );
 		
@@ -2144,16 +2136,16 @@ class StripeInstance {
 		 * Now start loop for payouts
 		 */
 		foreach ( $payees as $payee ) {
-			
+
 			/*
 			 * -
 			 * seller as payee
 			 */
 			$account_payee = $this->memreasStripeTables->getAccountTable ()->getAccount ( $payee ['account_id'], 'seller' );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			if (! $account_payee) {
-				Mlog::addone ( $cm . __LINE__ . '', '...' );
+				
 				return array (
 						'status' => 'Failure',
 						'message' => 'Account does not exist' 
@@ -2163,7 +2155,7 @@ class StripeInstance {
 			//
 			// Check if stripe customer / recipient is set
 			//
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			if (empty ( $account_payee->stripe_customer_id )) {
 				Mlog::addone ( $cm, __LINE__ );
 				return array (
@@ -2175,7 +2167,7 @@ class StripeInstance {
 			//
 			// Check if stripeaccount_id is set
 			//
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			if (empty ( $account_payee->stripe_account_id )) {
 				Mlog::addone ( $cm, __LINE__ );
 				return array (
@@ -2187,7 +2179,7 @@ class StripeInstance {
 			//
 			// Check if account has available balance
 			//
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			if ($account_payee->balance < $payee ['amount']) {
 				Mlog::addone ( $cm, __LINE__ );
 				return array (
@@ -2203,9 +2195,9 @@ class StripeInstance {
 			//
 			// Payee payout - amount logged has transfaction fee factored in
 			//
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			// $payee_amount = (($payee ['amount'] * (1 - MemreasConstants::MEMREAS_PROCESSING_FEE)) * 100);
-			$payee_amount = ($payee ['amount'] * 100); // convert to cents for Stripe
+			$payee_amount = $payee ['amount']; // don't convert for memreas storage
 			
 			/*
 			 * -
@@ -2213,15 +2205,21 @@ class StripeInstance {
 			 * DEBUGGING - TO BE REMOVED $memreas_payer_amount - temporary until transaction level implemented
 			 * **********************************************************************
 			 */
+			$stripe_payee_amount = $payee ['amount'] * 100; // convert to cents for Stripe
+			$stripe_memreas_payer_amount = ($stripe_payee_amount / 4); 
 			$memreas_payer_amount = ($payee ['amount'] / 4); // 20% of total is payee_amount/4 = 80% payment to seller
+
+			//
+			// Stripe transfer parameters
+			//
 			$transferParams = array (
-					'amount' => $payee_amount, // stripe stores in cents
+					'amount' => $stripe_payee_amount, // stripe stores in cents
 					'currency' => 'USD',
 					'destination' => $account_payee->stripe_account_id,
 					'description' => $payee ['description'] 
 			);
 			
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			//
 			// Create transaction to log transfer
 			//
@@ -2237,15 +2235,15 @@ class StripeInstance {
 					'transaction_sent' => MNow::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
 			// Make call to stripe for seller payee transfer
 			//
 			try {
-				Mlog::addone ( $cm . __LINE__ . '', '...' );
+				
 				$transferResponse = $this->stripeClient->createTransfer ( $transferParams );
-				Mlog::addone ( $cm . __LINE__ . '', '...' );
+				
 			} catch ( ZfrStripe\Exception\BadRequestException $e ) {
 				return array (
 						'status' => 'Failure',
@@ -2258,7 +2256,7 @@ class StripeInstance {
 			//
 			// Update transaction for response
 			//
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			$transaction->exchangeArray ( array (
 					'transaction_status' => 'payout_seller_success',
 					'pass_fail' => 1,
@@ -2266,7 +2264,7 @@ class StripeInstance {
 					'transaction_receive' => MNow::now () 
 			) );
 			$payee_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
 			// Debit seller balance for payout
@@ -2284,7 +2282,7 @@ class StripeInstance {
 					'create_time' => MNow::now () 
 			) );
 			$account_balances_payee_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $payee_account_balances );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
 			// Update the account table with new balance
@@ -2294,7 +2292,7 @@ class StripeInstance {
 					'update_time' => MNow::now () 
 			) );
 			$account_payee_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_payee );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			/*
 			 * -
@@ -2316,18 +2314,20 @@ class StripeInstance {
 			 * -
 			 * memreas_master payout
 			 */
+			$memreas_payer_amount = ($payee ['amount'] / 4); // 20% of total is payee_amount/4 = 80% payment to seller
+			$stripe_payer_amount = $memreas_payer_amount * 100; // convert to cents for Stripe
 			$transferParams = array (
-					'amount' => $memreas_payer_amount, // stripe stores in cents
+					'amount' => $stripe_payer_amount, // stripe stores in cents
 					'currency' => 'USD',
-					'destination' => $memreas_master->stripe_account_id,
+					'destination' => $account_memreas_master->stripe_account_id,
 					'description' => "memreas_master payout for seller account_id: " . $account_payee->account_id 
 			);
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			// Update transaction
 			$transaction = new Memreas_Transaction ();
 			$transaction->exchangeArray ( array (
-					'account_id' => $memreas_master->account_id,
+					'account_id' => $account_memreas_master->account_id,
 					'transaction_type' => 'payout_memreas_master',
 					'transaction_status' => 'payout_memreas_master_fail',
 					'transaction_request' => json_encode ( $transferParams ),
@@ -2337,11 +2337,11 @@ class StripeInstance {
 					'transaction_sent' => MNow::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			try {
 				$transferResponse = $this->stripeClient->createTransfer ( $transferParams );
-				Mlog::addone ( $cm . __LINE__ . '', '...' );
+				
 			} catch ( Exception $e ) {
 				return array (
 						'status' => 'Failure',
@@ -2359,7 +2359,7 @@ class StripeInstance {
 					'transaction_receive' => MNow::now () 
 			) );
 			$memreas_master_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
 			// Debit memreas_payer for payout
@@ -2377,7 +2377,7 @@ class StripeInstance {
 					'create_time' => MNow::now () 
 			) );
 			$account_balances_memreas_payer_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $account_memreas_payer_balances );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
 			// Update the account table with new balance
@@ -2387,7 +2387,7 @@ class StripeInstance {
 					'update_time' => MNow::now () 
 			) );
 			$account_memreas_payer_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_payer );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
 			// Debit memreas_float for payout
@@ -2405,7 +2405,7 @@ class StripeInstance {
 					'create_time' => MNow::now () 
 			) );
 			$account_balances_memreas_float_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $account_memreas_float_balances );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
 			// Update the account table with new balance
@@ -2415,7 +2415,7 @@ class StripeInstance {
 					'update_time' => MNow::now () 
 			) );
 			$account_memreas_float_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
 			// Credit memreas_master for payout
@@ -2433,7 +2433,7 @@ class StripeInstance {
 					'create_time' => MNow::now () 
 			) );
 			$account_balances_memreas_float_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $account_memreas_master_balances );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
 			// Update the account table with new balance
@@ -2443,7 +2443,7 @@ class StripeInstance {
 					'update_time' => MNow::now () 
 			) );
 			$account_memreas_float_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_master );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			/*
 			 * -
@@ -2452,7 +2452,7 @@ class StripeInstance {
 			$stripeBalanceTransactionParams = array (
 					'id' => $payee_transfer_id 
 			);
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			/**
 			 * -
@@ -2461,7 +2461,7 @@ class StripeInstance {
 			
 			$memreas_transaction = new Memreas_Transaction ();
 			$memreas_transaction->exchangeArray ( array (
-					'account_id' => $memreas_fees->account_id,
+					'account_id' => $account_memreas_fees->account_id,
 					'transaction_type' => 'payout_seller_transfer_fees',
 					'pass_fail' => 0,
 					'ref_transaction_id' => $payee_transaction_id,
@@ -2470,15 +2470,14 @@ class StripeInstance {
 					'transaction_sent' => MNow::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
-			// Make call to Stripe
+			// Make call to Stripe to fetch fees
 			//
 			$balance_transaction = $this->stripeClient->getBalanceTransaction ( $stripeBalanceTransactionParams );
-			// Mlog::addone ( $cm . 'addValueToAccount()->$balance_transaction::', $balance_transaction );
-			$fees = $balance_transaction ['fee'] / 100; // stripe stores in cents
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			$fees = $balance_transaction ['fee'] / 100; // stripe stores in cents so convert to $'s
+			
 			
 			/**
 			 * -
@@ -2494,7 +2493,7 @@ class StripeInstance {
 					'transaction_receive' => MNow::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			/**
 			 * -
@@ -2508,14 +2507,14 @@ class StripeInstance {
 			$endingAccountBalance->exchangeArray ( array (
 					'account_id' => $account_memreas_fees->account_id,
 					'transaction_id' => $transaction_id,
-					'transaction_type' => "add_value_to_account_capture_memreas_fees",
+					'transaction_type' => "payout_seller_transfer_fees",
 					'starting_balance' => $starting_balance,
 					'amount' => "-$fees",
 					'ending_balance' => $ending_balance,
 					'create_time' => MNow::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			// Update the account table with new balance
 			$account_memreas_fees->exchangeArray ( array (
@@ -2523,7 +2522,7 @@ class StripeInstance {
 					'update_time' => MNow::now () 
 			) );
 			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_fees );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			/*
 			 * -
@@ -2532,7 +2531,7 @@ class StripeInstance {
 			$stripeBalanceTransactionParams = array (
 					'id' => $memreas_master_transfer_id 
 			);
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			/*
 			 * -
@@ -2540,7 +2539,7 @@ class StripeInstance {
 			 */
 			$memreas_transaction = new Memreas_Transaction ();
 			$memreas_transaction->exchangeArray ( array (
-					'account_id' => $memreas_fees->account_id,
+					'account_id' => $account_memreas_fees->account_id,
 					'transaction_type' => 'payout_memreas_master_fees',
 					'pass_fail' => 0,
 					'ref_transaction_id' => $memreas_master_transaction_id,
@@ -2549,15 +2548,14 @@ class StripeInstance {
 					'transaction_sent' => MNow::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
 			// Make call to Stripe
 			//
 			$balance_transaction = $this->stripeClient->getBalanceTransaction ( $stripeBalanceTransactionParams );
-			// Mlog::addone ( $cm . 'addValueToAccount()->$balance_transaction::', $balance_transaction );
 			$fees = $balance_transaction ['fee'] / 100; // stripe stores in cents
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
 			// Store balance transaction fee response from stripe
@@ -2572,14 +2570,14 @@ class StripeInstance {
 					'transaction_receive' => MNow::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
 			// apply fee to fees account
 			//
-			$starting_balance = (isset ( $account_memreas_fees )) ? $account_memreas_fees->balance : '0.00';
+			$starting_balance = $account_memreas_fees->balance;
 			$ending_balance = $starting_balance - $fees;
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
 			// Insert the new account balance
@@ -2589,14 +2587,14 @@ class StripeInstance {
 			$endingAccountBalance->exchangeArray ( array (
 					'account_id' => $account_memreas_fees->account_id,
 					'transaction_id' => $transaction_id,
-					'transaction_type' => "payout_memreas_master_fees_fees",
+					'transaction_type' => "payout_memreas_master_fees",
 					'starting_balance' => $starting_balance,
 					'amount' => "-$fees",
 					'ending_balance' => $ending_balance,
 					'create_time' => MNow::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
+			
 			
 			//
 			// Update the account table with new balance
@@ -2606,7 +2604,6 @@ class StripeInstance {
 					'update_time' => MNow::now () 
 			) );
 			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_fees );
-			Mlog::addone ( $cm . __LINE__ . '', '...' );
 			
 			Mlog::addone ( $cm . __LINE__ . '::payouts-->', $payouts );
 		} // end foreach($payees as $payee)
