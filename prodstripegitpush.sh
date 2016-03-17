@@ -9,7 +9,7 @@ echo "You entered $comment"
 #set -v verbose #echo on
 
 #copy fe settings to push to git...
-cp ./module/Application/src/Application/Model/MemreasConstants.pay.php ./module/Application/src/Application/Model/MemreasConstants.php
+cp ./module/Application/src/Application/Model/MemreasConstants.pay.production.php ./module/Application/src/Application/Model/MemreasConstants.php
 
 #Push to AWS
 echo "Committing to git..."
