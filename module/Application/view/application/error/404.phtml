@@ -1,0 +1,88 @@
+<?php
+    use Application\Model\MemreasConstants;
+    header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1.
+    header('Pragma: no-cache'); // HTTP 1.0.
+    header('Expires: 0'); // Proxies.
+    header('Access-Control-Allow-Origin: *');
+    header("Access-Control-Allow-Methods: POST, GET");
+    header("Access-Control-Allow-Headers: x-requested-with");
+?>
+<!doctype html>
+<html lang="en" class="no-js">
+    <head>
+        <meta name="description" content="PUT YOUR Description here">
+        <meta name="keywords" content="PUT YOUR Keyword here">
+        <title>memreas - 404 error</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!--meta responsive-->
+
+        <link rel="stylesheet" type="text/css" href="/memreas/css/reset.css">
+        <link rel="stylesheet" type="text/css" href="/memreas/css/register.css">
+        <link rel="stylesheet" type="text/css" href="/memreas/css/responsiveslides.css">
+        <link rel="shortcut icon" href="/memreas/img/icon.png" />
+    </head>
+    <body>
+        <!--Header Starts Here-->
+        <header class="rel">
+            <div class="container">
+                <div class="header-inner">
+                    <h1 id="logo"><a href="/">memreas</a></h1>
+                </div>
+            </div>
+        </header>
+        <!--Header Ends Here-->
+
+        <!--Body Starts Here-->
+
+
+        <section id="body" class="rel">
+            <div class="body-inner clearfix">
+                <div class="body-top ">
+                    <div class="container clearfix">
+                        <div class="notfound top">
+                            <h2>404 - page not found</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="body-bottom">
+                    <div class="container clearfix">
+                        <div class="pull-right sign-up">
+                            <div class="notfound-image"><img src="/memreas/img/404Page.png" /></div>
+                            <div class="clear"></div>
+                            <a class="btn btn-sm take-back-btn" href="/">&larr; take me back</a>
+                        </div>
+                        <div class="pull-left filmstrip">
+                            <div class="relative feature">
+                                <div class="film absolute" style="cursor: pointer;" onclick="document.location.href='/';">
+                                    <img src="/memreas/img/memreas-img.png" alt="Film Strip" style="width: 100%;">
+                                </div>
+                                <div id="slider" class="absolute">
+                                    <ul class="rslides">
+                                        <li><img src="/memreas/img/slide-3.png" alt="Beach Party"></li>
+                                        <li><img src="/memreas/img/slide-1.png" alt="Fireworks"></li>
+                                        <li><img src="/memreas/img/slide-2.png" alt="Wedding"></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!--Body Ends Here-->
+
+        <!--Footer-->
+        <footer class="rel">
+            <p><?php echo MemreasConstants::COPYRIGHT?></p>
+        </footer>
+        <!--End of Footer-->
+
+        <!-- Modal JS -->
+        <script src="/memreas/js/responsiveslides.min.js"></script>
+        <script>
+            $(function() {
+                $(".rslides").responsiveSlides();
+            });
+        </script>
+    </body>
+</html>

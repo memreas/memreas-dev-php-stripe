@@ -8,19 +8,24 @@
 namespace Application\memreas;
 
 use Application\Model\MemreasConstants;
+use Aws\Ses\SesClient;
 
 class AWSStripeManagerSender {
 	private $aws = null;
-	private $ses = null;
+	private $sqs = null;	
+	private $ses = null;	
 	public function __construct() {
-		// Fetch aws handle
-		$this->aws = MemreasConstants::fetchAWS ();
-		
-		// Fetch the Ses class
-		$this->ses = $this->aws->createSes ();
-		
+		try {
+			
+			// Fetch aws handle
+			$this->aws = MemreasConstants::fetchAWS ();
+			$this->ses = $this->aws->createSes ();
+			
+		} catch ( Exception $e ) {
+			Mlog::addone ( __CLASS__ . __METHOD__ . '::$e->getMessage()--->', $e->getMessage () );
+		}
 	}
-
+	
 	public function sendSeSMail($to_array, $subject, $text_or_html) {
 		$from = MemreasConstants::ADMIN_EMAIL;
 		$client = $this->ses;

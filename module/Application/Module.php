@@ -30,6 +30,8 @@ use Application\Model\AccountBalances;
 use Application\Model\AccountBalancesTable;
 use Application\Model\Account;
 use Application\Model\AccountTable;
+use Application\Model\BankAccount;
+use Application\Model\BankAccountTable;
 use Application\Model\Transaction;
 use Application\Model\TransactionTable;
 use Application\Model\PaymentMethod;
@@ -187,6 +189,17 @@ class Module {
 							$resultSetPrototype = new ResultSet ();
 							$resultSetPrototype->setArrayObjectPrototype ( new AccountBalances () );
 							return new TableGateway ( 'account_balances', $dbAdapter, null, $resultSetPrototype );
+						},
+						'Application\Model\BankAccountTable' => function ($sm) {
+							$tableGateway = $sm->get ( 'BankAccountTableGateway' );
+							$table = new BankAccountTable ( $tableGateway );
+							return $table;
+						},
+						'BankAccountTableGateway' => function ($sm) {
+							$dbAdapter = $sm->get ( MemreasConstants::MEMREASPAYMENTSDB );
+							$resultSetPrototype = new ResultSet ();
+							$resultSetPrototype->setArrayObjectPrototype ( new BankAccount () );
+							return new TableGateway ( 'bank_account', $dbAdapter, null, $resultSetPrototype );
 						},
 						'Application\Model\AccountPurchasesTable' => function ($sm) {
 							$tableGateway = $sm->get ( 'AccountPurchasesTableGateway' );

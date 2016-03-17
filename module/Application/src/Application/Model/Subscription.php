@@ -10,12 +10,14 @@ namespace Application\Model;
 class Subscription {
 	public $subscription_id;
 	public $account_id;
+	public $stripe_subscription_id;
 	public $currency_code;
 	public $plan;
 	public $plan_amount;
 	public $plan_description;
 	public $gb_storage_amount;
 	public $billing_frequency;
+	public $active;
 	public $start_date;
 	public $end_date;
 	public $create_date;
@@ -23,16 +25,16 @@ class Subscription {
 	public function exchangeArray($data) {
 		$this->subscription_id = (isset ( $data ['subscription_id'] )) ? $data ['subscription_id'] : null;
 		$this->account_id = (isset ( $data ['account_id'] )) ? $data ['account_id'] : null;
+		$this->stripe_subscription_id = (isset ( $data ['stripe_subscription_id'] )) ? $data ['stripe_subscription_id'] : null;
 		$this->currency_code = (isset ( $data ['currency_code'] )) ? $data ['currency_code'] : null;
 		$this->plan = (isset ( $data ['plan'] )) ? $data ['plan'] : null;
 		$this->plan_amount = (isset ( $data ['plan_amount'] )) ? $data ['plan_amount'] : null;
 		$this->plan_description = (isset ( $data ['plan_description'] )) ? $data ['plan_description'] : null;
 		$this->gb_storage_amount = (isset ( $data ['gb_storage_amount'] )) ? $data ['gb_storage_amount'] : null;
 		$this->billing_frequency = (isset ( $data ['billing_frequency'] )) ? $data ['billing_frequency'] : null;
+		$this->active = (isset ( $data ['active'] )) ? $data ['active'] : 0;
 		$this->start_date = (isset ( $data ['start_date'] )) ? $data ['start_date'] : null;
 		$this->end_date = (isset ( $data ['end_date'] )) ? $data ['end_date'] : null;
-		$this->subscription_profile_id = (isset ( $data ['subscription_profile_id'] )) ? $data ['subscription_profile_id'] : null;
-		$this->subscription_profile_status = (isset ( $data ['subscription_profile_status'] )) ? $data ['subscription_profile_status'] : null;
 		$this->createDate = (isset ( $data ['create_date'] )) ? $data ['create_date'] : null;
 		$this->updateTime = (isset ( $data ['update_time'] )) ? $data ['update_time'] : null;
 	}

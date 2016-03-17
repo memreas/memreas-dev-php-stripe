@@ -7,6 +7,8 @@
  */
 namespace Application\Model;
 
+
+
 class MemreasConstants {
 	
 	// Redis section ubuntu standalone for redis 3 version
@@ -25,14 +27,20 @@ class MemreasConstants {
 	const MEMREAS_WS = "https://memreasdev-wsj.memreas.com";
 	const MEMREAS_WSPROXYPAY = "https://memreasdev-wsj.memreas.com/index?action=";
 	const URL = "/index";
+	const COPYRIGHT = '&copy;2015 memreas, llc. all rights reserved.';
 	
 	// Key data
-	const SECRET_KEY = 'sk_test_AFU42eViRyXQfXVSxCPPh05Q';
-	const PUBLIC_KEY = 'pk_test_nvbjKhLYYUe4iuuPE3PC6BZ8';
+	const SECRET_KEY = 'sk_test_wGuOAxPnnNVn6n9J7oBWVZ0h';
+	const PUBLIC_KEY = 'pk_test_zCmszvnYzWu8VjueyHpmcAJZ';
 	
 	// Account data
 	const ACCOUNT_MEMREAS_FLOAT = "memreas_float";
+	const ACCOUNT_MEMREAS_FEES = "memreas_fees";
+	const ACCOUNT_MEMREAS_PAYER = "memreas_payer";
 	const ACCOUNT_MEMREAS_MASTER = "memreas_master";
+	const ACCOUNT_TYPE_BUYER = "buyer";
+	const ACCOUNT_TYPE_TRACKER = "tracker";
+	const ACCOUNT_TYPE_SELLER = "seller";
 	const MEMREAS_PROCESSING_FEE = 0.2; // 80 / 20 marketplace
 	const PLAN_BILLINGFREQUENCY = "1";
 	const PLAN_BILLINGPERIOD = "Month";
@@ -57,18 +65,25 @@ class MemreasConstants {
 	const PLAN_GB_STORAGE_AMOUNT_D = 100;
 	const ADMIN_EMAIL = 'admin@memreas.com';
 	
-	const S3_APPKEY = 'AKIAJMXGGG4BNFS42LZA';
-	const S3_APPSEC = 'xQfYNvfT0Ar+Wm/Gc4m6aacPwdT5Ors9YHE/d38H';
+	//S3_AccessUser
+	const AWS_APPKEY = 'AKIAIXDH3Q23AP4KPZRA';
+	const AWS_APPSEC = 'TM+p8s9hlJwnKECCEKSVVhEOBjVhTWDG4ijIhJdk';
+	const SES_SMTP_KEY = 'AKIAJZNY5YHUCYUP2U4A';
+	const SES_SMTP_SECRET = 'Ashp1eCvbvKuL5uTpw/TSipW/O7CkewRoTl/N+NXUAGr';
+
+	//Listpay Payout
+	const LIST_MASS_PAYEE_INTERVAL = 1; //Get records for older 30 days
+
 	public static function fetchAWS() {
 		$sharedConfig = [
 				'region' => 'us-east-1',
 				'version' => 'latest',
 				'credentials' => [
-						'key' => self::S3_APPKEY,
-						'secret' => self::S3_APPSEC
+						'key' => self::AWS_APPKEY,
+						'secret' => self::AWS_APPSEC
 				]
 		];
-	
+		
 		return new \Aws\Sdk ( $sharedConfig );
 	}
 	

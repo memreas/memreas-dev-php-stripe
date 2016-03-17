@@ -14,6 +14,7 @@ class Transaction {
 	public $pass_fail;
 	public $amount;
 	public $currency;
+	public $ref_transaction_id;
 	public $transaction_request;
 	public $transaction_response;
 	public $transaction_sent;
@@ -26,6 +27,7 @@ class Transaction {
 		$this->pass_fail = (isset ( $data ['pass_fail'] )) ? $data ['pass_fail'] : $this->pass_fail;
 		$this->amount = (isset ( $data ['amount'] )) ? $data ['amount'] : $this->amount;
 		$this->currency = (isset ( $data ['currency'] )) ? $data ['currency'] : $this->currency;
+		$this->ref_transaction_id = (isset ( $data ['ref_transaction_id'] )) ? $data ['ref_transaction_id'] : $this->ref_transaction_id;
 		$this->transaction_request = (isset ( $data ['transaction_request'] )) ? $data ['transaction_request'] : $this->transaction_request;
 		$this->transaction_response = (isset ( $data ['transaction_response'] )) ? $data ['transaction_response'] : $this->transaction_response;
 		$this->transaction_sent = (isset ( $data ['transaction_sent'] )) ? $data ['transaction_sent'] : $this->transaction_sent;

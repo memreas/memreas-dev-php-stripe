@@ -10,13 +10,17 @@ namespace Application\Model;
 use Zend\Db\Sql\Select;
 use Zend\Db\TableGateway\TableGateway;
 use Application\memreas\MUUID;
+use Application\memreas\Mlog;
 
 class TransactionTable {
 	protected $tableGateway;
 	public $account_id;
+	public $date_from;
+	public $date_to;
 	public $account_range;
 	public $offset = 0;
 	public $limit = 0;
+	public $payee_interval;
 	public function __construct(TableGateway $tableGateway) {
 		$this->tableGateway = $tableGateway;
 	}
@@ -40,6 +44,7 @@ class TransactionTable {
 		return $resultSet;
 	}
 	public function getTransactionByAccountId($account_id, $page = null, $limit = null) {
+		Mlog::addone ( 'Inside getTransactionByAccountId', '...' );
 		$this->account_id = $account_id;
 		if ($page && $limit) {
 			$this->offset = ($page - 1) * $limit;
@@ -55,6 +60,63 @@ class TransactionTable {
 			) );
 		}
 		return $resultSet;
+	}
+
+	public function getPayeeTransactionByAccountId($account_id, $interval, $page = null, $limit = null) {
+		Mlog::addone ( 'Inside getPayeeTransactionByAccountId', '...' );
+		$this->account_id = $account_id;
+		$this->payee_interval = $interval;
+		if ($page && $limit) {
+			$this->offset = ($page - 1) * $limit;
+			$this->limit = $limit;
+			$resultSet = $this->tableGateway->select ( function (Select $select) {
+				$select->where ( array (
+					'account_id' => $this->account_id
+				) );
+				$select->where->lessThan('transaction_sent', '(NOW() - INTERVAL ' . $this->payee_interval . ' DAY)');
+				$select->order ( 'transaction_sent DESC' )->offset ( $this->offset )->limit ( $this->limit );
+
+			} );
+		} else {
+			$resultSet = $this->tableGateway->select ( array (
+				'account_id' => $account_id,
+				'transaction_sent < (NOW() - INTERVAL ' . $this->payee_interval . ' DAY)'
+			) );
+		}
+		return $resultSet;
+	}
+
+	public function getTransactionByAccountIdAndDateFromTo($account_id, $date_from, $date_to, $page = null, $limit = null) {
+		Mlog::addone ( 'Inside getTransactionByAccountIdAndDateFromTo', '...' );
+		
+		$this->account_id = $account_id;
+		$this->date_from = $date_from;
+		$this->date_to = $date_to;
+		
+		if (! empty ( $date_from )) {
+			if ($page && $limit) {
+				$this->offset = ($page - 1) * $limit;
+				$this->limit = $limit;
+				$resultSet = $this->tableGateway->select ( function (Select $select) {
+					$select->where ( array (
+							'account_id' => $this->account_id 
+					) );
+					$select->where->between ( 'transaction_receive', $this->date_from, $this->date_to );
+					$select->order ( 'transaction_receive DESC' )->offset ( $this->offset )->limit ( $this->limit );
+					Mlog::addone ( 'getTransactionByAccountIdAndDateFromTo sql with page and limit --> ', $select );
+				} );
+			} else {
+				$resultSet = $this->tableGateway->select ( function (Select $select) {
+					$select->where ( array (
+							'account_id' => $this->account_id 
+					) );
+					$select->where->between ( 'transaction_receive', $this->date_from, $this->date_to );
+					$select->order ( 'transaction_receive DESC' );
+					Mlog::addone ( 'getTransactionByAccountIdAndDateFromTo sql --> ', $select );
+				} );
+			}
+			return $resultSet;
+		}
 	}
 	public function getTransaction($transaction_id) {
 		$rowset = $this->tableGateway->select ( array (
@@ -74,6 +136,7 @@ class TransactionTable {
 				'pass_fail' => $transaction->pass_fail,
 				'amount' => $transaction->amount,
 				'currency' => $transaction->currency,
+				'ref_transaction_id' => $transaction->ref_transaction_id,
 				'transaction_request' => $transaction->transaction_request,
 				'transaction_response' => $transaction->transaction_response,
 				'transaction_sent' => $transaction->transaction_sent,

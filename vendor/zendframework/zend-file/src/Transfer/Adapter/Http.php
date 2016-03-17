@@ -29,7 +29,7 @@ class Http extends AbstractAdapter
      * @param  array $options OPTIONAL Options to set
      * @throws Exception\PhpEnvironmentException if file uploads are not allowed
      */
-    public function __construct($options = array())
+    public function __construct($options = [])
     {
         if (ini_get('file_uploads') == false) {
             throw new Exception\PhpEnvironmentException('File uploads are not allowed in your php config!');
@@ -115,9 +115,9 @@ class Http extends AbstractAdapter
                 $files = current($files);
             }
 
-            $temp = array($files => array(
+            $temp = [$files => [
                 'name'  => $files,
-                'error' => 1));
+                'error' => 1]];
             $validator = $this->validators['Zend\Validator\File\Upload'];
             $validator->setTranslator($this->getTranslator())
                       ->setFiles($temp)
@@ -293,13 +293,13 @@ class Http extends AbstractAdapter
         }
 
         $session = 'Zend\File\Transfer\Adapter\Http\ProgressBar';
-        $status  = array(
+        $status  = [
             'total'    => 0,
             'current'  => 0,
             'rate'     => 0,
             'message'  => '',
             'done'     => false
-        );
+        ];
 
         if (is_array($id)) {
             if (isset($id['progress'])) {
@@ -411,7 +411,7 @@ class Http extends AbstractAdapter
      */
     protected function prepareFiles()
     {
-        $this->files = array();
+        $this->files = [];
         foreach ($_FILES as $form => $content) {
             if (is_array($content['name'])) {
                 foreach ($content as $param => $file) {
@@ -423,6 +423,9 @@ class Http extends AbstractAdapter
 
                 $this->files[$form]['name'] = $form;
                 foreach ($this->files[$form]['multifiles'] as $key => $value) {
+                    if ($this->files[$value]['tmp_name'] !== '') {
+                        $this->files[$value]['name']  = basename($this->files[$value]['tmp_name']) . '_' .  $this->files[$value]['name'];
+                    }
                     $this->files[$value]['options']   = $this->options;
                     $this->files[$value]['validated'] = false;
                     $this->files[$value]['received']  = false;
@@ -441,6 +444,9 @@ class Http extends AbstractAdapter
                 }
             } else {
                 $this->files[$form]              = $content;
+                if ($this->files[$form]['tmp_name'] !== '') {
+                    $this->files[$form]['name']  = basename($this->files[$form]['tmp_name']) . '_' .  $this->files[$form]['name'];
+                }
                 $this->files[$form]['options']   = $this->options;
                 $this->files[$form]['validated'] = false;
                 $this->files[$form]['received']  = false;

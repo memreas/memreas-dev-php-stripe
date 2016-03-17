@@ -21,4 +21,14 @@ git push
 
 cp module/Application/src/Application/Model/MemreasConstants.localhost.php module/Application/src/Application/Model/MemreasConstants.php
 
-eb events -f
+#eb events -f
+
+
+#
+# curl url to pull latest on backend
+#
+#
+# curl url to pull latest on backend
+#
+curl https://memreasdev-pay.memreas.com/?action=clearlog
+curl https://memreasdev-pay.memreas.com/?action=gitpull

@@ -13,6 +13,7 @@ class MemreasStripeTables {
 	protected $accountTable = NULL;
 	protected $accountBalancesTable = NULL;
 	protected $accountDetailTable = NULL;
+	protected $bankAccountTable = NULL;
 	protected $paymentMethodTable = NULL;
 	protected $subscriptionTable = NULL;
 	protected $transactionTable = NULL;
@@ -48,6 +49,12 @@ class MemreasStripeTables {
 			$this->accountDetailTable = $this->service_locator->get ( 'Application\Model\AccountDetailTable' );
 		}
 		return $this->accountDetailTable;
+	}
+	public function getBankAccountTable() {
+		if (! $this->bankAccountTable) {
+			$this->bankAccountTable = $this->service_locator->get ( 'Application\Model\BankAccountTable' );
+		}
+		return $this->bankAccountTable;
 	}
 	public function getTransactionTable() {
 		if (! $this->transactionTable) {

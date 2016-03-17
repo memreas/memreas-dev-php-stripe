@@ -56,6 +56,7 @@ return array (
 						// new controllers and actions without needing to create a new
 						// module. Simply drop new controllers in, and you can access them
 						// using the path /application/:controller/:action
+					
 						'application' => array (
 								'type' => 'Literal',
 								'options' => array (
@@ -83,6 +84,7 @@ return array (
 						) 
 				) 
 		),
+		
 		'service_manager' => array (
 				'factories' => array (
 						'translator' => 'Zend\I18n\Translator\TranslatorServiceFactory' 
@@ -122,5 +124,23 @@ return array (
 				'strategies' => array (
 						'ViewJsonStrategy' 
 				) 
-		) 
+		),
+		// Doctrine config
+		'doctrine' => array (
+				'driver' => array (
+						'Application_driver' => array (
+								'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
+								'cache' => 'array',
+								'paths' => array (
+										__DIR__ . '/../src/Application/Entity'
+								)
+						),
+						'orm_default' => array (
+								'drivers' => array (
+										'Application\Entity' => 'Application_driver'
+								)
+						)
+				)
+		)
+		
 );

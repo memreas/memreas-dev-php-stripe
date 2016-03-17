@@ -1,0 +1,166 @@
+<?php
+    use Application\Model\MemreasConstants;
+    header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1.
+    header('Pragma: no-cache'); // HTTP 1.0.
+    header('Expires: 0'); // Proxies.
+    header('Access-Control-Allow-Origin: *');
+    header("Access-Control-Allow-Methods: POST, GET");
+    header("Access-Control-Allow-Headers: x-requested-with");
+?>
+<!doctype html>
+<html lang="en" class="no-js">
+    <head>
+        <meta name="description" content="PUT YOUR Description here">
+        <meta name="keywords" content="PUT YOUR Keyword here">
+        <title>memreas - 500 Internal Error</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!--meta responsive-->
+
+        <link rel="stylesheet" type="text/css" href="/memreas/css/reset.css">
+        <link rel="stylesheet" type="text/css" href="/memreas/css/register.css">
+        <link rel="stylesheet" type="text/css" href="/memreas/css/responsiveslides.css">
+        <link href="/memreas/css/modalPopLite.css" rel="stylesheet" type="text/css" />
+        <link rel="shortcut icon" href="/memreas/img/icon.png" />
+
+        <script src="/memreas/js/jquery-register.js"></script>
+        <script type="text/javascript" src="/memreas/js/modalPopLite.min.js"></script>
+        <script src="/memreas/js/responsiveslides.min.js"></script>
+        <link rel="stylesheet" href="/memreas/css/jNotify.jquery.css">
+        <script src="/memreas/js/jNotify.jquery.min.js"></script>
+        <script type="text/javascript" src="/memreas/js/global.js"></script>
+        <script type="text/javascript" src="/memreas/js/ajax.js"></script>
+        <script src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+        <script src="/memreas/assets/js/jquery.iframe-transport.js"></script>
+        <script src="/memreas/assets/js/jquery.fileupload.js"></script>
+        <script type="text/javascript" src="/memreas/js/registration.js"></script>
+        <script src="/memreas/js/popup.js" type="text/javascript"></script>
+        <script src="/memreas/js/jquery.mCustomScrollbar.concat.min.js"></script>
+    </head>
+    <body>
+        <div id="loadingpopup" class="loadingpopup">
+            <div id="loadingpopupinner" class="loadingpopupinner">
+                <img id="loadingimg" src="/memreas/img/loading_animate.gif">
+            </div>
+        </div>
+        <!--Header Starts Here-->
+        <header class="rel">
+            <div class="container">
+                <div class="header-inner">
+                    <h1 id="logo"><a href="/">memreas</a></h1>
+                </div>
+            </div>
+        </header>
+        <!--Header Ends Here-->
+
+        <!--Body Starts Here-->
+
+
+        <section id="body" class="rel">
+            <div class="body-inner clearfix">
+                <div class="body-top ">
+                    <div class="container clearfix">
+                        <div class="notfound top">
+                            <h2>500 - an error occurred ... let us know we'll fix it. <a href="javascript:popup('popupFeedback');">Feedback</a></h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="body-bottom">
+                    <div class="container clearfix">
+                        <div class="pull-right sign-up">
+                            <div class="notfound-image"><img src="/memreas/img/500Pages.png" /></div>
+                            <div class="clear"></div>
+                            <a class="btn btn-sm take-back-btn" href="/">&larr; take me back</a>
+                        </div>
+                        <div class="pull-left filmstrip">
+                            <div class="relative feature">
+                                <div class="film absolute">
+                                    <img src="/memreas/img/memreas-img.png" alt="Film Strip" style="width: 100%;">
+                                </div>
+                                <div id="slider" class="absolute">
+                                    <ul class="rslides">
+                                        <li><img src="/memreas/img/slide-3.png" alt="Beach Party"></li>
+                                        <li><img src="/memreas/img/slide-1.png" alt="Fireworks"></li>
+                                        <li><img src="/memreas/img/slide-2.png" alt="Wedding"></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!--Body Ends Here-->
+
+        <!--Footer-->
+        <footer class="rel">
+            <p><?php echo MemreasConstants::COPYRIGHT?></p>
+        </footer>
+        <!--End of Footer-->
+        <div id="popupFeedback" class="popups">
+          <a id="popupFeedbackClose" onClick="disablePopup('popupFeedback')" class='popupClose'>x</a>
+            <h2>Send us your feedback</h2>
+            <ul class="feedback-detail share_memreas_details">
+                <li>
+                    <label class="textfield_names">Your email</label>
+                    <input style="width: 250px;" name="email" type="text" id="email" class="" value="your email" onBlur="if(!/\S/.test(this.value))this.value=this.defaultValue" onFocus="if(this.value == 'your email')this.value = '';"/>
+                </li>
+                <li>
+                    <label class="textfield_names">Subject</label>
+                    <input style="width: 250px;" name="subject" type="text" id="subject" class="" value="subject" onBlur="if(!/\S/.test(this.value))this.value=this.defaultValue" onFocus="if(this.value == 'subject')this.value = '';"/>
+                </li>
+                <li>
+                    <label class="textfield_names">Comment</label>
+                    <textarea id="comment" style="height: 100px; width: 250px;" name="comment"></textarea>
+                </li>
+            </ul>
+            <div style="text-align: right;">
+            <a class="btn btn-sm send-feedback-btn" href="javascript:;" onclick="" style="margin-right: 45px;">Send Feedback</a>
+            </div>
+        </div>
+        <div id="bgpopupFeedback" class="backgroundPopup"></div>
+
+        <!-- Modal JS -->
+        <script src="/memreas/js/responsiveslides.min.js"></script>
+        <script>
+            $(function() {
+                $(".rslides").responsiveSlides();
+
+                //Send feedback
+                $(".send-feedback-btn").click(function(){
+                    var email = $("input[name=email]").val();
+                    var subject = $("input[name=subject]").val();
+                    var comment = $("textarea[name=comment]").val();
+
+                    if (email == '' || email == 'your email'){
+                        jerror("please input your email");
+                        return false;
+                    }
+                    if (subject == '' || subject == 'subject'){
+                        jerror("please input subject");
+                        return false;
+                    }
+                    if (comment == ''){
+                        jerror('please specify your comment');
+                        return false;
+                    }
+                    var params = [
+                        {tag: 'user_id', value: '1'},
+                        {tag: 'name', value: 'not set'},
+                        {tag: 'email', value: email},
+                        {tag: 'message', value: comment}
+                    ];
+                    ajaxRequest('feedback', params, function(response){
+                        if (getValueFromXMLTag(response, 'status') == 'success'){
+                            jsuccess(getValueFromXMLTag(response, 'message'));
+                            $("input[name=email]").val('your email');
+                            $("input[name=subject]").val('subject');
+                            $("textarea[name=comment]").val('');
+                            disablePopup('popupFeedback');
+                        }
+                        else jerror(getValueFromXMLTag(response, 'message'));
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>
