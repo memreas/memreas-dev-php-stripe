@@ -23,10 +23,6 @@ cp module/Application/src/Application/Model/MemreasConstants.localhost.php modul
 
 #eb events -f
 
-
-#
-# curl url to pull latest on backend
-#
 #
 # curl url to pull latest on backend
 #

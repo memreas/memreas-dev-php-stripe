@@ -1,14 +1,10 @@
 <?php
-
 /**
  * Copyright (C) 2015 memreas llc. - All Rights Reserved
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
 namespace Application\Model;
-
-
-
 class MemreasConstants {
 	
 	// Redis section ubuntu standalone for redis 3 version
@@ -70,10 +66,8 @@ class MemreasConstants {
 	const AWS_APPSEC = 'TM+p8s9hlJwnKECCEKSVVhEOBjVhTWDG4ijIhJdk';
 	const SES_SMTP_KEY = 'AKIAJZNY5YHUCYUP2U4A';
 	const SES_SMTP_SECRET = 'Ashp1eCvbvKuL5uTpw/TSipW/O7CkewRoTl/N+NXUAGr';
-
 	//Listpay Payout
 	const LIST_MASS_PAYEE_INTERVAL = 1; //Get records for older 30 days
-
 	public static function fetchAWS() {
 		$sharedConfig = [
 				'region' => 'us-east-1',
