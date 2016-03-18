@@ -51,6 +51,12 @@ class Module {
 		$moduleRouteListener = new ModuleRouteListener ();
 		$moduleRouteListener->attach ( $eventManager );
 		// $this->bootstrapSession ( $e );
+		register_shutdown_function(function ()
+		{
+			if ($e = error_get_last()) {
+				error_log('LAST ERROR---->'. $e['message'] . " in " . $e['file'] . ' line ' . $e['line']);
+			}
+		});
 	}
 	public function bootstrapSession($e) {
 		// $session = $e->getApplication ()->getServiceManager ()->get ( 'Zend\Session\SessionManager' );
