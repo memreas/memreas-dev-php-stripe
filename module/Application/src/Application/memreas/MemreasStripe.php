@@ -813,7 +813,6 @@ class StripeInstance {
 			$transactionRequest ['account_id'] = $account->account_id;
 			$transactionRequest ['stripe_details'] = array (
 					'stripeCustomer' => $customerId,
-					'stripeCardToken' => $cardToken,
 					'stripeCardId' => $cardId,
 					'stripeChargeParams' => $stripeChargeParams 
 			);
