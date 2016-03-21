@@ -84,12 +84,19 @@ class StripeController extends AbstractActionController {
 				// Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
 			} else if (isset($_REQUEST ['json']) && ! empty ( $_REQUEST ['json'] )) {
 				$json = $_REQUEST ['json'];
-				// Mlog::addone ( $cm . __LINE__ . '$json', $json );
+				Mlog::addone ( $cm . __LINE__ . '$json', $json );
 				$jsonArr = json_decode ( $json, true );
+				if (isset($jsonArr ['memreascookie']) && !empty($jsonArr ['memreascookie'])) {
 				$memreascookie = $jsonArr ['memreascookie'];
 				// Mlog::addone ( $cm . __LINE__ . '$memreascookie', $memreascookie );
 				$this->sessHandler->startSessionWithMemreasCookie ( $memreascookie );
 				$hasSession = true;
+				} else if (isset($jsonArr ['sid']) && !empty($jsonArr ['sid'])) {
+					$sid = $jsonArr ['sid'];
+					// Mlog::addone ( $cm . __LINE__ . 'sid', $sid );
+					$this->sessHandler->startSessionWithSID($sid);
+					$hasSession = true;
+				}
 				// Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
 			}
 		} catch ( \Exception $e ) {
