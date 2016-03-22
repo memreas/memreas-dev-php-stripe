@@ -1,10 +1,13 @@
 <?php
+
+namespace Application\Model;
+
 /**
- * Copyright (C) 2015 memreas llc. - All Rights Reserved
+ * Copyright (C) 2015 memreas llc.
+ * - All Rights Reserved
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
-namespace Application\Model;
 class MemreasConstants {
 	
 	// Redis section ubuntu standalone for redis 3 version
@@ -61,24 +64,23 @@ class MemreasConstants {
 	const PLAN_GB_STORAGE_AMOUNT_D = 100;
 	const ADMIN_EMAIL = 'admin@memreas.com';
 	
-	//S3_AccessUser
+	// S3_AccessUser
 	const AWS_APPKEY = 'AKIAIXDH3Q23AP4KPZRA';
 	const AWS_APPSEC = 'TM+p8s9hlJwnKECCEKSVVhEOBjVhTWDG4ijIhJdk';
 	const SES_SMTP_KEY = 'AKIAJZNY5YHUCYUP2U4A';
 	const SES_SMTP_SECRET = 'Ashp1eCvbvKuL5uTpw/TSipW/O7CkewRoTl/N+NXUAGr';
-	//Listpay Payout
-	const LIST_MASS_PAYEE_INTERVAL = 1; //Get records for older 30 days
+	// Listpay Payout
+	const LIST_MASS_PAYEE_INTERVAL = 1; // Get records for older 30 days
 	public static function fetchAWS() {
-		$sharedConfig = [
+		$sharedConfig = [ 
 				'region' => 'us-east-1',
 				'version' => 'latest',
-				'credentials' => [
+				'credentials' => [ 
 						'key' => self::AWS_APPKEY,
-						'secret' => self::AWS_APPSEC
-				]
+						'secret' => self::AWS_APPSEC 
+				] 
 		];
 		
 		return new \Aws\Sdk ( $sharedConfig );
 	}
-	
 }
