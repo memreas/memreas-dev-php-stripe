@@ -1568,6 +1568,7 @@ class StripeInstance {
 	}
 	public function AccountHistory($data) {
 		$cm = __CLASS__ . __METHOD__;
+		Mlog::addone ( $cm . __LINE__ . '::$data', $data );
 		$userName = $data ['user_name'];
 		$date_from = isset ( $data ['date_from'] ) ? $data ['date_from'] : '';
 		$date_to = isset ( $data ['date_to'] ) ? $data ['date_to'] : MNow::now ();
