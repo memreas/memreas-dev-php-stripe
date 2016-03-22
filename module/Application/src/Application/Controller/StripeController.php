@@ -62,15 +62,23 @@ class StripeController extends AbstractActionController {
 		$this->setupSaveHandler ();
 		try {
 			if (! empty ( $_REQUEST ['admin_key'] )) {
-				$redis_admin_key = $this->redis->getCache('admin_key');
+				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::admin_key-->', $_REQUEST ['admin_key'] );
+				$redis_admin_key = $this->redis->getCache ( 'admin_key' );
+				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$this->redis->getCache(admin_key)-->', $this->redis->getCache ( 'admin_key' ) );
+				$hasSession = false;
 				if ($redis_admin_key == $_REQUEST ['admin_key']) {
-					$username = $this->redis->getCache ( 'admin_key' );
-					$this->sessHandler->startSessionWithUID ( '', $message_data['$username'] );
-					$hasSession = true;
-						
-				} else {
-					$hasSession = false;
-						
+					// $username = $this->redis->getCache ( 'admin_key' );
+					if (! empty ( $message_data ['username'] )) {
+						$this->sessHandler->startSessionWithUID ( '', $message_data ['username'] );
+						$hasSession = true;
+					} else if (! empty ( $message_data ['user_name'] )) {
+						$this->sessHandler->startSessionWithUID ( '', $message_data ['user_name'] );
+						$hasSession = true;
+					} else if (! empty ( $message_data ['user_id'] )) {
+						$this->sessHandler->startSessionWithUID ( '', $message_data ['user_id'] );
+						$hasSession = true;
+					}
+					Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$_SESSION-->', $_SESSION );
 				}
 			} else if (! empty ( $_REQUEST ['memreascookie'] )) {
 				$sid = $_REQUEST ['memreascookie'];
@@ -114,7 +122,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function indexAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__ . '::$_SERVER-->', $_SERVER );
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$view = new ViewModel ();
 			$view->setTemplate ( 'application/error/500.phtml' );
 			return $view;
@@ -169,7 +177,7 @@ class StripeController extends AbstractActionController {
 	 * Create Customer Action
 	 */
 	public function createCustomerAction() {
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$_REQUEST', $_REQUEST );
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$json::', $json );
@@ -185,7 +193,7 @@ class StripeController extends AbstractActionController {
 	 * List stripe plan
 	 */
 	public function listPlanAction() {
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$_REQUEST', $_REQUEST );
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::$json::', $json );
@@ -201,7 +209,7 @@ class StripeController extends AbstractActionController {
 	 * Ajax functions
 	 */
 	public function storeCardAction() {
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '::request', $_REQUEST );
 			$json = $_REQUEST ['json'];
 			$message_data = json_decode ( $json, true );
@@ -233,7 +241,7 @@ class StripeController extends AbstractActionController {
 		}
 	}
 	public function listCardsAction() {
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			Mlog::addone ( __CLASS__ . __METHOD__, "::Enter listCardsAction" );
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
@@ -246,7 +254,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function viewCardAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
@@ -258,7 +266,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function updateCardAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
@@ -270,7 +278,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function deleteCardsAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
@@ -282,7 +290,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function addSellerAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
@@ -294,7 +302,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function addValueAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
@@ -306,7 +314,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function decrementAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
@@ -318,7 +326,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function accounthistoryAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
@@ -330,7 +338,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function subscribeAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
@@ -341,7 +349,7 @@ class StripeController extends AbstractActionController {
 		}
 	}
 	public function getCustomerInfoAction() {
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
@@ -376,7 +384,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function getUserBalanceAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
@@ -388,7 +396,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function buyMediaAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
@@ -399,7 +407,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function checkOwnEventAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
@@ -409,7 +417,7 @@ class StripeController extends AbstractActionController {
 		}
 	}
 	public function listMassPayeeAction() {
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			/*
 			 * if (empty ( $_REQUEST ['admin_key'] )) {
 			 * // Only admins allowed
@@ -428,17 +436,14 @@ class StripeController extends AbstractActionController {
 		}
 	}
 	public function getOrderHistoryAction() {
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$message_data-->', $message_data );
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
-			$orderHistories = $MemreasStripe->getOrderHistories ( $message_data ['user_id'], 
-								$message_data ['search_username'], 
-								( int ) $message_data ['page'], 
-								( int ) $message_data ['limit'] );
+			$orderHistories = $MemreasStripe->getOrderHistories ( $message_data ['user_id'], $message_data ['search_username'], ( int ) $message_data ['page'], ( int ) $message_data ['limit'] );
 			if ($orderHistories ['status'] == "Success") {
 				if ($message_data ['user_id']) {
 					
@@ -483,7 +488,7 @@ class StripeController extends AbstractActionController {
 		 * }
 		 */
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
@@ -496,7 +501,7 @@ class StripeController extends AbstractActionController {
 	}
 	public function refundAction() {
 		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
-		if ($this->fetchSession ($_REQUEST ['json'])) {
+		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
