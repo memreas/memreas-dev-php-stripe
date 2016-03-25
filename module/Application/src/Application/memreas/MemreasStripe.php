@@ -108,23 +108,149 @@ class StripeInstance {
 	/*
 	 * Stripe Webhook Receiver
 	 */
-	public function webHookReceiver() {
+	public function webHookReceiver($eventArr) {
 		$cm = __CLASS__ . __METHOD__;
-		/**
-		 * -
-		 * Session is not required for webhooks
-		 */
-		\Stripe\Stripe::setApiKey ( MemreasConstants::SECRET_KEY );
 		
-		// Retrieve the request's body and parse it as JSON
-		$input = @file_get_contents ( "php://input" );
-		Mlog::addone ( $cm . __LINE__, 'webHookReceiver() received php://input' );
-		$event_json = json_decode ( $input );
-		Mlog::addone ( $cm . __LINE__ . '::$event_json::', $event_json );
 		
-		// Do something with $event_json
-		http_response_code ( 200 ); // PHP 5.4 or greater
-		Mlog::addone ( $cm . __LINE__, 'exit webHookReceiver()' );
+		//
+		// Handle transfers for subscriptions to add to log transaction and update memreas_master
+		// - invoice.payment.succeeded (subscription payment)
+		// - invoice.payment.failed (subscription payment failed - send email)
+		//
+			
+		if ($eventArr['type'] == 'invoice.payment_succeeded') {
+			//
+			// Log transaction - note float balance is not incremented for subscriptions
+			//
+			$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
+			$subscription_amount = $eventArr['data']['object']['lines']['data'][0][amount]/100; //convert stripe to $'s
+			$transactionDetail = array (
+					'account_id' => $account_memreas_float->account_id,
+					'transaction_type' => 'subscription_payment_float',
+					'amount' => $subscription_amount,
+					'currency' => 'USD',
+					'transaction_request' => $eventArr['type'],
+					'transaction_response' => $eventArr,
+					'transaction_sent' => MNow::now (),
+					'transaction_receive' => MNow::now ()
+			);
+			$memreas_transaction = new Memreas_Transaction ();
+			$memreas_transaction->exchangeArray ( $transactionDetail );
+			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+			
+			//
+			// Transfer funds to memreas_master
+			// Stripe transfer parameters
+			//
+			$account_memreas_master = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_MASTER );
+			$transferParams = array (
+					'amount' => $subscription_amount, // stripe stores in cents
+					'currency' => 'USD',
+					'destination' => $account_memreas_master->stripe_account_id,
+					'description' => "transfer subscription payment to memreas master"
+			);
+				
+			//
+			// Create transaction to log transfer
+			//
+			$transaction = new Memreas_Transaction ();
+			$transaction->exchangeArray ( array (
+					'account_id' => $account_memreas_master->account_id,
+					'transaction_type' => 'subscription_payment_float_to_master',
+					'transaction_status' => 'subscription_payment_float_to_master_fail',
+					'pass_fail' => 0,
+					'amount' => $subscription_amount,
+					'currency' => "USD",
+					'transaction_request' => json_encode ( $transferParams ),
+					'transaction_sent' => MNow::now ()
+			) );
+			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+				
+				
+			//
+			// Make call to stripe for seller payee transfer
+			//
+			try {
+			
+				$transferResponse = $this->stripeClient->createTransfer ( $transferParams );
+			
+			} catch ( ZfrStripe\Exception\BadRequestException $e ) {
+				return array (
+						'status' => 'Failure',
+						'message' => $e->getMessage ()
+				);
+			}
+			$memreas_master_transfer_id = $transferResponse ['id'];
+			Mlog::addone ( $cm . __LINE__ . '::$payee_transfer_id--->', $memreas_master_transfer_id );
+				
+			//
+			// Update transaction for response
+			//
+				
+			$transaction->exchangeArray ( array (
+					'transaction_status' => 'subscription_payment_float_to_master_success',
+					'pass_fail' => 1,
+					'transaction_response' => json_encode ( $transferResponse ),
+					'transaction_receive' => MNow::now ()
+			) );
+			$memreas_master_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+				
+			if($memreas_master_transaction_id) {
+				//
+				// Send email to admin to check account
+				//
+				$subject = "Stripe::Subscription payment success!";
+				$data['memreas_master_transaction_id']= $memreas_master_transaction_id;
+				$data['transaction_type']= 'subscription_payment_float_to_master';
+				$data['amount']= $subscription_amount;
+				$data['event_data']= $eventArr;
+				$this->aws->sendSeSMail ( array (
+						MemreasConstants::ADMIN_EMAIL
+				), $subject, json_encode($eventArr, JSON_PRETTY_PRINT) );
+			
+			}
+		
+		} else if ($eventArr['type'] == 'invoice.payment_failed') {
+			//
+			// Log transaction
+			//
+			$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
+			$stripe_customer_id = $eventArr['data']['object']['customer'];
+			$transactionDetail = array (
+					'account_id' => $account_memreas_float->account_id,
+					'transaction_type' => 'subscription_payment_failed_float',
+					'amount' => 0,
+					'currency' => 'USD',
+					'transaction_request' => $eventArr['type'],
+					'transaction_response' => $eventArr,
+					'transaction_sent' => MNow::now (),
+					'transaction_receive' => MNow::now ()
+			);
+			$memreas_transaction = new Memreas_Transaction ();
+			$memreas_transaction->exchangeArray ( $transactionDetail );
+			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
+				
+			//
+			// lookup customer by stripe customer id
+			//
+			$account_for_stripe_customer_id = $this->memreasStripeTables->getAccountTable ()->getAccountByStripeCustomerId ( $stripe_customer_id );
+			if($account_for_stripe_customer_id) {
+				//
+				// Send email to admin to check account
+				//
+				
+				$subject = "Stripe Error::Subscription payment failed!";
+				$data['username']= $account->username;
+				$data['user_id']= $account->user_id;
+				$data['stripe_email_address']= $account->stripe_email_address;
+				$data['stripe_customer_id']= $account->stripe_customer_id;
+				$data['event_data']= $eventArr;
+				$this->aws->sendSeSMail ( array (
+						MemreasConstants::ADMIN_EMAIL
+				), $subject, json_encode($eventArr, JSON_PRETTY_PRINT) ); 
+				
+			}
+		}
 		die ();
 	}
 	
