@@ -100,6 +100,16 @@ class AccountTable {
 		}
 		return $row;
 	}
+	public function getAccountByStripeCustomerId($stripe_customer_id) {
+		$rowset = $this->tableGateway->select ( array (
+				'stripe_customer_id' => $stripe_customer_id 
+		) );
+		$row = $rowset->current ();
+		if (! $row) {
+			return null;
+		}
+		return $row;
+	}	
 	public function saveAccount(Account $account) {
 		Mlog::addone(__CLASS__.__METHOD__,__LINE__);
 		$data = array (
