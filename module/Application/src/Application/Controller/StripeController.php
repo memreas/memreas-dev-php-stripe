@@ -147,6 +147,11 @@ class StripeController extends AbstractActionController {
 			$input = @file_get_contents ( "php://input" );
 			Mlog::addone ( $cm . __LINE__, 'webHookReceiver() received php://input' );
 			$eventArr = json_decode ( $input, true );
+			
+			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__, 'initialized' );
+			$MemreasStripe->webHookReceiver ($eventArr);
+				
 			Mlog::addone ( $cm . __LINE__ . '::$event_json::', $eventArr );
 			
 			// Do something with $event_json

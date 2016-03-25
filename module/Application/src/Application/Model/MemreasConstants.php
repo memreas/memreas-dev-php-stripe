@@ -37,6 +37,7 @@ class MemreasConstants {
 	const ACCOUNT_MEMREAS_FEES = "memreas_fees";
 	const ACCOUNT_MEMREAS_PAYER = "memreas_payer";
 	const ACCOUNT_MEMREAS_MASTER = "memreas_master";
+	const ACCOUNT_MEMREAS_PLATFORM = "memreas_platform";
 	const ACCOUNT_TYPE_BUYER = "buyer";
 	const ACCOUNT_TYPE_TRACKER = "tracker";
 	const ACCOUNT_TYPE_SELLER = "seller";
