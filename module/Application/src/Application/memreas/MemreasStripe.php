@@ -349,7 +349,7 @@ class StripeInstance {
 		//
 		// Fetch Buyer Account
 		//
-		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '...' );
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['user_id'] );
 		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
 		if (! empty ( $account )) {
