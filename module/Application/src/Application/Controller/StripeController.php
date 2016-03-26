@@ -360,8 +360,7 @@ class StripeController extends AbstractActionController {
 			$message_data = json_decode ( $json, true );
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
 			$customer = $MemreasStripe->getCustomer ( array (
-					// 'userid' => $_SESSION ['user_id']
-					'user_id' => $message_data ['user_id'] 
+					'userid' => $_SESSION ['user_id']
 			), true );
 			Mlog::addone ( __CLASS__ . __METHOD__ . '', '' );
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$customer', $customer );
