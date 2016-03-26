@@ -354,6 +354,7 @@ class StripeController extends AbstractActionController {
 		}
 	}
 	public function getCustomerInfoAction() {
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ .'', '...' );
 		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
