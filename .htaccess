@@ -11,8 +11,8 @@ php_flag html_errors off
 
 
 # PHP error handling for development servers
-php_flag display_startup_errors on
-php_flag display_errors on
+i#php_flag display_startup_errors on
+#php_flag display_errors on
 #php_flag html_errors on
 php_flag log_errors on
 #php_value error_reporting on
