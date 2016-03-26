@@ -54,11 +54,8 @@ class MemreasStripe extends StripeInstance {
 			 * Retrieve memreas user_id from session
 			 */
 			if (isset ( $_SESSION ['user_id'] )) {
-				Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
 				$this->user_id = $_SESSION ['user_id'];
-				Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
 			}
-			Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
 		} catch ( Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$e->getMessage()', $e->getMessage () );
 			throw new \Exception ( $e->getMessage () );
@@ -349,9 +346,18 @@ class StripeInstance {
 		//
 		// Fetch Buyer Account
 		//
-		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '...' );
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '$data [user_id]', $data ['user_id'] );
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['user_id'] );
-		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
+		// Check if exist account
+		if (! $account) {
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
+			return array (
+					'status' => 'Failure',
+					'message' => 'Account not found' 
+			);
+		}
+		
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '...' );
 		if (! empty ( $account )) {
 			$account_found = true;
 			$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
@@ -368,15 +374,6 @@ class StripeInstance {
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
 			$accounts ['buyer_account'] ['subscription'] = $subscription;
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
-		}
-		
-		// Check if exist account
-		if (! $account_found) {
-			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
-			return array (
-					'status' => 'Failure',
-					'message' => 'Account not found' 
-			);
 		}
 		
 		//
