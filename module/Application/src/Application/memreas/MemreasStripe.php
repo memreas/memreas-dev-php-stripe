@@ -108,28 +108,32 @@ class StripeInstance {
 	public function webHookReceiver($eventArr) {
 		$cm = __CLASS__ . __METHOD__;
 		
-		
 		//
 		// Handle transfers for subscriptions to add to log transaction and update memreas_master
 		// - invoice.payment.succeeded (subscription payment)
 		// - invoice.payment.failed (subscription payment failed - send email)
 		//
-			
-		if ($eventArr['type'] == 'invoice.payment_succeeded') {
+		
+		if ($eventArr ['type'] == 'invoice.payment_succeeded') {
 			//
 			// Log transaction - note float balance is not incremented for subscriptions
 			//
 			$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
-			$subscription_amount = $eventArr['data']['object']['lines']['data'][0][amount]/100; //convert stripe to $'s
+			$sub_amount = $eventArr ['data'] ['object'] ['lines'] ['data'] [0] ['amount'];
+			if ($sub_amount > 0) {
+				$subscription_amount = $sub_amount / 100; // convert stripe to $'s
+			} else {
+				$subscription_amount = 0;
+			}
 			$transactionDetail = array (
 					'account_id' => $account_memreas_float->account_id,
 					'transaction_type' => 'subscription_payment_float',
 					'amount' => $subscription_amount,
 					'currency' => 'USD',
-					'transaction_request' => $eventArr['type'],
+					'transaction_request' => $eventArr ['type'],
 					'transaction_response' => $eventArr,
 					'transaction_sent' => MNow::now (),
-					'transaction_receive' => MNow::now ()
+					'transaction_receive' => MNow::now () 
 			);
 			$memreas_transaction = new Memreas_Transaction ();
 			$memreas_transaction->exchangeArray ( $transactionDetail );
@@ -139,113 +143,110 @@ class StripeInstance {
 			// Transfer funds to memreas_master
 			// Stripe transfer parameters
 			//
-			$account_memreas_master = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_MASTER );
-			$transferParams = array (
-					'amount' => $subscription_amount, // stripe stores in cents
-					'currency' => 'USD',
-					'destination' => $account_memreas_master->stripe_account_id,
-					'description' => "transfer subscription payment to memreas master"
-			);
-				
-			//
-			// Create transaction to log transfer
-			//
-			$transaction = new Memreas_Transaction ();
-			$transaction->exchangeArray ( array (
-					'account_id' => $account_memreas_master->account_id,
-					'transaction_type' => 'subscription_payment_float_to_master',
-					'transaction_status' => 'subscription_payment_float_to_master_fail',
-					'pass_fail' => 0,
-					'amount' => $subscription_amount,
-					'currency' => "USD",
-					'transaction_request' => json_encode ( $transferParams ),
-					'transaction_sent' => MNow::now ()
-			) );
-			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-				
-				
-			//
-			// Make call to stripe for seller payee transfer
-			//
-			try {
-			
-				$transferResponse = $this->stripeClient->createTransfer ( $transferParams );
-			
-			} catch ( ZfrStripe\Exception\BadRequestException $e ) {
-				return array (
-						'status' => 'Failure',
-						'message' => $e->getMessage ()
+			if ($subscription_amount > 0) {
+				$account_memreas_master = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_MASTER );
+				$transferParams = array (
+						'amount' => $subscription_amount, // stripe stores in cents
+						'currency' => 'USD',
+						'destination' => $account_memreas_master->stripe_account_id,
+						'description' => "transfer subscription payment to memreas master" 
 				);
-			}
-			$memreas_master_transfer_id = $transferResponse ['id'];
-			Mlog::addone ( $cm . __LINE__ . '::$payee_transfer_id--->', $memreas_master_transfer_id );
 				
-			//
-			// Update transaction for response
-			//
-				
-			$transaction->exchangeArray ( array (
-					'transaction_status' => 'subscription_payment_float_to_master_success',
-					'pass_fail' => 1,
-					'transaction_response' => json_encode ( $transferResponse ),
-					'transaction_receive' => MNow::now ()
-			) );
-			$memreas_master_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
-				
-			if($memreas_master_transaction_id) {
 				//
-				// Send email to admin to check account
+				// Create transaction to log transfer
 				//
-				$subject = "Stripe::Subscription payment success!";
-				$data['memreas_master_transaction_id']= $memreas_master_transaction_id;
-				$data['transaction_type']= 'subscription_payment_float_to_master';
-				$data['amount']= $subscription_amount;
-				$data['event_data']= $eventArr;
-				$this->aws->sendSeSMail ( array (
-						MemreasConstants::ADMIN_EMAIL
-				), $subject, json_encode($eventArr, JSON_PRETTY_PRINT) );
-			
+				$transaction = new Memreas_Transaction ();
+				$transaction->exchangeArray ( array (
+						'account_id' => $account_memreas_master->account_id,
+						'transaction_type' => 'subscription_payment_float_to_master',
+						'transaction_status' => 'subscription_payment_float_to_master_fail',
+						'pass_fail' => 0,
+						'amount' => $subscription_amount,
+						'currency' => "USD",
+						'transaction_request' => json_encode ( $transferParams ),
+						'transaction_sent' => MNow::now () 
+				) );
+				$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+				
+				//
+				// Make call to stripe for seller payee transfer
+				//
+				try {
+					
+					$transferResponse = $this->stripeClient->createTransfer ( $transferParams );
+				} catch ( ZfrStripe\Exception\BadRequestException $e ) {
+					return array (
+							'status' => 'Failure',
+							'message' => $e->getMessage () 
+					);
+				}
+				$memreas_master_transfer_id = $transferResponse ['id'];
+				Mlog::addone ( $cm . __LINE__ . '::$payee_transfer_id--->', $memreas_master_transfer_id );
+				
+				//
+				// Update transaction for response
+				//
+				
+				$transaction->exchangeArray ( array (
+						'transaction_status' => 'subscription_payment_float_to_master_success',
+						'pass_fail' => 1,
+						'transaction_response' => json_encode ( $transferResponse ),
+						'transaction_receive' => MNow::now () 
+				) );
+				$memreas_master_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
+				
+				if ($memreas_master_transaction_id) {
+					//
+					// Send email to admin to check account
+					//
+					$subject = "Stripe::Subscription payment success!";
+					$data ['memreas_master_transaction_id'] = $memreas_master_transaction_id;
+					$data ['transaction_type'] = 'subscription_payment_float_to_master';
+					$data ['amount'] = $subscription_amount;
+					$data ['event_data'] = $eventArr;
+					$this->aws->sendSeSMail ( array (
+							MemreasConstants::ADMIN_EMAIL 
+					), $subject, json_encode ( $eventArr, JSON_PRETTY_PRINT ) );
+				}
 			}
-		
-		} else if ($eventArr['type'] == 'invoice.payment_failed') {
+		} else if ($eventArr ['type'] == 'invoice.payment_failed') {
 			//
 			// Log transaction
 			//
 			$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
-			$stripe_customer_id = $eventArr['data']['object']['customer'];
+			$stripe_customer_id = $eventArr ['data'] ['object'] ['customer'];
 			$transactionDetail = array (
 					'account_id' => $account_memreas_float->account_id,
 					'transaction_type' => 'subscription_payment_failed_float',
 					'amount' => 0,
 					'currency' => 'USD',
-					'transaction_request' => $eventArr['type'],
+					'transaction_request' => $eventArr ['type'],
 					'transaction_response' => $eventArr,
 					'transaction_sent' => MNow::now (),
-					'transaction_receive' => MNow::now ()
+					'transaction_receive' => MNow::now () 
 			);
 			$memreas_transaction = new Memreas_Transaction ();
 			$memreas_transaction->exchangeArray ( $transactionDetail );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-				
+			
 			//
 			// lookup customer by stripe customer id
 			//
 			$account_for_stripe_customer_id = $this->memreasStripeTables->getAccountTable ()->getAccountByStripeCustomerId ( $stripe_customer_id );
-			if($account_for_stripe_customer_id) {
+			if ($account_for_stripe_customer_id) {
 				//
 				// Send email to admin to check account
 				//
 				
 				$subject = "Stripe Error::Subscription payment failed!";
-				$data['username']= $account->username;
-				$data['user_id']= $account->user_id;
-				$data['stripe_email_address']= $account->stripe_email_address;
-				$data['stripe_customer_id']= $account->stripe_customer_id;
-				$data['event_data']= $eventArr;
+				$data ['username'] = $account->username;
+				$data ['user_id'] = $account->user_id;
+				$data ['stripe_email_address'] = $account->stripe_email_address;
+				$data ['stripe_customer_id'] = $account->stripe_customer_id;
+				$data ['event_data'] = $eventArr;
 				$this->aws->sendSeSMail ( array (
-						MemreasConstants::ADMIN_EMAIL
-				), $subject, json_encode($eventArr, JSON_PRETTY_PRINT) ); 
-				
+						MemreasConstants::ADMIN_EMAIL 
+				), $subject, json_encode ( $eventArr, JSON_PRETTY_PRINT ) );
 			}
 		}
 		die ();
@@ -684,7 +685,7 @@ class StripeInstance {
 				$data ['description'] = "stripe seller account for email: " . $user->email_address;
 				$data ['metadata'] = array (
 						'user_id' => $user->user_id,
-						'username' => $user->username
+						'username' => $user->username 
 				);
 				$managedAccount ['request'] ['customer'] = $data;
 				$managedAccount ['response'] ['customer'] = $result = $this->stripeClient->createCustomer ( $data );
@@ -2259,13 +2260,12 @@ class StripeInstance {
 		 * Now start loop for payouts
 		 */
 		foreach ( $payees as $payee ) {
-
+			
 			/*
 			 * -
 			 * seller as payee
 			 */
 			$account_payee = $this->memreasStripeTables->getAccountTable ()->getAccount ( $payee ['account_id'], 'seller' );
-			
 			
 			if (! $account_payee) {
 				
@@ -2329,19 +2329,18 @@ class StripeInstance {
 			 * **********************************************************************
 			 */
 			$stripe_payee_amount = $payee ['amount'] * 100; // convert to cents for Stripe
-			$stripe_memreas_payer_amount = ($stripe_payee_amount / 4); 
+			$stripe_memreas_payer_amount = ($stripe_payee_amount / 4);
 			$memreas_payer_amount = ($payee ['amount'] / 4); // 20% of total is payee_amount/4 = 80% payment to seller
-
+			                                                 
 			//
-			// Stripe transfer parameters
-			//
+			                                                 // Stripe transfer parameters
+			                                                 //
 			$transferParams = array (
 					'amount' => $stripe_payee_amount, // stripe stores in cents
 					'currency' => 'USD',
 					'destination' => $account_payee->stripe_account_id,
 					'description' => $payee ['description'] 
 			);
-			
 			
 			//
 			// Create transaction to log transfer
@@ -2359,14 +2358,12 @@ class StripeInstance {
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 			
-			
 			//
 			// Make call to stripe for seller payee transfer
 			//
 			try {
 				
 				$transferResponse = $this->stripeClient->createTransfer ( $transferParams );
-				
 			} catch ( ZfrStripe\Exception\BadRequestException $e ) {
 				return array (
 						'status' => 'Failure',
@@ -2388,7 +2385,6 @@ class StripeInstance {
 			) );
 			$payee_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 			
-			
 			//
 			// Debit seller balance for payout
 			//
@@ -2406,7 +2402,6 @@ class StripeInstance {
 			) );
 			$account_balances_payee_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $payee_account_balances );
 			
-			
 			//
 			// Update the account table with new balance
 			//
@@ -2415,7 +2410,6 @@ class StripeInstance {
 					'update_time' => MNow::now () 
 			) );
 			$account_payee_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_payee );
-			
 			
 			/*
 			 * -
@@ -2446,7 +2440,6 @@ class StripeInstance {
 					'description' => "memreas_master payout for seller account_id: " . $account_payee->account_id 
 			);
 			
-			
 			// Update transaction
 			$transaction = new Memreas_Transaction ();
 			$transaction->exchangeArray ( array (
@@ -2461,10 +2454,8 @@ class StripeInstance {
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 			
-			
 			try {
 				$transferResponse = $this->stripeClient->createTransfer ( $transferParams );
-				
 			} catch ( Exception $e ) {
 				return array (
 						'status' => 'Failure',
@@ -2483,7 +2474,6 @@ class StripeInstance {
 			) );
 			$memreas_master_transaction_id = $transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $transaction );
 			
-			
 			//
 			// Debit memreas_payer for payout
 			//
@@ -2501,7 +2491,6 @@ class StripeInstance {
 			) );
 			$account_balances_memreas_payer_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $account_memreas_payer_balances );
 			
-			
 			//
 			// Update the account table with new balance
 			//
@@ -2510,7 +2499,6 @@ class StripeInstance {
 					'update_time' => MNow::now () 
 			) );
 			$account_memreas_payer_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_payer );
-			
 			
 			//
 			// Debit memreas_float for payout
@@ -2529,7 +2517,6 @@ class StripeInstance {
 			) );
 			$account_balances_memreas_float_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $account_memreas_float_balances );
 			
-			
 			//
 			// Update the account table with new balance
 			//
@@ -2538,7 +2525,6 @@ class StripeInstance {
 					'update_time' => MNow::now () 
 			) );
 			$account_memreas_float_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_float );
-			
 			
 			//
 			// Credit memreas_master for payout
@@ -2557,7 +2543,6 @@ class StripeInstance {
 			) );
 			$account_balances_memreas_float_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $account_memreas_master_balances );
 			
-			
 			//
 			// Update the account table with new balance
 			//
@@ -2567,7 +2552,6 @@ class StripeInstance {
 			) );
 			$account_memreas_float_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_master );
 			
-			
 			/*
 			 * -
 			 * Call Stripe for payee transfer fees
@@ -2575,7 +2559,6 @@ class StripeInstance {
 			$stripeBalanceTransactionParams = array (
 					'id' => $payee_transfer_id 
 			);
-			
 			
 			/**
 			 * -
@@ -2594,13 +2577,11 @@ class StripeInstance {
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 			
-			
 			//
 			// Make call to Stripe to fetch fees
 			//
 			$balance_transaction = $this->stripeClient->getBalanceTransaction ( $stripeBalanceTransactionParams );
 			$fees = $balance_transaction ['fee'] / 100; // stripe stores in cents so convert to $'s
-			
 			
 			/**
 			 * -
@@ -2616,7 +2597,6 @@ class StripeInstance {
 					'transaction_receive' => MNow::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
-			
 			
 			/**
 			 * -
@@ -2638,14 +2618,12 @@ class StripeInstance {
 			) );
 			$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
 			
-			
 			// Update the account table with new balance
 			$account_memreas_fees->exchangeArray ( array (
 					'balance' => $ending_balance,
 					'update_time' => MNow::now () 
 			) );
 			$account_id = $this->memreasStripeTables->getAccountTable ()->saveAccount ( $account_memreas_fees );
-			
 			
 			/*
 			 * -
@@ -2654,7 +2632,6 @@ class StripeInstance {
 			$stripeBalanceTransactionParams = array (
 					'id' => $memreas_master_transfer_id 
 			);
-			
 			
 			/*
 			 * -
@@ -2672,17 +2649,15 @@ class StripeInstance {
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 			
-			
 			//
 			// Make call to Stripe
 			//
 			$balance_transaction = $this->stripeClient->getBalanceTransaction ( $stripeBalanceTransactionParams );
 			$fees = $balance_transaction ['fee'] / 100; // stripe stores in cents
-			
-			
+			                                            
 			//
-			// Store balance transaction fee response from stripe
-			//
+			                                            // Store balance transaction fee response from stripe
+			                                            //
 			$memreas_transaction->exchangeArray ( array (
 					'transaction_id' => $transaction_id,
 					'amount' => "-$fees",
@@ -2694,13 +2669,11 @@ class StripeInstance {
 			) );
 			$transaction_id = $this->memreasStripeTables->getTransactionTable ()->saveTransaction ( $memreas_transaction );
 			
-			
 			//
 			// apply fee to fees account
 			//
 			$starting_balance = $account_memreas_fees->balance;
 			$ending_balance = $starting_balance - $fees;
-			
 			
 			//
 			// Insert the new account balance
@@ -2717,7 +2690,6 @@ class StripeInstance {
 					'create_time' => MNow::now () 
 			) );
 			$transaction_id = $this->memreasStripeTables->getAccountBalancesTable ()->saveAccountBalances ( $endingAccountBalance );
-			
 			
 			//
 			// Update the account table with new balance
