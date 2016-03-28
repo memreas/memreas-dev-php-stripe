@@ -119,7 +119,12 @@ class StripeInstance {
 			// Log transaction - note float balance is not incremented for subscriptions
 			//
 			$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
-			$subscription_amount = $eventArr ['data'] ['object'] ['lines'] ['data'] [0] [amount] / 100; // convert stripe to $'s
+			$sub_amount = $eventArr ['data'] ['object'] ['lines'] ['data'] [0] ['amount'];
+			if ($sub_amount > 0) {
+				$subscription_amount = $sub_amount / 100; // convert stripe to $'s
+			} else {
+				$subscription_amount = 0;
+			}
 			$transactionDetail = array (
 					'account_id' => $account_memreas_float->account_id,
 					'transaction_type' => 'subscription_payment_float',
