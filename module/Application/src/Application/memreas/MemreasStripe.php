@@ -2164,7 +2164,7 @@ class StripeInstance {
 		$this->stripeCustomer->cancelSubscription ( $data );
 	}
 	public function listMassPayee($data) {
-		$username = $data ['username'];
+		$username = $data ['payeelist'];
 		$page = isset ( $data ['page'] ) ? $data ['page'] : 1;
 		$limit = isset ( $data ['limit'] ) ? $data ['limit'] : 100;
 		
