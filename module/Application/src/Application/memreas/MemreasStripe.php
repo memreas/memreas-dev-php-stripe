@@ -2013,6 +2013,7 @@ class StripeInstance {
 		$disk_usage = $data ['disk_usage'];
 		$planDetail = $this->stripePlan->getPlanConfig ( $data ['plan'] );
 		$amount = $planDetail ['plan_amount'];
+		$plan_storage = $planDetail ['storage'] * 100000;
 		Mlog::addone ( $cm . __LINE__ . '::$disk_usage-->', $disk_usage );
 		Mlog::addone ( $cm . __LINE__ . '::$planDetail->', $planDetail );
 		if ($disk_usage > $planDetail ['storage']) {
