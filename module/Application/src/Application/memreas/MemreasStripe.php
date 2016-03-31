@@ -2016,7 +2016,7 @@ class StripeInstance {
 		$plan_storage = $planDetail ['storage'] * 100000;
 		Mlog::addone ( $cm . __LINE__ . '::$disk_usage-->', $disk_usage );
 		Mlog::addone ( $cm . __LINE__ . '::$planDetail->', $planDetail );
-		if ($disk_usage > $planDetail ['storage']) {
+		if ($disk_usage > $plan_storage) {
 			return array (
 					'status' => 'Failure',
 					'message' => 'In order to downgrade your plan you must be within the required usage limits. Please remove media as needed before downgrading your plan' 
