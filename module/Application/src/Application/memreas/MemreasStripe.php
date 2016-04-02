@@ -119,9 +119,9 @@ class StripeInstance {
 			// Log transaction - note float balance is not incremented for subscriptions
 			//
 			$account_memreas_float = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_FLOAT );
-			$sub_amount = $eventArr ['data'] ['object'] ['lines'] ['data'] [0] ['amount'];
-			if ($sub_amount > 0) {
-				$subscription_amount = $sub_amount / 100; // convert stripe to $'s
+			$stripe_subscription_amount = $eventArr ['data'] ['object'] ['lines'] ['data'] [0] ['amount'];
+			if ($stripe_subscription_amount > 0) {
+				$subscription_amount = $stripe_subscription_amount / 100; // convert stripe to $'s
 			} else {
 				$subscription_amount = 0;
 			}
@@ -146,7 +146,7 @@ class StripeInstance {
 			if ($subscription_amount > 0) {
 				$account_memreas_master = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_MASTER );
 				$transferParams = array (
-						'amount' => $subscription_amount, // stripe stores in cents
+						'amount' => $stripe_subscription_amount, // stripe stores in cents
 						'currency' => 'USD',
 						'destination' => $account_memreas_master->stripe_account_id,
 						'description' => "transfer subscription payment to memreas master" 
