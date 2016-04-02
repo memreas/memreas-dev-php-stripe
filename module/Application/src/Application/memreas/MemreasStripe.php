@@ -145,7 +145,6 @@ class StripeInstance {
 			//
 			if ($subscription_amount > 0) {
 				$account_memreas_master = $this->memreasStripeTables->getAccountTable ()->getAccountByUserName ( MemreasConstants::ACCOUNT_MEMREAS_MASTER );
-				$stripe 
 				$transferParams = array (
 						'amount' => $stripe_subscription_amount, // stripe stores in cents
 						'currency' => 'USD',
