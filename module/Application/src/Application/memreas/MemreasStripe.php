@@ -2825,25 +2825,27 @@ class StripeInstance {
 			);
 		}
 		
-		// Check if this card has exist at Stripe
+		// Check if this card exists at Stripe
 		$stripeCard = $this->stripeClient->getCard ( $account->stripe_customer_id, $data ['card_id'] );
-		if (! $stripeCard ['exist']) {
+		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$stripeCard-->', $stripeCard );
+		if (! $stripeCard ['id']) {
 			return array (
 					'status' => 'Failure',
-					'message' => 'This card is not belong to you.' 
+					'message' => 'failure retreiving card...' 
 			);
 		} else {
 			return array (
 					'status' => 'Success',
-					'card' => $stripeCard ['info'] 
+					'card' => $stripeCard 
 			);
 		}
 	}
 	public function saveCard($card_data) {
-		if (empty ( $card_data ['user_id'] ))
+		if (empty ( $card_data ['user_id'] )) {
 			$user_id = $_SESSION ['user_id'];
-		else
+		} else {
 			$user_id = $card_data ['user_id'];
+		}
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
 		
 		// Check if exist account
@@ -2854,9 +2856,20 @@ class StripeInstance {
 			);
 		
 		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
-		$card_data ['customer'] = $account->stripe_customer_id;
+		$card_data ['stripe_customer_id'] = $account->stripe_customer_id;
 		
-		return $this->stripeClient->updateCard ( $card_data );
+		$stripeCard =  $this->stripeClient->updateCard ( $card_data );
+		if (! $stripeCard ['id']) {
+			return array (
+					'status' => 'Failure',
+					'message' => 'failure retreiving card...'
+			);
+		} else {
+			return array (
+					'status' => 'Success',
+					'card' => $stripeCard
+			);
+		}
 	}
 	/*
 	 * Delete cards
@@ -2896,7 +2909,8 @@ class StripeInstance {
 					
 					// Call Stripe to delete card
 					$deleteStripeCard = $this->stripeClient->deleteCard ( $stripeCustomerId, $stripe_card_reference_id );
-					Mlog::addone ( __CLASS__ . __METHOD__, __LINE__ );
+					Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$stripeCustomerId-->', $stripeCustomerId );
+					Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$stripe_card_reference_id-->', $stripe_card_reference_id );
 					
 					// store request transaction
 					$transaction = array (
@@ -2991,19 +3005,25 @@ class StripeClient {
 	 * function updateCard
 	 * stripe arguments $data
 	 */
-	public function updateCard($stripe_customer_id, $cardToken, $card_data) {
+	public function updateCard($card_data) {
 		try {
 			$cm = __CLASS__ . __METHOD__;
 			Mlog::addone ( $cm, __LINE__ );
-			Mlog::addone ( $cm . __LINE__ . '::$data--->', $data );
-			die ();
-			$customer = \Stripe\Customer::retrieve ( $stripe_customer_id );
-			$result = $customer->sources->retrieve ( $cardToken );
-			$card = $customer->sources->retrieve ( "card_17nL5W2gUEVpEUdcWjCfFfrG" );
-			/**
-			 * TODO - updated fields
-			 */
-			// $card->name = "Jane Austen";
+			Mlog::addone ( $cm . __LINE__ . '::$card_data--->', $card_data );
+			
+			$customer = \Stripe\Customer::retrieve ( $card_data ['stripe_customer_id'] );
+			$card = $customer->sources->retrieve ( $card_data ['id'] );
+			$card->name = $card_data['name'];
+			$card->exp_month = $card_data['exp_month'];
+			$card->exp_year = $card_data['exp_year'];
+			$card->address_line1 = $card_data['address_line1'];
+			$card->address_line2 = $card_data['address_line2'];
+			$card->address_city = $card_data['address_city'];
+			$card->address_state = $card_data['address_state'];
+			$card->address_zip = $card_data['address_zip'];
+			$card->metadata = array (
+					"user_id" => $card_data ['user_id'] 
+			);
 			$collection = $card->save ();
 			$result = $collection->__toArray ( true );
 			Mlog::addone ( $cm . __LINE__ . '::$result--->', $result );
