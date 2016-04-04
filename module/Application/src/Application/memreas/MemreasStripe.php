@@ -504,7 +504,7 @@ class StripeInstance {
 			if (empty ( $account ))
 				return array (
 						'status' => 'Failure',
-						'message' => 'You have no any payment method at this time. please try to add card first' 
+						'message' => 'please add your payment method' 
 				);
 			
 			$transactions = $this->memreasStripeTables->getTransactionTable ()->getTransactionByAccountId ( $account->account_id, $page, $limit );
@@ -635,7 +635,7 @@ class StripeInstance {
 		else
 			return array (
 					'status' => 'Failure',
-					'message' => 'You have no any payment method at this time. please try to add card first' 
+					'message' => 'please add your payment method' 
 			);
 	}
 	
@@ -1322,8 +1322,9 @@ class StripeInstance {
 		 */
 		$cm = __CLASS__ . __METHOD__;
 		Mlog::addone ( $cm . __LINE__ . 'buyMedia->$data', $data );
-		// $user = $this->memreasStripeTables->getUserTable ()->getUser ( $data ['user_id'] );
+		//$user = $this->memreasStripeTables->getUserTable ()->getUser ( $data ['user_id'] );
 		$user = $this->memreasStripeTables->getUserTable ()->getUser ( $_SESSION ['user_id'] );
+		$password_verification = md5 ( $data ['password'] );
 		$amount = $data ['amount'];
 		$event_id = $data ['event_id'];
 		$seller_id = $data ['seller_id'];
@@ -1340,16 +1341,28 @@ class StripeInstance {
 					'message' => 'No user related to this username' 
 			);
 		}
-		$buyer_email = $user->email_address;
+
+		/**
+		 * -
+		 * Ensure buyer hasn't already purchased
+		 */
 		
+		
+		/**
+		 * -
+		 * Confirm password
+		 */
+		$buyer_email = $user->email_address;
 		if (empty ( $data ['stripe_ws_tester'] )) {
 			
 			// Validate password
 			if (md5 ( $data ['password'] ) != $user->password) {
 				return array (
 						'status' => 'Failure',
-						'message' => 'Confirmation password is incorrect' 
+						'message' => 'verification failed - purchase cannot proceed' 
 				);
+			} else {
+				$password_verified = 1;
 			}
 		}
 		
@@ -1436,10 +1449,12 @@ class StripeInstance {
 			// Update purchase table
 			//
 			$AccountPurchase = new AccountPurchases ();
+			$verification_json = json_encode(array(	 "password_verified" => $password_verified ));
 			$AccountPurchase->exchangeArray ( array (
 					'account_id' => $account_id,
 					'event_id' => $event_id,
 					'amount' => $amount,
+					'meta' => $verification_json, 
 					'transaction_id' => $transaction_id,
 					'transaction_type' => 'buy_media_purchase',
 					'create_time' => MNow::now (),
@@ -1959,7 +1974,7 @@ class StripeInstance {
 		if (! $account) {
 			return array (
 					'status' => 'Failure',
-					'message' => 'You have no any payment method at this time. please try to add card first' 
+					'message' => 'please add your payment method' 
 			);
 		}
 		Mlog::addone ( $cm, __LINE__ );
@@ -2724,7 +2739,7 @@ class StripeInstance {
 			Mlog::addone ( "listCards", "empty account" );
 			return array (
 					'status' => 'Failure',
-					'message' => 'You have no any payment method at this time. please try to add card first' 
+					'message' => 'please add your payment method' 
 			);
 		}
 		
@@ -2805,7 +2820,7 @@ class StripeInstance {
 		if (empty ( $account ))
 			return array (
 					'status' => 'Failure',
-					'message' => 'You have no any payment method at this time. please try to add card first' 
+					'message' => 'please add your payment method' 
 			);
 			
 			// Check if account has payment method
@@ -2852,7 +2867,7 @@ class StripeInstance {
 		if (empty ( $account ))
 			return array (
 					'status' => 'Failure',
-					'message' => 'You have no any payment method at this time. please try to add card first' 
+					'message' => 'please add your payment method' 
 			);
 		
 		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
