@@ -1830,6 +1830,7 @@ class StripeInstance {
 		$cardForStripe ['source'] ['object'] = "card";
 		$cardForStripe ['source'] ['name'] = $card_data ['name'];
 		$cardForStripe ['source'] ['number'] = $card_data ['number'];
+		$cardForStripe ['source'] ['brand'] = $card_data ['type'];
 		$cardForStripe ['source'] ['cvc'] = $card_data ['cvc'];
 		$cardForStripe ['source'] ['exp_month'] = $card_data ['exp_month'];
 		$cardForStripe ['source'] ['exp_year'] = $card_data ['exp_year'];
