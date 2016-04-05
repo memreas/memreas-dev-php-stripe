@@ -709,9 +709,9 @@ class StripeInstance {
 				// legal_entity
 				$ssn_last4 = substr ( $seller_data ['tax_ssn_ein'], - 4, 4 );
 				$seller_info ['legal_entity'] ['business_tax_id'] = $seller_data ['tax_ssn_ein'];
-				$seller_info ['legal_entity'] ['dob'] ['month'] = $dob_split [0];
-				$seller_info ['legal_entity'] ['dob'] ['day'] = $dob_split [1];
-				$seller_info ['legal_entity'] ['dob'] ['year'] = $dob_split [2];
+				$seller_info ['legal_entity'] ['dob'] ['month'] = $dob_split [1];
+				$seller_info ['legal_entity'] ['dob'] ['day'] = $dob_split [2];
+				$seller_info ['legal_entity'] ['dob'] ['year'] = $dob_split [0];
 				$seller_info ['legal_entity'] ['first_name'] = $seller_data ['first_name'];
 				$seller_info ['legal_entity'] ['last_name'] = $seller_data ['last_name'];
 				$seller_info ['legal_entity'] ['type'] = "individual"; // company later
