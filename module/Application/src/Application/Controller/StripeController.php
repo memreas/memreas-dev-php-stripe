@@ -105,7 +105,7 @@ class StripeController extends AbstractActionController {
 		}
 		
 		//
-		// If session is valid on wsj we can proceed
+		// If session is valid on ws we can proceed
 		//
 		return $hasSession;
 	}
