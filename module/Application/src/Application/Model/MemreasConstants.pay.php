@@ -21,10 +21,10 @@ class MemreasConstants {
 	const MEMREASPAYMENTSDB = 'memreaspaymentstripe';
 	const S3BUCKET = "memreasdev";
 	const ORIGINAL_URL = "https://memreasdev-pay.memreas.com/";
-	const MEDIA_URL = "https://memreasdev-wsj.memreas.com/?action=addmediaevent";
+	const MEDIA_URL = "https://memreasdev-ws.memreas.com/?action=addmediaevent";
 	const MEMREAS_FE = "https://fe.memreas.com";
-	const MEMREAS_WS = "https://memreasdev-wsj.memreas.com";
-	const MEMREAS_WSPROXYPAY = "https://memreasdev-wsj.memreas.com/index?action=";
+	const MEMREAS_WS = "https://memreasdev-ws.memreas.com";
+	const MEMREAS_WSPROXYPAY = "https://memreasdev-ws.memreas.com/index?action=";
 	const URL = "/index";
 	const COPYRIGHT = '&copy;2015 memreas, llc. all rights reserved.';
 	
@@ -41,7 +41,7 @@ class MemreasConstants {
 	const ACCOUNT_TYPE_BUYER = "buyer";
 	const ACCOUNT_TYPE_TRACKER = "tracker";
 	const ACCOUNT_TYPE_SELLER = "seller";
-	const MEMREAS_PROCESSING_FEE = 0.2; // 80 / 20 marketplace
+	const MEMREAS_PROCESSING_FEE = 0.25; // 75 / 25 marketplace
 	const PLAN_BILLINGFREQUENCY = "1";
 	const PLAN_BILLINGPERIOD = "Month";
 	const PLAN_BILLINGCYCLES = "36";
