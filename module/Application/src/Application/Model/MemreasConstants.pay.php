@@ -21,10 +21,10 @@ class MemreasConstants {
 	const MEMREASPAYMENTSDB = 'memreaspaymentstripe';
 	const S3BUCKET = "memreasdev";
 	const ORIGINAL_URL = "https://memreasdev-pay.memreas.com/";
-	const MEDIA_URL = "https://memreasdev-wsj.memreas.com/?action=addmediaevent";
+	const MEDIA_URL = "https://memreasdev-ws.memreas.com/?action=addmediaevent";
 	const MEMREAS_FE = "https://fe.memreas.com";
-	const MEMREAS_WS = "https://memreasdev-wsj.memreas.com";
-	const MEMREAS_WSPROXYPAY = "https://memreasdev-wsj.memreas.com/index?action=";
+	const MEMREAS_WS = "https://memreasdev-ws.memreas.com";
+	const MEMREAS_WSPROXYPAY = "https://memreasdev-ws.memreas.com/index?action=";
 	const URL = "/index";
 	const COPYRIGHT = '&copy;2015 memreas, llc. all rights reserved.';
 	
