@@ -46,6 +46,7 @@ class MemreasStripe extends StripeInstance {
 			$this->memreasStripeTables = new MemreasStripeTables ( $service_locator );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
 			$this->aws = $aws;
+			$this->dbDoctrine = $service_locator->get ( 'doctrine.entitymanager.orm_default' );
 			
 			// Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
 			
@@ -1322,7 +1323,7 @@ class StripeInstance {
 		 */
 		$cm = __CLASS__ . __METHOD__;
 		Mlog::addone ( $cm . __LINE__ . 'buyMedia->$data', $data );
-		//$user = $this->memreasStripeTables->getUserTable ()->getUser ( $data ['user_id'] );
+		// $user = $this->memreasStripeTables->getUserTable ()->getUser ( $data ['user_id'] );
 		$user = $this->memreasStripeTables->getUserTable ()->getUser ( $_SESSION ['user_id'] );
 		$password_verification = md5 ( $data ['password'] );
 		$amount = $data ['amount'];
@@ -1341,12 +1342,11 @@ class StripeInstance {
 					'message' => 'No user related to this username' 
 			);
 		}
-
+		
 		/**
 		 * -
 		 * Ensure buyer hasn't already purchased
 		 */
-		
 		
 		/**
 		 * -
@@ -1449,12 +1449,14 @@ class StripeInstance {
 			// Update purchase table
 			//
 			$AccountPurchase = new AccountPurchases ();
-			$verification_json = json_encode(array(	 "password_verified" => $password_verified ));
+			$verification_json = json_encode ( array (
+					"password_verified" => $password_verified 
+			) );
 			$AccountPurchase->exchangeArray ( array (
 					'account_id' => $account_id,
 					'event_id' => $event_id,
 					'amount' => $amount,
-					'meta' => $verification_json, 
+					'meta' => $verification_json,
 					'transaction_id' => $transaction_id,
 					'transaction_type' => 'buy_media_purchase',
 					'create_time' => MNow::now (),
@@ -2226,10 +2228,58 @@ class StripeInstance {
 			$transactions_array = array ();
 			foreach ( $transactions as $transaction ) {
 				
+				//
+				// Transaction data must be > 30 days old.
+				//
+				$now = time();
+				$transaction_date = strtotime($transaction->transaction_sent);
+				$datediff = $now - $transaction_date;
+				$days_passed = floor($datediff/(60*60*24));
+				Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$now->',$now);
+				Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$transaction_date->',$transaction_date);
+				Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$datediff->',$datediff);
+				Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$days_passed->',$days_passed);
+				if ($datediff < 30) {
+					// skip this transaction it has not passed the 30 day mark
+					Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::skipping $transaction->transaction_id',$transaction->transaction_id);
+					continue;
+				}
+				
+				
 				// Get event ID
 				$AccountPurchase = $this->memreasStripeTables->getAccountPurchasesTable ()->getPurchaseByTransactionId ( $transaction->transaction_id );
+				$event_id = '';
 				if (! empty ( $AccountPurchase )) {
 					$event_id = $AccountPurchase->event_id;
+				}
+				if ($event_id) {
+					//without event id purchase is not correct type
+					continue;
+				}
+				
+				
+				//
+				// Check the media for the event
+				// - fetch list of media and check report flag
+				//
+				$report_flags = '';
+				$q_event_media = "select  event_media.event_id, media.* 
+								Application\Entity\EventMedia event_media,
+								Application\Entity\Media media,
+								where event_media.media_id = media.media_id
+								and event_media.event_id = '$event_id'";					
+				Mlog::addone ( $cm . __LINE__ . '::$q_event_media--->', $q_event_media );
+				$statement = $this->dbDoctrine->createQuery ( $q_event_media );
+				$event_media_array = $statement->getArrayResult ();
+				foreach ( $event_media_array as $event_media) {
+					if ($event_media['report_flag'] != 0) {
+						//there is a problem and shoudld be checked
+						$report_flags .= $event_media['report_flag'] .',';
+						
+					}
+				}
+				if (empty($report_flags)) {
+					$report_flags = '0';
 				}
 				
 				$transactions_array [] = array (
@@ -2237,6 +2287,7 @@ class StripeInstance {
 						'amount' => $transaction->amount,
 						'type' => $transaction->transaction_type,
 						'date' => $transaction->transaction_sent,
+						'report_flags' => $report_flags,
 						'event_id' => isset ( $event_id ) ? $event_id : '' 
 				);
 			}
@@ -2873,16 +2924,16 @@ class StripeInstance {
 		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
 		$card_data ['stripe_customer_id'] = $account->stripe_customer_id;
 		
-		$stripeCard =  $this->stripeClient->updateCard ( $card_data );
+		$stripeCard = $this->stripeClient->updateCard ( $card_data );
 		if (! $stripeCard ['id']) {
 			return array (
 					'status' => 'Failure',
-					'message' => 'failure retreiving card...'
+					'message' => 'failure retreiving card...' 
 			);
 		} else {
 			return array (
 					'status' => 'Success',
-					'card' => $stripeCard
+					'card' => $stripeCard 
 			);
 		}
 	}
@@ -3028,14 +3079,14 @@ class StripeClient {
 			
 			$customer = \Stripe\Customer::retrieve ( $card_data ['stripe_customer_id'] );
 			$card = $customer->sources->retrieve ( $card_data ['id'] );
-			$card->name = $card_data['name'];
-			$card->exp_month = $card_data['exp_month'];
-			$card->exp_year = $card_data['exp_year'];
-			$card->address_line1 = $card_data['address_line1'];
-			$card->address_line2 = $card_data['address_line2'];
-			$card->address_city = $card_data['address_city'];
-			$card->address_state = $card_data['address_state'];
-			$card->address_zip = $card_data['address_zip'];
+			$card->name = $card_data ['name'];
+			$card->exp_month = $card_data ['exp_month'];
+			$card->exp_year = $card_data ['exp_year'];
+			$card->address_line1 = $card_data ['address_line1'];
+			$card->address_line2 = $card_data ['address_line2'];
+			$card->address_city = $card_data ['address_city'];
+			$card->address_state = $card_data ['address_state'];
+			$card->address_zip = $card_data ['address_zip'];
 			$card->metadata = array (
 					"user_id" => $card_data ['user_id'] 
 			);

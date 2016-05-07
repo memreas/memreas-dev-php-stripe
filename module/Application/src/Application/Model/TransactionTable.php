@@ -44,14 +44,14 @@ class TransactionTable {
 		return $resultSet;
 	}
 	public function getTransactionByAccountId($account_id, $page = null, $limit = null) {
-		Mlog::addone ( 'Inside getTransactionByAccountId', '...' );
 		$this->account_id = $account_id;
 		if ($page && $limit) {
 			$this->offset = ($page - 1) * $limit;
 			$this->limit = $limit;
 			$resultSet = $this->tableGateway->select ( function (Select $select) {
 				$select->where ( array (
-						'account_id' => $this->account_id 
+						'account_id' => $this->account_id,
+						'transaction_type' => 'buy_media_purchase'
 				) )->order ( 'transaction_sent DESC' )->offset ( $this->offset )->limit ( $this->limit );
 			} );
 		} else {
