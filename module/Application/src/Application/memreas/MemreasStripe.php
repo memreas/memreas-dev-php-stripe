@@ -2256,6 +2256,7 @@ class StripeInstance {
 					//without event id purchase is not correct type
 					continue;
 				}
+				Mlog::addone ( $cm . __LINE__ . '::$AccountPurchase->transaction_type', $AccountPurchase->transaction_type );
 				
 				
 				//
@@ -2288,7 +2289,7 @@ class StripeInstance {
 						'type' => $transaction->transaction_type,
 						'date' => $transaction->transaction_sent,
 						'report_flags' => $report_flags,
-						'event_id' => isset ( $event_id ) ? $event_id : '' 
+						'event_id' => $event_id 
 				);
 			}
 			
