@@ -30,10 +30,9 @@ class AccountPurchasesTable {
 		}
 		return $row;
 	}
-
 	public function getPurchaseByTransactionId($transaction_id) {
 		$rowset = $this->tableGateway->select ( array (
-				'transaction_id' => $transaction_id
+				'transaction_id' => $transaction_id 
 		) );
 		$row = $rowset->current ();
 		if (! $row) {
@@ -41,23 +40,21 @@ class AccountPurchasesTable {
 		}
 		return $row;
 	}
-
 	public function getAccountPurchases($account_id) {
-
 		$adapter = $this->tableGateway->getAdapter ();
 		// Setup the query
 		$sql = new Sql ( $adapter );
 		$select = $sql->select ();
 		$select->from ( $this->tableGateway->table )->columns ( array (
-			'*'
+				'*' 
 		) )->where ( array (
-			'account_id' => $account_id
+				'account_id' => $account_id 
 		) );
 		$sqlString = $sql->getSqlStringForSqlObject ( $select );
-
+		
 		$statement = $sql->prepareStatementForSqlObject ( $select );
 		$result = $statement->execute ();
-
+		
 		return $result;
 	}
 	public function saveAccountPurchase(AccountPurchases $account_purchase) {
