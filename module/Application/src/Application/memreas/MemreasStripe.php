@@ -2201,31 +2201,10 @@ class StripeInstance {
 		
 		$massPayeesArray = array ();
 		foreach ( $massPayees as $massPayee ) {
-			/**
-			 * TODO: fetch list of corresponding transactions > 30
-			 * - for loop for transactions here
-			 * $failFlagTest=false
-			 * TODO: fetch list of events and media ids for transaction
-			 * - inner for loop here to get event and media ids
-			 * - if media does not have flag then ok to add to payout balance
-			 * - if media does have flag then not ok to add to payout balance => $failFlagTest = true
-			 *
-			 * if (!$failFlagTest) {
-			 * //here add flag to output
-			 * arr['offensive_content'] = 0;
-			 * arr['dmca_violation'] = 0
-			 * $balancePyaout += $transaction_amount
-			 * } else {
-			 * //here add flag to output
-			 * arr['offensive_content'] = 0;
-			 * arr['dmca_violation'] = 1;
-			 * arr['dmca_violation']['media_ids'] = array ("...","...");
-			 * continue;
-			 * }
-			 */
-			// Get Transactions
+			// Get Transactions - query has interval now - 30
 			$transactions = $this->memreasStripeTables->getTransactionTable ()->getPayeeTransactionByAccountId ( $massPayee->account_id, MemreasConstants::LIST_MASS_PAYEE_INTERVAL );
 			$transactions_array = array ();
+			$clearedBalanceAmount = 0;
 			foreach ( $transactions as $transaction ) {
 				
 				//
@@ -2255,8 +2234,6 @@ class StripeInstance {
 					// without event id purchase is not correct type
 					continue;
 				}
-				Mlog::addone ( $cm . __LINE__ . '::$AccountPurchase->transaction_type', $AccountPurchase->transaction_type );
-				Mlog::addone ( $cm . __LINE__ . '::$AccountPurchase', $AccountPurchase );
 				
 				//
 				// Check the media for the event
@@ -2268,7 +2245,7 @@ class StripeInstance {
 								Application\Entity\Media media,
 								where event_media.media_id = media.media_id
 								and event_media.event_id = '$event_id'";
-				Mlog::addone ( $cm . __LINE__ . '::$q_event_media--->', $q_event_media );
+				//Mlog::addone ( $cm . __LINE__ . '::$q_event_media--->', $q_event_media );
 				$statement = $this->dbDoctrine->createQuery ( $q_event_media );
 				$event_media_array = $statement->getArrayResult ();
 				foreach ( $event_media_array as $event_media ) {
@@ -2281,15 +2258,20 @@ class StripeInstance {
 					$report_flags = '0';
 				}
 				
-				$transactions_array [] = array (
+				//Add to $clearedBalanceAmount
+				$clearedBalanceAmount += $transaction->amount;
+				
+				$transactions_array[] = array (
 						'id' => $transaction->transaction_id,
 						'amount' => $transaction->amount,
 						'type' => $transaction->transaction_type,
 						'date' => $transaction->transaction_sent,
-						'report_flags' => $report_flags,
+						'report_flag' => $event_media ['report_flag'],
 						'event_id' => $event_id 
 				);
-			}
+			} // end transaction for loop
+			
+			Mlog::addone ( $cm . __LINE__ . '::$clearedBalanceAmount--->', $clearedBalanceAmount );
 			
 			$massPayeesArray [] = array (
 					'account_id' => $massPayee->account_id,
@@ -2297,9 +2279,10 @@ class StripeInstance {
 					'username' => $massPayee->username,
 					'account_type' => $massPayee->account_type,
 					'balance' => $massPayee->balance,
+					'clearedBalanceAmount' => $clearedBalanceAmount,
 					'transactions' => $transactions_array 
 			);
-		}
+		} // end mass_payee for loop
 		
 		return array (
 				'status' => 'Success',

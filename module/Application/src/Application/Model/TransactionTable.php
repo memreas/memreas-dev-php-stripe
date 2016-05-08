@@ -51,7 +51,6 @@ class TransactionTable {
 			$resultSet = $this->tableGateway->select ( function (Select $select) {
 				$select->where ( array (
 						'account_id' => $this->account_id
-						//'transaction_type' => 'buy_media_purchase'
 				) )->order ( 'transaction_sent DESC' )->offset ( $this->offset )->limit ( $this->limit );
 			} );
 		} else {
