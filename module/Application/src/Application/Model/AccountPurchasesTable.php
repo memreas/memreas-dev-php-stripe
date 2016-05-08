@@ -7,13 +7,9 @@
  */
 namespace Application\Model;
 
-use Zend\Db\TableGateway\TableGateway;
-use Zend\Db\TableGateway\AbstractTableGateway;
-use Zend\Db\Sql\Select;
-use Zend\Db\Adapter\Adapter;
 use Zend\Db\Sql\Sql;
-use Zend\Db\Sql\Where;
-use Application\memreas\MUUID;
+use Zend\Db\TableGateway\TableGateway;
+use Application\memreas\Mlog;
 
 class AccountPurchasesTable {
 	protected $tableGateway;
@@ -25,6 +21,8 @@ class AccountPurchasesTable {
 		return $resultSet;
 	}
 	public function getAccountPurchase($account_id, $event_id) {
+		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$account_id',$account_id);
+		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$event_id',$event_id);
 		$rowset = $this->tableGateway->select ( array (
 				'account_id' => $account_id,
 				'event_id' => $event_id 

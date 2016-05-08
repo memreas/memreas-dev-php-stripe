@@ -2231,20 +2231,19 @@ class StripeInstance {
 				//
 				// Transaction data must be > 30 days old.
 				//
-				$now = time();
-				$transaction_date = strtotime($transaction->transaction_sent);
+				$now = time ();
+				$transaction_date = strtotime ( $transaction->transaction_sent );
 				$datediff = $now - $transaction_date;
-				$days_passed = floor($datediff/(60*60*24));
-				Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$now->',$now);
-				Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$transaction_date->',$transaction_date);
-				Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$datediff->',$datediff);
-				Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::$days_passed->',$days_passed);
+				$days_passed = floor ( $datediff / (60 * 60 * 24) );
+				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$now->', $now );
+				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$transaction_date->', $transaction_date );
+				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$datediff->', $datediff );
+				Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$days_passed->', $days_passed );
 				if ($datediff < 30) {
 					// skip this transaction it has not passed the 30 day mark
-					Mlog::addone(__CLASS__.__METHOD__.__LINE__.'::skipping $transaction->transaction_id',$transaction->transaction_id);
+					Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::skipping $transaction->transaction_id', $transaction->transaction_id );
 					continue;
 				}
-				
 				
 				// Get event ID
 				$AccountPurchase = $this->memreasStripeTables->getAccountPurchasesTable ()->getPurchaseByTransactionId ( $transaction->transaction_id );
@@ -2252,12 +2251,12 @@ class StripeInstance {
 				if (! empty ( $AccountPurchase )) {
 					$event_id = $AccountPurchase->event_id;
 				}
-				if ($event_id) {
-					//without event id purchase is not correct type
+				if (!$event_id) {
+					// without event id purchase is not correct type
 					continue;
 				}
 				Mlog::addone ( $cm . __LINE__ . '::$AccountPurchase->transaction_type', $AccountPurchase->transaction_type );
-				
+				Mlog::addone ( $cm . __LINE__ . '::$AccountPurchase', $AccountPurchase );
 				
 				//
 				// Check the media for the event
@@ -2268,18 +2267,17 @@ class StripeInstance {
 								Application\Entity\EventMedia event_media,
 								Application\Entity\Media media,
 								where event_media.media_id = media.media_id
-								and event_media.event_id = '$event_id'";					
+								and event_media.event_id = '$event_id'";
 				Mlog::addone ( $cm . __LINE__ . '::$q_event_media--->', $q_event_media );
 				$statement = $this->dbDoctrine->createQuery ( $q_event_media );
 				$event_media_array = $statement->getArrayResult ();
-				foreach ( $event_media_array as $event_media) {
-					if ($event_media['report_flag'] != 0) {
-						//there is a problem and shoudld be checked
-						$report_flags .= $event_media['report_flag'] .',';
-						
+				foreach ( $event_media_array as $event_media ) {
+					if ($event_media ['report_flag'] != 0) {
+						// there is a problem and shoudld be checked
+						$report_flags .= $event_media ['report_flag'] . ',';
 					}
 				}
-				if (empty($report_flags)) {
+				if (empty ( $report_flags )) {
 					$report_flags = '0';
 				}
 				
