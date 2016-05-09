@@ -2209,7 +2209,7 @@ class StripeInstance {
 			// Get Transactions - query has interval now - 30
 			$transactions = $this->memreasStripeTables->getTransactionTable ()->getPayeeTransactionByAccountId ( $massPayee->account_id, MemreasConstants::LIST_MASS_PAYEE_INTERVAL );
 			$transactions_array = array ();
-			$clearedBalanceAmount = (float) 0.00;
+			$clearedBalanceAmount = 0;
 			$report_flags = '';
 			$clearedTransactionIds = [ ];
 			$failedTransactionIds = [ ];
@@ -2250,7 +2250,6 @@ class StripeInstance {
 					Mlog::addone ( $cm . __LINE__ . '::$AccountPurchase->event_id', $AccountPurchase->event_id );
 					Mlog::addone ( $cm . __LINE__ . '::$AccountPurchase->amount', $AccountPurchase->amount );
 					Mlog::addone ( $cm . __LINE__ . '::$transaction->amount', $transaction->amount );
-					Mlog::addone ( $cm . __LINE__ . '::$clearedBalanceAmount', $clearedBalanceAmount);
 						
 					$event_id = '';
 					if (! empty ( $AccountPurchase->event_id )) {
@@ -2296,7 +2295,7 @@ class StripeInstance {
 				if (! $investigate) {
 					$clearedTransactionIds [] = $transaction->transaction_id;
 					// Add to $clearedBalanceAmount
-					$clearedBalanceAmount = $clearedBalanceAmount  + $transaction->amount;
+					$clearedBalanceAmount = (float)($clearedBalanceAmount  + $transaction->amount);
 					Mlog::addone ( $cm . __LINE__ . '::$transaction->amount', $transaction->amount );
 					Mlog::addone ( $cm . __LINE__ . '::$clearedBalanceAmount', $clearedBalanceAmount );
 				} else {
@@ -2313,7 +2312,7 @@ class StripeInstance {
 				$report_flags = '0';
 			}
 			
-			Mlog::addone ( $cm . __LINE__ . '::$clearedBalanceAmount--->', $clearedBalanceAmount );
+			Mlog::addone ( $cm . __LINE__ . '::$clearedBalanceAmount--->', (float)$clearedBalanceAmount );
 			
 			$massPayeesArray [] = array (
 					'account_id' => $massPayee->account_id,
