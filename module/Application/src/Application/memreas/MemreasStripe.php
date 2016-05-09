@@ -7,10 +7,8 @@
  */
 namespace Application\memreas;
 
-use Application\Entity\User;
-use Application\memreas\Mlog;
-use Application\memreas\MNow;
-use Application\memreas\StripePlansConfig;
+use Application\Entity\EventMedia;
+use Application\Entity\Media;
 use Application\Model\Account;
 use Application\Model\AccountBalances;
 use Application\Model\AccountDetail;
@@ -31,7 +29,7 @@ class MemreasStripe extends StripeInstance {
 	protected $clientPublic;
 	protected $user_id;
 	protected $aws;
-	protected $dbDoctrine;
+	protected $dbAdapter;
 	public $service_locator;
 	public function __construct($service_locator, $aws) {
 		try {
@@ -46,7 +44,7 @@ class MemreasStripe extends StripeInstance {
 			$this->memreasStripeTables = new MemreasStripeTables ( $service_locator );
 			$this->stripeInstance = parent::__construct ( $this->stripeClient, $this->memreasStripeTables );
 			$this->aws = $aws;
-			
+			$this->dbAdapter = $service_locator->get ( 'doctrine.entitymanager.orm_default' );
 			// Mlog::addone ( __CLASS__ . __METHOD__ . '__construct $_SESSION', $_SESSION );
 			
 			/**
@@ -1322,7 +1320,7 @@ class StripeInstance {
 		 */
 		$cm = __CLASS__ . __METHOD__;
 		Mlog::addone ( $cm . __LINE__ . 'buyMedia->$data', $data );
-		//$user = $this->memreasStripeTables->getUserTable ()->getUser ( $data ['user_id'] );
+		// $user = $this->memreasStripeTables->getUserTable ()->getUser ( $data ['user_id'] );
 		$user = $this->memreasStripeTables->getUserTable ()->getUser ( $_SESSION ['user_id'] );
 		$password_verification = md5 ( $data ['password'] );
 		$amount = $data ['amount'];
@@ -1341,12 +1339,11 @@ class StripeInstance {
 					'message' => 'No user related to this username' 
 			);
 		}
-
+		
 		/**
 		 * -
 		 * Ensure buyer hasn't already purchased
 		 */
-		
 		
 		/**
 		 * -
@@ -1449,12 +1446,14 @@ class StripeInstance {
 			// Update purchase table
 			//
 			$AccountPurchase = new AccountPurchases ();
-			$verification_json = json_encode(array(	 "password_verified" => $password_verified ));
+			$verification_json = json_encode ( array (
+					"password_verified" => $password_verified 
+			) );
 			$AccountPurchase->exchangeArray ( array (
 					'account_id' => $account_id,
 					'event_id' => $event_id,
 					'amount' => $amount,
-					'meta' => $verification_json, 
+					'meta' => $verification_json,
 					'transaction_id' => $transaction_id,
 					'transaction_type' => 'buy_media_purchase',
 					'create_time' => MNow::now (),
@@ -1462,6 +1461,11 @@ class StripeInstance {
 					'end_date' => $duration_to 
 			) );
 			$this->memreasStripeTables->getAccountPurchasesTable ()->saveAccountPurchase ( $AccountPurchase );
+			
+			//
+			// store event_id with seller transaction for verifying payout later
+			//
+			$seller_event_id_purchased = $event_id;
 			
 			/**
 			 * -
@@ -1493,12 +1497,14 @@ class StripeInstance {
 					'amount' => "+$seller_amount",
 					'currency' => 'USD',
 					'transaction_request' => json_encode ( array (
-							"transaction_id" => $account_purchase_transaction_id 
+							"transaction_id" => $account_purchase_transaction_id,
+							"event_id" => $seller_event_id_purchased 
 					) ),
 					'transaction_status' => 'success',
 					'transaction_sent' => MNow::now (),
 					'transaction_response' => json_encode ( array (
-							"transaction_id" => $account_purchase_transaction_id 
+							"transaction_id" => $account_purchase_transaction_id,
+							"event_id" => $seller_event_id_purchased 
 					) ),
 					'transaction_receive' => MNow::now () 
 			) );
@@ -2188,8 +2194,6 @@ class StripeInstance {
 		Mlog::addone ( $cm, __LINE__ );
 		$massPayees = $this->memreasStripeTables->getAccountTable ()->listMassPayee ( $username, $page, $limit );
 		$countRow = count ( $massPayees );
-		Mlog::addone ( $cm, $massPayees );
-		
 		if (! $countRow) {
 			return array (
 					'status' => 'Failure',
@@ -2197,49 +2201,118 @@ class StripeInstance {
 			);
 		}
 		
+		//
+		// Loop through each payee
+		//
 		$massPayeesArray = array ();
 		foreach ( $massPayees as $massPayee ) {
-			/**
-			 * TODO: fetch list of corresponding transactions > 30
-			 * - for loop for transactions here
-			 * $failFlagTest=false
-			 * TODO: fetch list of events and media ids for transaction
-			 * - inner for loop here to get event and media ids
-			 * - if media does not have flag then ok to add to payout balance
-			 * - if media does have flag then not ok to add to payout balance => $failFlagTest = true
-			 *
-			 * if (!$failFlagTest) {
-			 * //here add flag to output
-			 * arr['offensive_content'] = 0;
-			 * arr['dmca_violation'] = 0
-			 * $balancePyaout += $transaction_amount
-			 * } else {
-			 * //here add flag to output
-			 * arr['offensive_content'] = 0;
-			 * arr['dmca_violation'] = 1;
-			 * arr['dmca_violation']['media_ids'] = array ("...","...");
-			 * continue;
-			 * }
-			 */
-			// Get Transactions
+			// Get Transactions - query has interval now - 30
 			$transactions = $this->memreasStripeTables->getTransactionTable ()->getPayeeTransactionByAccountId ( $massPayee->account_id, MemreasConstants::LIST_MASS_PAYEE_INTERVAL );
 			$transactions_array = array ();
+			$clearedBalanceAmount = 0;
+			$report_flags = '';
+			$clearedTransactionIds = [ ];
+			$failedTransactionIds = [ ];
+			//
+			// Loop through each transaction for the payee
+			//
 			foreach ( $transactions as $transaction ) {
-				
-				// Get event ID
-				$AccountPurchase = $this->memreasStripeTables->getAccountPurchasesTable ()->getPurchaseByTransactionId ( $transaction->transaction_id );
-				if (! empty ( $AccountPurchase )) {
-					$event_id = $AccountPurchase->event_id;
+				Mlog::addone ( $cm . __LINE__, '***********************************************************' );
+				Mlog::addone ( $cm . __LINE__ . '::Top of For Loop -> $clearedBalanceAmount', $clearedBalanceAmount);
+				//
+				// Transaction data must be > 30 days old.
+				//
+				$now = time ();
+				$transaction_date = strtotime ( $transaction->transaction_sent );
+				$datediff = $now - $transaction_date;
+				$days_passed = floor ( $datediff / (60 * 60 * 24) );
+				$investigate = false;
+				Mlog::addone ( $cm . __LINE__ . '::MNow::now()->', MNow::now () );
+				Mlog::addone ( $cm . __LINE__ . '::$transaction_date->', $transaction_date );
+				Mlog::addone ( $cm . __LINE__ . '::$days_passed->', $days_passed );
+				if ($days_passed < 30) {
+					// skip this transaction it has not passed the 30 day mark
+					Mlog::addone ( $cm . __LINE__ . '::skipping $transaction->transaction_id', $transaction->transaction_id );
+					continue;
 				}
 				
+				//
+				// Get event ID - retrieve from transaction_request as meta
+				//
+				$transaction_request_meta_array = json_decode ( $transaction->transaction_request, true );
+				$buyer_transaction_id = (! empty ( $transaction_request_meta_array ['transaction_id'] )) ? $transaction_request_meta_array ['transaction_id'] : '';
+				$AccountPurchase = '';
+				if ($buyer_transaction_id) {
+					// get event id
+					$AccountPurchase = $this->memreasStripeTables->getAccountPurchasesTable ()->getPurchaseByTransactionId ( $buyer_transaction_id );
+					Mlog::addone ( $cm . __LINE__ . '::$buyer_transaction_id', $buyer_transaction_id );
+					Mlog::addone ( $cm . __LINE__ . '::$AccountPurchase->transaction_id', $AccountPurchase->transaction_id );
+					Mlog::addone ( $cm . __LINE__ . '::$AccountPurchase->event_id', $AccountPurchase->event_id );
+					Mlog::addone ( $cm . __LINE__ . '::$AccountPurchase->amount', $AccountPurchase->amount );
+					Mlog::addone ( $cm . __LINE__ . '::$transaction->amount', $transaction->amount );
+						
+					$event_id = '';
+					if (! empty ( $AccountPurchase->event_id )) {
+						$event_id = $AccountPurchase->event_id;
+						//
+						// Check the media for the event
+						// - fetch list of media and check report flag
+						//
+						$q_event_media = "select em.event_id, m.media_id, m.report_flag
+							from 	Application\Entity\Media m,
+									Application\Entity\EventMedia em
+							where em.media_id = m.media_id
+							and em.event_id = '$event_id'";
+						$statement = $this->dbAdapter->createQuery ( $q_event_media );
+						$event_media_array = $statement->getArrayResult ();
+						foreach ( $event_media_array as $event_media ) {
+							if ($event_media ['report_flag'] != 0) {
+								// there is a problem and shoudld be checked
+								$report_flags .= $event_media ['report_flag'] . ',';
+								// media was reported
+								Mlog::addone ( $cm . __LINE__ . '::media was reported -> $investigate', $investigate );
+								$investigate = true;
+							}
+						}
+					} else {
+						//wrong transaction type likely
+						Mlog::addone ( $cm . __LINE__ . '::wrong transaction type likely -> $investigate', $investigate );
+						$investigate = true;
+					}
+				} else {
+					//couldn't find corresponding account purchase
+					Mlog::addone ( $cm . __LINE__ . '::couldnt find corresponding account purchase -> $investigate', $investigate );
+					$investigate = true;
+				}
 				$transactions_array [] = array (
 						'id' => $transaction->transaction_id,
 						'amount' => $transaction->amount,
 						'type' => $transaction->transaction_type,
 						'date' => $transaction->transaction_sent,
-						'event_id' => isset ( $event_id ) ? $event_id : '' 
+						'investigate' => $investigate,
+						'event_id' => $event_id 
 				);
+				if (! $investigate) {
+					$clearedTransactionIds [] = $transaction->transaction_id;
+					// Add to $clearedBalanceAmount
+					$clearedBalanceAmount = (float)($clearedBalanceAmount  + $transaction->amount);
+					Mlog::addone ( $cm . __LINE__ . '::$transaction->amount', $transaction->amount );
+					Mlog::addone ( $cm . __LINE__ . '::$clearedBalanceAmount', $clearedBalanceAmount );
+				} else {
+					$failedTransactionIds [] = $transaction->transaction_id;
+					Mlog::addone ( $cm . __LINE__ . '::FAIL $transaction->amount', $transaction->amount );
+				}
+				Mlog::addone ( $cm . __LINE__, '***********************************************************' );
+			} // end transaction for loop
+			  
+			//
+			  // If not report flags then payout is cleared to execute through admin
+			  //
+			if (empty ( $report_flags )) {
+				$report_flags = '0';
 			}
+			
+			Mlog::addone ( $cm . __LINE__ . '::$clearedBalanceAmount--->', (float)$clearedBalanceAmount );
 			
 			$massPayeesArray [] = array (
 					'account_id' => $massPayee->account_id,
@@ -2247,9 +2320,13 @@ class StripeInstance {
 					'username' => $massPayee->username,
 					'account_type' => $massPayee->account_type,
 					'balance' => $massPayee->balance,
+					'clearedBalanceAmount' => $clearedBalanceAmount,
+					'report_flags' => $report_flags,
+					'investigate' => $investigate,
 					'transactions' => $transactions_array 
 			);
-		}
+			Mlog::addone ( $cm, __LINE__ );
+		} // end mass_payee for loop
 		
 		return array (
 				'status' => 'Success',
@@ -2873,16 +2950,16 @@ class StripeInstance {
 		$accountDetail = $this->memreasStripeTables->getAccountDetailTable ()->getAccountDetailByAccount ( $account->account_id );
 		$card_data ['stripe_customer_id'] = $account->stripe_customer_id;
 		
-		$stripeCard =  $this->stripeClient->updateCard ( $card_data );
+		$stripeCard = $this->stripeClient->updateCard ( $card_data );
 		if (! $stripeCard ['id']) {
 			return array (
 					'status' => 'Failure',
-					'message' => 'failure retreiving card...'
+					'message' => 'failure retreiving card...' 
 			);
 		} else {
 			return array (
 					'status' => 'Success',
-					'card' => $stripeCard
+					'card' => $stripeCard 
 			);
 		}
 	}
@@ -3028,14 +3105,14 @@ class StripeClient {
 			
 			$customer = \Stripe\Customer::retrieve ( $card_data ['stripe_customer_id'] );
 			$card = $customer->sources->retrieve ( $card_data ['id'] );
-			$card->name = $card_data['name'];
-			$card->exp_month = $card_data['exp_month'];
-			$card->exp_year = $card_data['exp_year'];
-			$card->address_line1 = $card_data['address_line1'];
-			$card->address_line2 = $card_data['address_line2'];
-			$card->address_city = $card_data['address_city'];
-			$card->address_state = $card_data['address_state'];
-			$card->address_zip = $card_data['address_zip'];
+			$card->name = $card_data ['name'];
+			$card->exp_month = $card_data ['exp_month'];
+			$card->exp_year = $card_data ['exp_year'];
+			$card->address_line1 = $card_data ['address_line1'];
+			$card->address_line2 = $card_data ['address_line2'];
+			$card->address_city = $card_data ['address_city'];
+			$card->address_state = $card_data ['address_state'];
+			$card->address_zip = $card_data ['address_zip'];
 			$card->metadata = array (
 					"user_id" => $card_data ['user_id'] 
 			);
