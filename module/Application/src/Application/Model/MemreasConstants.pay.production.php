@@ -28,12 +28,12 @@ class MemreasConstants {
 	const COPYRIGHT = '&copy; memreas, llc. all rights reserved.';
 	
 	// Key data - test
-	//const SECRET_KEY = 'sk_test_QQhD7TXKY4ph0ZOUsTyhywNX';
-	//const PUBLIC_KEY = 'pk_test_Puz750WYUZlXHCsH0iMbjYth';
+	const SECRET_KEY = 'sk_test_QQhD7TXKY4ph0ZOUsTyhywNX';
+	const PUBLIC_KEY = 'pk_test_Puz750WYUZlXHCsH0iMbjYth';
 	
 	// Key data - live
-	const SECRET_KEY = 'sk_live_fEVm7a7jfM7eej7iL2vn3jGl';
-	const PUBLIC_KEY = 'pk_live_b1VrPe5OPehrFceNI7uZKpD8';
+	//const SECRET_KEY = 'sk_live_fEVm7a7jfM7eej7iL2vn3jGl';
+	//const PUBLIC_KEY = 'pk_live_b1VrPe5OPehrFceNI7uZKpD8';
 
 	
 	// Account data
