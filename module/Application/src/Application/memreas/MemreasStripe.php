@@ -349,11 +349,37 @@ class StripeInstance {
 		$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['user_id'] );
 		// Check if exist account
 		if (! $account) {
-			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
-			return array (
-					'status' => 'Failure',
-					'message' => 'Account not found' 
+			//
+			// if not account must be registration so create account with free plan
+			//
+			$user = $this->memreasStripeTables->getUserTable ()->getUser ( $user_id );
+			// for testing
+			$data = [ ];
+			$data ['user_id'] = $user->user_id;
+			$data ['username'] = $user->username;
+			$data ['email'] = $user->email_address;
+			$data ['description'] = "Stripe account for email: " . $user->email_address;
+			$data ['metadata'] = array (
+					'user_id' => $user_id 
 			);
+			$data ['plan'] = ( string ) MemreasConstants::PLAN_ID_A;
+			$result = $this->createCustomer ( $data );
+			// Mlog::addone ( $cm . '::$this->createCustomer ( $data )', $result );
+			$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $user_id );
+			
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '' );
+			//
+			// Check again
+			//
+			$account = $this->memreasStripeTables->getAccountTable ()->getAccountByUserId ( $data ['user_id'] );
+			// Check if exist account
+			if (! $account) {
+				
+				return array (
+						'status' => 'Failure',
+						'message' => 'Account not found' 
+				);
+			}
 		}
 		
 		Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '', '...' );
@@ -2218,7 +2244,7 @@ class StripeInstance {
 			//
 			foreach ( $transactions as $transaction ) {
 				Mlog::addone ( $cm . __LINE__, '***********************************************************' );
-				Mlog::addone ( $cm . __LINE__ . '::Top of For Loop -> $clearedBalanceAmount', $clearedBalanceAmount);
+				Mlog::addone ( $cm . __LINE__ . '::Top of For Loop -> $clearedBalanceAmount', $clearedBalanceAmount );
 				//
 				// Transaction data must be > 30 days old.
 				//
@@ -2250,7 +2276,7 @@ class StripeInstance {
 					Mlog::addone ( $cm . __LINE__ . '::$AccountPurchase->event_id', $AccountPurchase->event_id );
 					Mlog::addone ( $cm . __LINE__ . '::$AccountPurchase->amount', $AccountPurchase->amount );
 					Mlog::addone ( $cm . __LINE__ . '::$transaction->amount', $transaction->amount );
-						
+					
 					$event_id = '';
 					if (! empty ( $AccountPurchase->event_id )) {
 						$event_id = $AccountPurchase->event_id;
@@ -2275,12 +2301,12 @@ class StripeInstance {
 							}
 						}
 					} else {
-						//wrong transaction type likely
+						// wrong transaction type likely
 						Mlog::addone ( $cm . __LINE__ . '::wrong transaction type likely -> $investigate', $investigate );
 						$investigate = true;
 					}
 				} else {
-					//couldn't find corresponding account purchase
+					// couldn't find corresponding account purchase
 					Mlog::addone ( $cm . __LINE__ . '::couldnt find corresponding account purchase -> $investigate', $investigate );
 					$investigate = true;
 				}
@@ -2295,7 +2321,7 @@ class StripeInstance {
 				if (! $investigate) {
 					$clearedTransactionIds [] = $transaction->transaction_id;
 					// Add to $clearedBalanceAmount
-					$clearedBalanceAmount = (float)($clearedBalanceAmount  + $transaction->amount);
+					$clearedBalanceAmount = ( float ) ($clearedBalanceAmount + $transaction->amount);
 					Mlog::addone ( $cm . __LINE__ . '::$transaction->amount', $transaction->amount );
 					Mlog::addone ( $cm . __LINE__ . '::$clearedBalanceAmount', $clearedBalanceAmount );
 				} else {
@@ -2312,7 +2338,7 @@ class StripeInstance {
 				$report_flags = '0';
 			}
 			
-			Mlog::addone ( $cm . __LINE__ . '::$clearedBalanceAmount--->', (float)$clearedBalanceAmount );
+			Mlog::addone ( $cm . __LINE__ . '::$clearedBalanceAmount--->', ( float ) $clearedBalanceAmount );
 			
 			$massPayeesArray [] = array (
 					'account_id' => $massPayee->account_id,
