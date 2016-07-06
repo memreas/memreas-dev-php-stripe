@@ -707,9 +707,9 @@ class StripeInstance {
 				// legal_entity
 				$ssn_last4 = substr ( $seller_data ['tax_ssn_ein'], - 4, 4 );
 				$seller_info ['legal_entity'] ['business_tax_id'] = $seller_data ['tax_ssn_ein'];
-				$seller_info ['legal_entity'] ['dob'] ['month'] = $dob_split [1];
-				$seller_info ['legal_entity'] ['dob'] ['day'] = $dob_split [2];
-				$seller_info ['legal_entity'] ['dob'] ['year'] = $dob_split [0];
+				$seller_info ['legal_entity'] ['dob'] ['month'] = $dob_split [0];
+				$seller_info ['legal_entity'] ['dob'] ['day'] = $dob_split [1];
+				$seller_info ['legal_entity'] ['dob'] ['year'] = $dob_split [2];
 				$seller_info ['legal_entity'] ['first_name'] = $seller_data ['first_name'];
 				$seller_info ['legal_entity'] ['last_name'] = $seller_data ['last_name'];
 				$seller_info ['legal_entity'] ['type'] = "individual"; // company later
@@ -732,6 +732,7 @@ class StripeInstance {
 				$seller_info ['external_account'] ['currency'] = "USD";
 				$seller_info ['external_account'] ['currency'] = "USD";
 				$seller_info ['transfer_schedule'] ['interval'] = "manual";
+				MLog::addone(__CLASS__.__METHOD__.__LINE__.'$seller_info--->',$seller_info);
 				
 				/*
 				 * -
@@ -754,7 +755,8 @@ class StripeInstance {
 					'username' => $user->username,
 					'account_type' => $account_type,
 					'balance' => 0,
-					// store only last 4 of ssn for PII purposes...
+					// store only last 4 of ssn for PII purposes 
+					// - data is stored with stripe...
 					// 'tax_ssn_ein' => $seller_data ['tax_ssn_ein'],
 					'tax_ssn_ein' => $ssn_last4,
 					'stripe_customer_id' => $stripe_customer_id,
@@ -1281,6 +1283,7 @@ class StripeInstance {
 				'message' => 'Amount has been captured and activated' 
 		);
 	}
+
 	public function getAccountBalance($data) {
 		$user_id = $data ['user_id'];
 		$user = $this->memreasStripeTables->getUserTable ()->getUser ( $user_id );
@@ -1307,6 +1310,7 @@ class StripeInstance {
 				'seller_balance' => $seller_amount 
 		);
 	}
+
 	public function buyMedia($data) {
 		
 		/**
@@ -1315,7 +1319,7 @@ class StripeInstance {
 		 * - the buyer's credits are debited
 		 * - the seller's credits are credited minus the memreas processing fee
 		 * - the memreas_float account is debited for the full purchase amount
-		 * - the memreas_master account is credit for the processing fee
+		 * - the memreas_master account is credited for the processing fee
 		 * - if an error occurs the transaction is rolled back and an email is sent.
 		 */
 		$cm = __CLASS__ . __METHOD__;
@@ -1681,6 +1685,7 @@ class StripeInstance {
 			);
 		}
 	}
+
 	public function checkOwnEvent($data) {
 		$user_id = $data ['user_id'];
 		
@@ -1711,6 +1716,7 @@ class StripeInstance {
 				'events' => $event_ids 
 		);
 	}
+
 	public function AccountHistory($data) {
 		$cm = __CLASS__ . __METHOD__;
 		Mlog::addone ( $cm . __LINE__ . '::$data', $data );
@@ -2371,7 +2377,6 @@ class StripeInstance {
 			//
 			// Check if stripe customer / recipient is set
 			//
-			
 			if (empty ( $account_payee->stripe_customer_id )) {
 				Mlog::addone ( $cm, __LINE__ );
 				return array (
