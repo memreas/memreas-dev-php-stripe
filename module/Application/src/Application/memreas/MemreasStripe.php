@@ -732,6 +732,7 @@ class StripeInstance {
 				$seller_info ['external_account'] ['currency'] = "USD";
 				$seller_info ['external_account'] ['currency'] = "USD";
 				$seller_info ['transfer_schedule'] ['interval'] = "manual";
+				MLog::addone(__CLASS__.__METHOD__.__LINE__'$seller_info--->',$seller_info);
 				
 				/*
 				 * -
@@ -1281,6 +1282,7 @@ class StripeInstance {
 				'message' => 'Amount has been captured and activated' 
 		);
 	}
+
 	public function getAccountBalance($data) {
 		$user_id = $data ['user_id'];
 		$user = $this->memreasStripeTables->getUserTable ()->getUser ( $user_id );
@@ -1307,6 +1309,7 @@ class StripeInstance {
 				'seller_balance' => $seller_amount 
 		);
 	}
+
 	public function buyMedia($data) {
 		
 		/**
@@ -1315,7 +1318,7 @@ class StripeInstance {
 		 * - the buyer's credits are debited
 		 * - the seller's credits are credited minus the memreas processing fee
 		 * - the memreas_float account is debited for the full purchase amount
-		 * - the memreas_master account is credit for the processing fee
+		 * - the memreas_master account is credited for the processing fee
 		 * - if an error occurs the transaction is rolled back and an email is sent.
 		 */
 		$cm = __CLASS__ . __METHOD__;
@@ -1681,6 +1684,7 @@ class StripeInstance {
 			);
 		}
 	}
+
 	public function checkOwnEvent($data) {
 		$user_id = $data ['user_id'];
 		
@@ -1711,6 +1715,7 @@ class StripeInstance {
 				'events' => $event_ids 
 		);
 	}
+
 	public function AccountHistory($data) {
 		$cm = __CLASS__ . __METHOD__;
 		Mlog::addone ( $cm . __LINE__ . '::$data', $data );
@@ -2371,7 +2376,6 @@ class StripeInstance {
 			//
 			// Check if stripe customer / recipient is set
 			//
-			
 			if (empty ( $account_payee->stripe_customer_id )) {
 				Mlog::addone ( $cm, __LINE__ );
 				return array (
