@@ -34,7 +34,6 @@ class MemreasConstants {
 	// Key data - live
 	const SECRET_KEY = 'sk_live_fEVm7a7jfM7eej7iL2vn3jGl';
 	const PUBLIC_KEY = 'pk_live_b1VrPe5OPehrFceNI7uZKpD8';
-
 	
 	// Account data
 	const ACCOUNT_MEMREAS_FLOAT = "memreas_float";
@@ -44,7 +43,7 @@ class MemreasConstants {
 	const ACCOUNT_TYPE_BUYER = "buyer";
 	const ACCOUNT_TYPE_TRACKER = "tracker";
 	const ACCOUNT_TYPE_SELLER = "seller";
-	const MEMREAS_PROCESSING_FEE = 0.2; // 80 / 20 marketplace
+	const MEMREAS_PROCESSING_FEE = 0.25; // 75/25% marketplace
 	const PLAN_BILLINGFREQUENCY = "1";
 	const PLAN_BILLINGPERIOD = "Month";
 	const PLAN_BILLINGCYCLES = "36";
