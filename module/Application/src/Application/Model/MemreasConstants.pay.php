@@ -41,7 +41,7 @@ class MemreasConstants {
 	const ACCOUNT_TYPE_BUYER = "buyer";
 	const ACCOUNT_TYPE_TRACKER = "tracker";
 	const ACCOUNT_TYPE_SELLER = "seller";
-	const MEMREAS_PROCESSING_FEE = 0.25; // 75 / 25 marketplace
+	const MEMREAS_PROCESSING_FEE = 0.25; // 75/25% marketplace
 	const PLAN_BILLINGFREQUENCY = "1";
 	const PLAN_BILLINGPERIOD = "Month";
 	const PLAN_BILLINGCYCLES = "36";
