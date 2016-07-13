@@ -33,8 +33,8 @@ class StripeController extends AbstractActionController {
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::setupSaveHandler() error->', $e->getMessage () );
 		}
 	}
-	public function flushResponse($response) {
-		header ( 'Content-Type: application/json' );
+	public function flushResponse($response, $content_type= "appplication/json") {
+		//header ( "Content-Type: $content_type" );
 		// $arr = headers_list ();
 		// Mlog::addone ( 'response headers -->', $arr );
 		Mlog::addone ( __CLASS__.__METHOD__.__LINE__.'response-->', $response );
@@ -383,11 +383,19 @@ class StripeController extends AbstractActionController {
 			$activeBalance = $MemreasStripe->activePendingBalanceToAccount ( $token, $cid );
 			// echo '<h3 style="text-align: center">' . $activeBalance ['message'] . '</h3>';
 			if ($activeBalance ['status'] == 'Success') {
-				$this->flushResponse ( '<script type="text/javascript">document.location.href="' . MemreasConstants::MEMREAS_FE . '/?credits_activated=1";</script>' );
+				//send back text with redirect
+				$content_type = 'application/text';
+				$redirect = 'Location: ' . MemreasConstants::MEMREAS_FE . '/?credits_activated=1';
+				$this->flushResponse ($redirect, $content_type);
 			} else if ($activeBalance ['status'] == 'activated') {
-				$this->flushResponse ( '<h3 style="text-align: center">' . $activeBalance ['message'] . '</h3><script type="text/javascript">document.location.href="' . MemreasConstants::MEMREAS_FE . '/?credits_already_activated=1";</script>' );
+				//send back text with redirect
+				$content_type = 'application/text';
+				$redirect = 'Location: ' . MemreasConstants::MEMREAS_FE . '/?credits_already_activated=1';
+				$this->flushResponse ($redirect, $content_type);
 			} else if ($activeBalance ['status'] == 'Failure') {
-				$this->flushResponse ( '<h3 style="text-align: center">An error has occurred for token:: ' . $token . ' Please email ' . MemreasConstants::ADMIN_EMAIL . ' with your token information.</h3>' );
+				$html = 'An error has occurred for token:: ' . $token . ' Please email ' . MemreasConstants::ADMIN_EMAIL . ' with your token information.';
+				$content_type = 'application/text';
+				$this->flushResponse ('$html', $header);
 			}
 			die ();
 		}
