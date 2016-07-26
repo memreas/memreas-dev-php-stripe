@@ -33,11 +33,11 @@ class StripeController extends AbstractActionController {
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::setupSaveHandler() error->', $e->getMessage () );
 		}
 	}
-	public function flushResponse($response) {
-		header ( 'Content-Type: application/json' );
+	public function flushResponse($response, $content_type= "appplication/json") {
+		//header ( "Content-Type: $content_type" );
 		// $arr = headers_list ();
 		// Mlog::addone ( 'response headers -->', $arr );
-		Mlog::addone ( 'response-->', $response );
+		Mlog::addone ( __CLASS__.__METHOD__.__LINE__.'response-->', $response );
 		echo $response;
 		// clean the buffer we don't need to send back session data
 		ob_end_flush ();
@@ -100,6 +100,7 @@ class StripeController extends AbstractActionController {
 				$hasSession = true;
 				// Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session found->', $_SESSION );
 			}
+			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::$_SESSION-->', $_SESSION );
 		} catch ( \Exception $e ) {
 			Mlog::addone ( __CLASS__ . __METHOD__ . __LINE__ . '::Redis Session lookup error->', $e->getMessage () );
 		}
@@ -282,14 +283,19 @@ class StripeController extends AbstractActionController {
 		}
 	}
 	public function deleteCardsAction() {
-		Mlog::addone ( __CLASS__ . __METHOD__, $_REQUEST ['json'] );
+		Mlog::addone ( __CLASS__ . __METHOD__.__LINE__, $_REQUEST ['json'] );
 		if ($this->fetchSession ( $_REQUEST ['json'] )) {
+			Mlog::addone ( __CLASS__ . __METHOD__.__LINE__, 'past fetchSession' );
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
 			$message_data = json_decode ( $json, true );
-			
+			Mlog::addone ( __CLASS__ . __METHOD__.__LINE__, '...' );
 			$MemreasStripe = new MemreasStripe ( $this->getServiceLocator (), $this->aws );
-			$this->flushResponse ( json_encode ( $MemreasStripe->deleteCards ( $message_data ) ) );
+			Mlog::addone ( __CLASS__ . __METHOD__.__LINE__, '...' );
+			$response = json_encode ( $MemreasStripe->deleteCards ( $message_data ) );
+			Mlog::addone ( __CLASS__ . __METHOD__.__LINE__, '...' );
+			Mlog::addone ( __CLASS__ . __METHOD__ . '$response-->', $response);
+			$this->flushResponse ( $response );
 			die ();
 		}
 	}
@@ -354,6 +360,7 @@ class StripeController extends AbstractActionController {
 		}
 	}
 	public function getCustomerInfoAction() {
+		Mlog::addone(__CLASS__.__METHOD__.__LINE__.'$_REQUEST [json]--->', $_REQUEST ['json']);
 		if ($this->fetchSession ( $_REQUEST ['json'] )) {
 			$json = $_REQUEST ['json'];
 			Mlog::addone ( __CLASS__ . __METHOD__ . '$json-->', $json );
@@ -376,11 +383,19 @@ class StripeController extends AbstractActionController {
 			$activeBalance = $MemreasStripe->activePendingBalanceToAccount ( $token, $cid );
 			// echo '<h3 style="text-align: center">' . $activeBalance ['message'] . '</h3>';
 			if ($activeBalance ['status'] == 'Success') {
-				$this->flushResponse ( '<script type="text/javascript">document.location.href="' . MemreasConstants::MEMREAS_FE . '/?credits_activated=1";</script>' );
+				//send back text with redirect
+				$content_type = 'application/text';
+				$redirect = 'Location: ' . MemreasConstants::MEMREAS_FE . '/?credits_activated=1';
+				$this->flushResponse ($redirect, $content_type);
 			} else if ($activeBalance ['status'] == 'activated') {
-				$this->flushResponse ( '<h3 style="text-align: center">' . $activeBalance ['message'] . '</h3><script type="text/javascript">document.location.href="' . MemreasConstants::MEMREAS_FE . '/?credits_already_activated=1";</script>' );
+				//send back text with redirect
+				$content_type = 'application/text';
+				$redirect = 'Location: ' . MemreasConstants::MEMREAS_FE . '/?credits_already_activated=1';
+				$this->flushResponse ($redirect, $content_type);
 			} else if ($activeBalance ['status'] == 'Failure') {
-				$this->flushResponse ( '<h3 style="text-align: center">An error has occurred for token:: ' . $token . ' Please email ' . MemreasConstants::ADMIN_EMAIL . ' with your token information.</h3>' );
+				$html = 'An error has occurred for token:: ' . $token . ' Please email ' . MemreasConstants::ADMIN_EMAIL . ' with your token information.';
+				$content_type = 'application/text';
+				$this->flushResponse ('$html', $header);
 			}
 			die ();
 		}
