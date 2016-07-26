@@ -7,13 +7,13 @@
  */
 namespace Application\Model;
 
-use Zend\Db\TableGateway\TableGateway;
-use Zend\Db\TableGateway\AbstractTableGateway;
+use Application\memreas\Mlog;
+use Application\memreas\MNow;
+use Application\memreas\MUUID;
 use Zend\Db\Adapter\Adapter;
 use Zend\Db\Sql\Sql;
 use Zend\Db\Sql\Where;
-use Application\memreas\MUUID;
-use Application\memreas\MNow;
+use Zend\Db\TableGateway\TableGateway;
 
 class PaymentMethodTable {
 	protected $tableGateway;
@@ -136,9 +136,6 @@ class PaymentMethodTable {
 		$this->tableGateway->update ( $data, array (
 				'payment_method_id' => $payment_method_id 
 		) );
-		//$this->tableGateway->delete ( array (
-		//		'payment_method_id' => $payment_method_id 
-		//) );
 	}
 	public function deletePaymentMethodByStripeCardReferenceId($stripe_card_reference_id) {
 		$rowset = $this->tableGateway->select ( array (
