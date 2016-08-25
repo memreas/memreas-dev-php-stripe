@@ -6,7 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'phpDocumentor' => array($vendorDir . '/phpdocumentor/reflection-docblock/src'),
     'ZfrStripeModule\\' => array($vendorDir . '/zfr/zfr-stripe-module/src'),
     'ZendXml\\' => array($vendorDir . '/zendframework/zendxml/library'),
     'Prophecy\\' => array($vendorDir . '/phpspec/prophecy/src'),
