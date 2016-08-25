@@ -19,11 +19,11 @@ class MemreasConstants {
 	const MEMREASDB = 'memreasdb';
 	const MEMREASPAYMENTSDB = 'memreaspaymentstripe';
 	const S3BUCKET = "memreasdev";
-	const ORIGINAL_URL = "http://127.0.0.1:8082/";
-	const MEDIA_URL = "http://127.0.0.1:8081/?action=addmediaevent";
-	const MEMREAS_FE = "http://127.0.0.1:8080";
-	const MEMREAS_WS = "http://127.0.0.1:8081";
-	const MEMREAS_WSPROXYPAY = "http://http://127.0.0.1:8081/index?action=";
+	const ORIGINAL_URL = "http://127.0.0.1:55153/";
+	const MEDIA_URL = "http://127.0.0.1:55152/?action=addmediaevent";
+	const MEMREAS_FE = "http://127.0.0.1:55151";
+	const MEMREAS_WS = "http://127.0.0.1:55152";
+	const MEMREAS_WSPROXYPAY = "http://http://127.0.0.1:55152/index?action=";
 	const URL = "/index";
 	const COPYRIGHT = '&copy; memreas, llc. all rights reserved.';
 	
