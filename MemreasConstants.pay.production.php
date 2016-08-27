@@ -1,12 +1,10 @@
 <?php
-
 /**
  * Copyright (C) 2015 memreas llc. - All Rights Reserved
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
 namespace Application\Model;
-
 class MemreasConstants {
 	
 	// Redis section ubuntu standalone for redis 3 version
@@ -25,15 +23,11 @@ class MemreasConstants {
 	const MEMREAS_WS = "https://memreasprod-ws.memreas.com";
 	const MEMREAS_WSPROXYPAY = "https://memreasprod-ws.memreas.com/index?action=";
 	const URL = "/index";
-	const COPYRIGHT = '&copy; memreas, llc. all rights reserved.';
+	const COPYRIGHT = '&copy;2015 memreas, llc. all rights reserved.';
 	
-	// Key data - test
-	//const SECRET_KEY = 'sk_test_QQhD7TXKY4ph0ZOUsTyhywNX';
-	//const PUBLIC_KEY = 'pk_test_Puz750WYUZlXHCsH0iMbjYth';
-	
-	// Key data - live
-	const SECRET_KEY = 'sk_live_fEVm7a7jfM7eej7iL2vn3jGl';
-	const PUBLIC_KEY = 'pk_live_b1VrPe5OPehrFceNI7uZKpD8';
+	// Key data
+	const SECRET_KEY = 'sk_test_QQhD7TXKY4ph0ZOUsTyhywNX';
+	const PUBLIC_KEY = 'pk_test_Puz750WYUZlXHCsH0iMbjYth';
 	
 	// Account data
 	const ACCOUNT_MEMREAS_FLOAT = "memreas_float";
@@ -43,7 +37,7 @@ class MemreasConstants {
 	const ACCOUNT_TYPE_BUYER = "buyer";
 	const ACCOUNT_TYPE_TRACKER = "tracker";
 	const ACCOUNT_TYPE_SELLER = "seller";
-	const MEMREAS_PROCESSING_FEE = 0.25; // 75/25% marketplace
+	const MEMREAS_PROCESSING_FEE = 0.2; // 80 / 20 marketplace
 	const PLAN_BILLINGFREQUENCY = "1";
 	const PLAN_BILLINGPERIOD = "Month";
 	const PLAN_BILLINGCYCLES = "36";
