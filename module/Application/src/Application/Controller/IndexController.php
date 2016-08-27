@@ -96,9 +96,7 @@ class IndexController extends AbstractActionController {
 		Mlog::addone ( $cm, __LINE__ . $action );
 		if ($action == "gitpull") {
 			$this->checkGitPull = new CheckGitPull ();
-			$this->checkGitPull->exec ();
-			$gitpull = true;
-			echo $this->checkGitPull->exec ( $gitpull );
+			echo $this->checkGitPull->exec ( true );
 			exit ();
 		} else if ($action == "clearlog") {
 			unlink ( getcwd () . '/php_errors.log' );
