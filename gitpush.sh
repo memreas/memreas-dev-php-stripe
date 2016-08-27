@@ -33,5 +33,7 @@ fi
 #
 # curl url to pull latest on backend
 #
-curl https://memreasdev-pay.memreas.com/?action=clearlog
-curl https://memreasdev-pay.memreas.com/?action=gitpull
+#curl https://memreasdev-pay.memreas.com/?action=clearlog
+#curl https://memreasdev-pay.memreas.com/?action=gitpull
+curl http://54.160.204.224:55153/index?action=clearlog
+curl http://54.160.204.224:55153/index?action=gitpull
