@@ -21,5 +21,7 @@ git push
 
 #cp module/Application/src/Application/Model/MemreasConstants.localhost.php module/Application/src/Application/Model/MemreasConstants.php
 
-curl https://memreasprod-pay.memreas.com/?action=clearlog
-curl https://memreasprod-pay.memreas.com/?action=gitpull
+#curl https://memreasprod-pay.memreas.com/?action=clearlog
+#curl https://memreasprod-pay.memreas.com/?action=gitpull
+curl https://memreasprod.memreas.com:9003/?action=clearlog
+curl https://memreasprod.memreas.com:9003/?action=gitpull
