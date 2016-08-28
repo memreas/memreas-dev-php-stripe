@@ -19,11 +19,16 @@ class MemreasConstants {
 	const MEMREASDB = 'memreasdb';
 	const MEMREASPAYMENTSDB = 'memreaspaymentstripe';
 	const S3BUCKET = "memreasdev";
-	const ORIGINAL_URL = "https://memreasprod-pay.memreas.com/";
-	const MEDIA_URL = "https://memreasprod-ws.memreas.com/?action=addmediaevent";
-	const MEMREAS_FE = "https://pfe.memreas.com";
-	const MEMREAS_WS = "https://memreasprod-ws.memreas.com";
-	const MEMREAS_WSPROXYPAY = "https://memreasprod-ws.memreas.com/index?action=";
+	const ORIGINAL_URL = "http://127.0.0.1:55153/";
+	const MEDIA_URL = "http://127.0.0.1:55152/?action=addmediaevent";
+	const MEMREAS_FE = "http://127.0.0.1:55151";
+	const MEMREAS_WS = "http://127.0.0.1:55152";
+	const MEMREAS_WSPROXYPAY = "http://http://127.0.0.1:55152/index?action=";
+	//const ORIGINAL_URL = "https://memreasprod-pay.memreas.com/";
+	//const MEDIA_URL = "https://memreasprod-ws.memreas.com/?action=addmediaevent";
+	//const MEMREAS_FE = "https://pfe.memreas.com";
+	//const MEMREAS_WS = "https://memreasprod-ws.memreas.com";
+	//const MEMREAS_WSPROXYPAY = "https://memreasprod-ws.memreas.com/index?action=";
 	const URL = "/index";
 	const COPYRIGHT = '&copy; memreas, llc. all rights reserved.';
 	
