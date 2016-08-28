@@ -23,5 +23,5 @@ git push
 
 #curl https://memreasprod-pay.memreas.com/?action=clearlog
 #curl https://memreasprod-pay.memreas.com/?action=gitpull
-curl https://memreasprod.memreas.com:9003/?action=clearlog
+#curl https://memreasprod.memreas.com:9003/?action=clearlog
 curl https://memreasprod.memreas.com:9003/?action=gitpull
