@@ -1,18 +1,18 @@
 <?php
 
-namespace Application\Model;
-
 /**
- * Copyright (C) 2015 memreas llc.
- * - All Rights Reserved
+ * Copyright (C) 2015 memreas llc. - All Rights Reserved
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
+namespace Application\Model;
+
 class MemreasConstants {
 	
 	// Redis section ubuntu standalone for redis 3 version
 	// const REDIS_SERVER_ENDPOINT = "54.225.187.57";
-	const REDIS_SERVER_ENDPOINT = "10.164.216.184";
+	//const REDIS_SERVER_ENDPOINT = "10.154.58.83";
+	const REDIS_SERVER_ENDPOINT = "10.142.17.134";
 	const REDIS_SERVER_USE = true;
 	const REDIS_SERVER_SESSION_ONLY = true;
 	const REDIS_SERVER_PORT = "6379";
@@ -25,24 +25,27 @@ class MemreasConstants {
 	const MEMREAS_FE = "http://127.0.0.1:55151";
 	const MEMREAS_WS = "http://127.0.0.1:55152";
 	const MEMREAS_WSPROXYPAY = "http://http://127.0.0.1:55152/index?action=";
-	//const ORIGINAL_URL = "https://memreasdev-pay.memreas.com/";
-	//const MEDIA_URL = "https://memreasdev-wsa.memreas.com/?action=addmediaevent";
-	//const MEMREAS_FE = "https://fe.memreas.com";
-	//const MEMREAS_WS = "https://memreasdev-wsa.memreas.com";
-	//const MEMREAS_WSPROXYPAY = "https://memreasdev-wsa.memreas.com/index?action=";
+	//const ORIGINAL_URL = "https://memreasprod-pay.memreas.com/";
+	//const MEDIA_URL = "https://memreasprod-ws.memreas.com/?action=addmediaevent";
+	//const MEMREAS_FE = "https://pfe.memreas.com";
+	//const MEMREAS_WS = "https://memreasprod-ws.memreas.com";
+	//const MEMREAS_WSPROXYPAY = "https://memreasprod-ws.memreas.com/index?action=";
 	const URL = "/index";
 	const COPYRIGHT = '&copy; memreas, llc. all rights reserved.';
 	
-	// Key data
-	const SECRET_KEY = 'sk_test_wGuOAxPnnNVn6n9J7oBWVZ0h';
-	const PUBLIC_KEY = 'pk_test_zCmszvnYzWu8VjueyHpmcAJZ';
+	// Key data - test
+	//const SECRET_KEY = 'sk_test_QQhD7TXKY4ph0ZOUsTyhywNX';
+	//const PUBLIC_KEY = 'pk_test_Puz750WYUZlXHCsH0iMbjYth';
+	
+	// Key data - live
+	const SECRET_KEY = 'sk_live_fEVm7a7jfM7eej7iL2vn3jGl';
+	const PUBLIC_KEY = 'pk_live_b1VrPe5OPehrFceNI7uZKpD8';
 	
 	// Account data
 	const ACCOUNT_MEMREAS_FLOAT = "memreas_float";
 	const ACCOUNT_MEMREAS_FEES = "memreas_fees";
 	const ACCOUNT_MEMREAS_PAYER = "memreas_payer";
 	const ACCOUNT_MEMREAS_MASTER = "memreas_master";
-	const ACCOUNT_MEMREAS_PLATFORM = "memreas_platform";
 	const ACCOUNT_TYPE_BUYER = "buyer";
 	const ACCOUNT_TYPE_TRACKER = "tracker";
 	const ACCOUNT_TYPE_SELLER = "seller";
@@ -71,8 +74,8 @@ class MemreasConstants {
 	const ADMIN_EMAIL = 'admin@memreas.com';
 	
 	// S3_AccessUser
-	const AWS_APPKEY = 'AKIAIXDH3Q23AP4KPZRA';
-	const AWS_APPSEC = 'TM+p8s9hlJwnKECCEKSVVhEOBjVhTWDG4ijIhJdk';
+	const AWS_APPKEY = 'AKIAISDIQFVJMWFYXCIA';
+	const AWS_APPSEC = 'eM5HG4MbYhkW1Jz1RWIdMapo2s+DbB+KnkhzTt91';
 	const SES_SMTP_KEY = 'AKIAJZNY5YHUCYUP2U4A';
 	const SES_SMTP_SECRET = 'Ashp1eCvbvKuL5uTpw/TSipW/O7CkewRoTl/N+NXUAGr';
 	// Listpay Payout
