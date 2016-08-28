@@ -11,7 +11,6 @@ use Application\memreas\AWSMemreasRedisCache;
 use Application\memreas\AWSMemreasRedisSessionHandler;
 use Application\memreas\AWSStripeManagerSender;
 use Application\memreas\CheckGitPull;
-use Application\memreas\MemreasStripe;
 use Application\memreas\Mlog;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
@@ -99,6 +98,7 @@ class IndexController extends AbstractActionController {
 			echo $this->checkGitPull->exec ( true );
 			exit ();
 		} else if ($action == "clearlog") {
+			//`cat /dev/null > getcwd () . '/php_errors.log'`
 			unlink ( getcwd () . '/php_errors.log' );
 			Mlog::addone ( $cm . __LINE__, "Log has been cleared!" );
 			echo '<pre>' . file_get_contents ( getcwd () . '/php_errors.log' );

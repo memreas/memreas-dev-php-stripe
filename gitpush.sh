@@ -35,5 +35,5 @@ fi
 #
 #curl https://memreasdev-pay.memreas.com/?action=clearlog
 #curl https://memreasdev-pay.memreas.com/?action=gitpull
-curl http://54.160.204.224:55153/index?action=clearlog
-curl http://54.160.204.224:55153/index?action=gitpull
+#curl https://memreasdev.memreas.com:9003/index?action=clearlog
+curl https://memreasdev.memreas.com:9003/index?action=gitpull
