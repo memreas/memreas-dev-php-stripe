@@ -807,16 +807,14 @@ class PHPUnit_Framework_TestResult implements Countable
                     $linesToBeUsed
                 );
             } catch (UnintentionallyCoveredCodeException $cce) {
-                if (!$test->isMedium() && !$test->isLarge()) {
-                    $this->addFailure(
-                        $test,
-                        new PHPUnit_Framework_UnintentionallyCoveredCodeError(
-                            'This test executed code that is not listed as code to be covered or used:' .
-                            PHP_EOL . $cce->getMessage()
-                        ),
-                        $time
-                    );
-                }
+                $this->addFailure(
+                    $test,
+                    new PHPUnit_Framework_UnintentionallyCoveredCodeError(
+                        'This test executed code that is not listed as code to be covered or used:' .
+                        PHP_EOL . $cce->getMessage()
+                    ),
+                    $time
+                );
             } catch (CoveredCodeNotExecutedException $cce) {
                 $this->addFailure(
                     $test,
@@ -856,7 +854,8 @@ class PHPUnit_Framework_TestResult implements Countable
         } elseif ($warning === true) {
             $this->addWarning($test, $e, $time);
         } elseif ($this->beStrictAboutTestsThatDoNotTestAnything &&
-                 $test->getNumAssertions() == 0) {
+                  !$test->doesNotPerformAssertions() &&
+                  $test->getNumAssertions() == 0) {
             $this->addFailure(
                 $test,
                 new PHPUnit_Framework_RiskyTestError(
