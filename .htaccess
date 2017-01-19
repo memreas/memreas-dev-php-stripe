@@ -1,8 +1,6 @@
 #Require host memreas.com
 #Require local
 
-<IfModule mod_php5.c>
-
 #Prevent public display of PHP errors via htaccess
 # supress php errors
 #php_flag display_startup_errors off
@@ -41,5 +39,3 @@ php_value date.timezone "America/New_York"
  Deny from all
  Satisfy All
 </Files>
-
-</IfModule>
